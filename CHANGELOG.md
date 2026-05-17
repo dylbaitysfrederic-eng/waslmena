@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/dylbaitysfrederic-eng/waslmena/compare/v1.1.0...v1.2.0) (2026-05-17)
+
+
+### Features
+
+* add clerk organization sync ([9034759](https://github.com/dylbaitysfrederic-eng/waslmena/commit/9034759c718baeb7c0782a13d99ac33274ef8a51))
+
 # [1.1.0](https://github.com/dylbaitysfrederic-eng/waslmena/compare/v1.0.0...v1.1.0) (2026-05-17)
 
 
