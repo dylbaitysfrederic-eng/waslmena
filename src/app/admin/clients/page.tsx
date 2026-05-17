@@ -23,6 +23,7 @@ import {
   markClientPaymentPaidAction,
   revokeClientAccessAction,
   suspendClientAccessAction,
+  syncClerkOrganizationsAction,
   updateAdminClientAction,
 } from '../actions';
 
@@ -33,21 +34,56 @@ const statusBadgeClassName = (status: string) => {
   return `inline-flex w-fit rounded-md border px-2 py-1 text-xs font-semibold ${getStatusBadgeClassName(status)}`;
 };
 
-const AdminClientsPage = async () => {
+const getSyncCount = (value: string | string[] | undefined) => {
+  const textValue = Array.isArray(value) ? value.at(0) : value;
+  const count = Number.parseInt(textValue ?? '', 10);
+
+  return Number.isNaN(count) || count < 0 ? null : count;
+};
+
+const AdminClientsPage = async (props: {
+  searchParams?: {
+    syncCreated?: string | string[];
+    syncExisting?: string | string[];
+  };
+}) => {
   const {
     ids,
     organizationRecords,
   } = await getAdminOrganizations();
+  const syncCreated = getSyncCount(props.searchParams?.syncCreated);
+  const syncExisting = getSyncCount(props.searchParams?.syncExisting);
 
   return (
     <section className="rounded-md bg-background p-5">
-      <div className="mb-5">
-        <h2 className="text-xl font-semibold">Restaurant clients</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Manage client identity, contact details, billing shortcuts, and access
-          actions. Restaurant menus, tables, and orders stay in the dashboard.
-        </p>
+      <div className="mb-5 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        <div>
+          <h2 className="text-xl font-semibold">Restaurant clients</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Manage client identity, contact details, billing shortcuts, and access
+            actions. Restaurant menus, tables, and orders stay in the dashboard.
+          </p>
+        </div>
+        <form action={syncClerkOrganizationsAction}>
+          <FormSubmitButton size="sm" variant="secondary" pendingLabel="Syncing...">
+            Sync Clerk organizations
+          </FormSubmitButton>
+        </form>
       </div>
+
+      {syncCreated !== null && syncExisting !== null && (
+        <div className="mb-4 rounded-md border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-950">
+          Clerk sync complete:
+          {' '}
+          {syncCreated}
+          {' '}
+          created,
+          {' '}
+          {syncExisting}
+          {' '}
+          already existing.
+        </div>
+      )}
 
       {ids.length === 0 && (
         <div className="rounded-md border p-8 text-center text-muted-foreground">

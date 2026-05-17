@@ -113,6 +113,35 @@ const revalidateAdminPaths = (...paths: string[]) => {
   }
 };
 
+const getAllClerkOrganizations = async () => {
+  const client = await clerkClient();
+  const limit = 100;
+  let offset = 0;
+  let totalCount = 0;
+  const organizations: Array<{
+    id: string;
+    name: string;
+  }> = [];
+
+  do {
+    const page = await client.organizations.getOrganizationList({
+      limit,
+      offset,
+      orderBy: '+created_at',
+    });
+
+    organizations.push(...page.data.map(organization => ({
+      id: organization.id,
+      name: organization.name,
+    })));
+
+    totalCount = page.totalCount;
+    offset += limit;
+  } while (organizations.length < totalCount);
+
+  return organizations;
+};
+
 const normalizeEmail = (value: FormDataEntryValue | null) => {
   const email = normalizeOptionalText(value)?.toLowerCase() ?? null;
 
@@ -494,6 +523,42 @@ export const createAdminOnboardingAction = async (formData: FormData) => {
 
   revalidateAdminPaths('/admin/clients', '/admin/billing', '/admin/templates');
   redirect(`/admin/onboarding?status=${inviteStatus}&organizationId=${clerkOrganizationId}`);
+};
+
+export const syncClerkOrganizationsAction = async () => {
+  await assertAdmin();
+
+  const [clerkOrganizations, localOrganizations] = await Promise.all([
+    getAllClerkOrganizations(),
+    db.select({ id: organizationSchema.id }).from(organizationSchema),
+  ]);
+  const localOrganizationIds = new Set(
+    localOrganizations.map(organization => organization.id),
+  );
+  const missingOrganizations = clerkOrganizations.filter(
+    organization => !localOrganizationIds.has(organization.id),
+  );
+
+  if (missingOrganizations.length > 0) {
+    await db
+      .insert(organizationSchema)
+      .values(
+        missingOrganizations.map(organization => ({
+          id: organization.id,
+          restaurantDisplayName: normalizeOptionalText(organization.name),
+          accessStatus: 'pending',
+          subscriptionStatus: 'trial',
+          accessSuspended: false,
+        })),
+      )
+      .onConflictDoNothing();
+  }
+
+  revalidateAdminPaths('/admin/clients');
+
+  redirect(
+    `/admin/clients?syncCreated=${missingOrganizations.length}&syncExisting=${clerkOrganizations.length - missingOrganizations.length}`,
+  );
 };
 
 export const updateAdminClientAction = async (formData: FormData) => {
