@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/dylbaitysfrederic-eng/waslmena/compare/v1.0.0...v1.1.0) (2026-05-17)
+
+
+### Features
+
+* improve admin onboarding and access workflow ([eb7d65f](https://github.com/dylbaitysfrederic-eng/waslmena/commit/eb7d65f6c88efefc2d85090093086a94879c9701))
+
 # 1.0.0 (2026-05-17)
 
 
