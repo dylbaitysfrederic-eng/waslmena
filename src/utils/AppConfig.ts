@@ -6,13 +6,27 @@ const localePrefix: LocalePrefix = 'as-needed';
 
 // FIXME: Update this configuration file based on your project information
 export const AppConfig = {
-  name: 'SaaS Template',
+  name: 'Wasl',
+  supportEmail: 'hello@waslmena.com',
+  whatsappNumberOrUrl: '',
+  instagramUrl: '',
+  facebookUrl: '',
   locales: [
     {
       id: 'en',
       name: 'English',
+      label: '🇺🇸 EN',
     },
-    { id: 'fr', name: 'Français' },
+    {
+      id: 'ar',
+      name: 'العربية',
+      label: '🇸🇦 AR',
+    },
+    {
+      id: 'fr',
+      name: 'Français',
+      label: '🇫🇷 FR',
+    },
   ],
   defaultLocale: 'en',
   localePrefix,

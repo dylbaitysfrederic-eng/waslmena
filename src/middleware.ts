@@ -14,7 +14,10 @@ const intlMiddleware = createMiddleware({
   defaultLocale: AppConfig.defaultLocale,
 });
 
+const isAdminRoute = createRouteMatcher(['/admin(.*)']);
+
 const isProtectedRoute = createRouteMatcher([
+  '/admin(.*)',
   '/dashboard(.*)',
   '/:locale/dashboard(.*)',
   '/onboarding(.*)',
@@ -43,6 +46,10 @@ export default function middleware(
           // `unauthenticatedUrl` is needed to avoid error: "Unable to find `next-intl` locale because the middleware didn't run on this request"
           unauthenticatedUrl: signInUrl.toString(),
         });
+      }
+
+      if (isAdminRoute(req)) {
+        return NextResponse.next();
       }
 
       const authObj = await auth();

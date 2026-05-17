@@ -1,0 +1,1 @@
+ALTER TABLE "organization" ADD COLUMN "restaurant_template_style" text;

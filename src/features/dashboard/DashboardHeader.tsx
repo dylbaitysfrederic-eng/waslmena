@@ -7,10 +7,13 @@ import { useLocale } from 'next-intl';
 import { ActiveLink } from '@/components/ActiveLink';
 import { LocaleSwitcher } from '@/components/LocaleSwitcher';
 import { ToggleMenuButton } from '@/components/ToggleMenuButton';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Separator } from '@/components/ui/separator';
@@ -22,6 +25,11 @@ export const DashboardHeader = (props: {
     href: string;
     label: string;
   }[];
+  secondaryMenu: {
+    href: string;
+    label: string;
+  }[];
+  settingsLabel: string;
 }) => {
   const locale = useLocale();
 
@@ -60,13 +68,33 @@ export const DashboardHeader = (props: {
           }}
         />
 
-        <nav className="ml-3 max-lg:hidden">
+        <nav className="ms-3 max-lg:hidden">
           <ul className="flex flex-row items-center gap-x-3 text-lg font-medium [&_a:hover]:opacity-100 [&_a]:opacity-75">
             {props.menu.map(item => (
               <li key={item.href}>
-                <ActiveLink href={item.href}>{item.label}</ActiveLink>
+                <ActiveLink href={getI18nPath(item.href, locale)}>
+                  {item.label}
+                </ActiveLink>
               </li>
             ))}
+            <li>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="px-3 py-2 text-lg font-medium">
+                    {props.settingsLabel}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="min-w-56">
+                  {props.secondaryMenu.map(item => (
+                    <DropdownMenuItem key={item.href} asChild>
+                      <Link href={getI18nPath(item.href, locale)}>
+                        {item.label}
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </li>
           </ul>
         </nav>
       </div>
@@ -79,10 +107,22 @@ export const DashboardHeader = (props: {
                 <DropdownMenuTrigger asChild>
                   <ToggleMenuButton />
                 </DropdownMenuTrigger>
-                <DropdownMenuContent>
+                <DropdownMenuContent className="min-w-56">
+                  <DropdownMenuLabel>{props.settingsLabel}</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
                   {props.menu.map(item => (
                     <DropdownMenuItem key={item.href} asChild>
-                      <Link href={item.href}>{item.label}</Link>
+                      <Link href={getI18nPath(item.href, locale)}>
+                        {item.label}
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                  <DropdownMenuSeparator />
+                  {props.secondaryMenu.map(item => (
+                    <DropdownMenuItem key={item.href} asChild>
+                      <Link href={getI18nPath(item.href, locale)}>
+                        {item.label}
+                      </Link>
                     </DropdownMenuItem>
                   ))}
                 </DropdownMenuContent>

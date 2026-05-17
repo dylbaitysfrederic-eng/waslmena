@@ -17,7 +17,7 @@ test.describe('Sanity', () => {
     test('should display the homepage', async ({ page, baseURL }) => {
       await page.goto(`${baseURL}/`);
 
-      await expect(page.getByText('The perfect SaaS template to build')).toBeVisible();
+      await expect(page.getByText('Restaurant operations and QR ordering designed for MENA hospitality.')).toBeVisible();
     });
   });
 });

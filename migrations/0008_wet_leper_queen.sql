@@ -1,0 +1,1 @@
+ALTER TABLE "organization" ADD COLUMN "restaurant_whatsapp_number" text;

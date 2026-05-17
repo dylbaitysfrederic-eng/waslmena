@@ -1,74 +1,168 @@
-import { useTranslations } from 'next-intl';
+import { auth } from '@clerk/nextjs/server';
+import { and, count, eq, gte } from 'drizzle-orm';
+import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
 
-import { MessageState } from '@/features/dashboard/MessageState';
+import { getCurrentRestaurantDisplayName } from '@/features/dashboard/getRestaurantDisplayName';
 import { TitleBar } from '@/features/dashboard/TitleBar';
-import { SponsorLogos } from '@/features/sponsors/SponsorLogos';
+import { db } from '@/libs/DB';
+import {
+  menuItemSchema,
+  orderSchema,
+  restaurantTableSchema,
+} from '@/models/Schema';
+import { getI18nPath } from '@/utils/Helpers';
 
-const DashboardIndexPage = () => {
-  const t = useTranslations('DashboardIndex');
+const getCountValue = (rows: { count: number }[]) => {
+  return Number(rows.at(0)?.count ?? 0);
+};
+
+const DashboardIndexPage = async (props: { params: { locale: string } }) => {
+  const t = await getTranslations({
+    locale: props.params.locale,
+    namespace: 'DashboardIndex',
+  });
+  const { orgId } = await auth();
+  const restaurantDisplayName = await getCurrentRestaurantDisplayName(orgId);
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+
+  const [
+    todayOrderRows,
+    pendingOrderRows,
+    menuItemRows,
+    tableRows,
+  ] = orgId
+    ? await Promise.all([
+      db
+        .select({ count: count() })
+        .from(orderSchema)
+        .where(and(
+          eq(orderSchema.organizationId, orgId),
+          gte(orderSchema.createdAt, todayStart),
+        )),
+      db
+        .select({ count: count() })
+        .from(orderSchema)
+        .where(and(
+          eq(orderSchema.organizationId, orgId),
+          eq(orderSchema.status, 'pending'),
+        )),
+      db
+        .select({ count: count() })
+        .from(menuItemSchema)
+        .where(eq(menuItemSchema.organizationId, orgId)),
+      db
+        .select({ count: count() })
+        .from(restaurantTableSchema)
+        .where(eq(restaurantTableSchema.organizationId, orgId)),
+    ])
+    : [[], [], [], []];
+
+  const summaryCards = [
+    {
+      label: t('summary_today_orders'),
+      value: getCountValue(todayOrderRows),
+    },
+    {
+      label: t('summary_pending_orders'),
+      value: getCountValue(pendingOrderRows),
+    },
+    {
+      label: t('summary_menu_items'),
+      value: getCountValue(menuItemRows),
+    },
+    {
+      label: t('summary_tables'),
+      value: getCountValue(tableRows),
+    },
+  ];
+  const quickLinks = [
+    {
+      href: '/dashboard/orders',
+      title: t('orders_title'),
+      description: t('orders_description'),
+    },
+    {
+      href: '/dashboard/menu-items',
+      title: t('menu_title'),
+      description: t('menu_description'),
+    },
+    {
+      href: '/dashboard/tables',
+      title: t('tables_title'),
+      description: t('tables_description'),
+    },
+    {
+      href: '/dashboard/statistics',
+      title: t('statistics_title'),
+      description: t('statistics_description'),
+    },
+    {
+      href: '/dashboard/branding',
+      title: t('settings_title'),
+      description: t('settings_description'),
+    },
+  ];
 
   return (
     <>
       <TitleBar
-        title={t('title_bar')}
+        title={t('title_bar', { restaurantName: restaurantDisplayName })}
         description={t('title_bar_description')}
       />
 
-      <MessageState
-        icon={(
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M0 0h24v24H0z" stroke="none" />
-            <path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3M12 12l8-4.5M12 12v9M12 12L4 7.5" />
-          </svg>
-        )}
-        title={t('message_state_title')}
-        description={t.rich('message_state_description', {
-          code: chunks => (
-            <code className="bg-secondary text-secondary-foreground">
-              {chunks}
-            </code>
-          ),
-        })}
-        button={(
-          <>
-            <div className="mt-2 whitespace-pre text-sm font-light text-muted-foreground">
-              {t.rich('message_state_alternative', {
-                url: () => (
-                  <a
-                    className="text-blue-500 hover:text-blue-600"
-                    href="https://nextjs-boilerplate.com/pro-saas-starter-kit"
-                  >
-                    Next.js Boilerplate SaaS
-                  </a>
-                ),
-              })}
+      <section className="mb-8">
+        <div className="mb-3">
+          <h2 className="text-lg font-semibold">
+            {t('summary_title')}
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            {t('summary_description')}
+          </p>
+        </div>
 
-              <p>
-                {t.rich('max_message', {
-                  url: () => (
-                    <a
-                      className="text-blue-500 hover:text-blue-600"
-                      href="https://nextjs-boilerplate.com/nextjs-multi-tenant-saas-boilerplate"
-                    >
-                      Next.js Boilerplate Max
-                    </a>
-                  ),
-                })}
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {summaryCards.map(card => (
+            <div key={card.label} className="rounded-md border bg-card p-4">
+              <p className="text-sm font-medium text-muted-foreground">
+                {card.label}
+              </p>
+              <p className="mt-2 text-3xl font-semibold">
+                {card.value}
               </p>
             </div>
+          ))}
+        </div>
+      </section>
 
-            <div className="mt-7">
-              <SponsorLogos />
-            </div>
-          </>
-        )}
-      />
+      <section>
+        <div className="mb-3">
+          <h2 className="text-lg font-semibold">
+            {t('quick_actions_title')}
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            {t('quick_actions_description')}
+          </p>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {quickLinks.map(link => (
+            <Link
+              key={link.href}
+              href={getI18nPath(link.href, props.params.locale)}
+              className="rounded-md border bg-card p-5 transition-colors hover:bg-muted"
+            >
+              <h2 className="text-lg font-semibold">
+                {link.title}
+              </h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                {link.description}
+              </p>
+            </Link>
+          ))}
+        </div>
+      </section>
     </>
   );
 };

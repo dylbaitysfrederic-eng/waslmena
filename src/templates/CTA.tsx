@@ -16,7 +16,7 @@ export const CTA = () => {
         buttons={(
           <a
             className={buttonVariants({ size: 'lg' })}
-            href="https://nextjs-boilerplate.com/nextjs-multi-tenant-saas-boilerplate"
+            href="/dashboard"
           >
             {t('button_text')}
             <ArrowRightIcon className="ml-1 size-5" />

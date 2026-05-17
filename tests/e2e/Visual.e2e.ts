@@ -6,7 +6,7 @@ test.describe('Visual testing', () => {
     test('should take screenshot of the homepage', async ({ page }) => {
       await page.goto('/');
 
-      await expect(page.getByText('The perfect SaaS template to build')).toBeVisible();
+      await expect(page.getByText('Restaurant operations and QR ordering designed for MENA hospitality.')).toBeVisible();
 
       await percySnapshot(page, 'Homepage');
     });

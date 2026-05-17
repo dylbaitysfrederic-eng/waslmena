@@ -36,7 +36,7 @@ export const Hero = () => {
           <>
             <a
               className={buttonVariants({ variant: 'outline', size: 'lg' })}
-              href="https://github.com/ixartz/SaaS-Boilerplate"
+              href="/admin/settings"
             >
               <GitHubLogoIcon className="mr-2 size-5" />
               {t('secondary_button')}
@@ -44,7 +44,7 @@ export const Hero = () => {
 
             <a
               className={buttonVariants({ size: 'lg' })}
-              href="https://nextjs-boilerplate.com/nextjs-multi-tenant-saas-boilerplate"
+              href="/dashboard"
             >
               {t('primary_button')}
               <ArrowRightIcon className="ml-1 size-5" />

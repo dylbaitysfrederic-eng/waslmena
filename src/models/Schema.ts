@@ -1,5 +1,7 @@
 import {
   bigint,
+  boolean,
+  integer,
   pgTable,
   serial,
   text,
@@ -23,6 +25,46 @@ export const organizationSchema = pgTable(
   'organization',
   {
     id: text('id').primaryKey(),
+    restaurantDisplayName: text('restaurant_display_name'),
+    restaurantLogoUrl: text('restaurant_logo_url'),
+    restaurantPrimaryColor: text('restaurant_primary_color'),
+    restaurantTemplateStyle: text('restaurant_template_style'),
+    restaurantWhatsappNumber: text('restaurant_whatsapp_number'),
+    localCurrencyCode: text('local_currency_code'),
+    localCurrencyLabel: text('local_currency_label'),
+    restaurantProfile: text('restaurant_profile').default('table_service').notNull(),
+    orderingMode: text('ordering_mode').default('table_ordering').notNull(),
+    enableTableNumbers: boolean('enable_table_numbers').default(true).notNull(),
+    enableNamedTables: boolean('enable_named_tables').default(false).notNull(),
+    enableCustomerName: boolean('enable_customer_name').default(true).notNull(),
+    enableWhatsappContact: boolean('enable_whatsapp_contact').default(true).notNull(),
+    qrMode: text('qr_mode').default('per_table').notNull(),
+    qrFrameColor: text('qr_frame_color').default('#111827').notNull(),
+    qrForegroundColor: text('qr_foreground_color').default('#111827').notNull(),
+    qrBackgroundColor: text('qr_background_color').default('#ffffff').notNull(),
+    qrLabelText: text('qr_label_text'),
+    qrShowRestaurantName: boolean('qr_show_restaurant_name').default(true).notNull(),
+    qrShowTableNumber: boolean('qr_show_table_number').default(true).notNull(),
+    qrStyleTemplate: text('qr_style_template').default('classic').notNull(),
+    setupFeeAmountUsd: integer('setup_fee_amount_usd'),
+    setupFeeStatus: text('setup_fee_status'),
+    monthlySubscriptionAmountUsd: integer('monthly_subscription_amount_usd'),
+    monthlySubscriptionStatus: text('monthly_subscription_status'),
+    nextBillingDate: timestamp('next_billing_date', { mode: 'date' }),
+    paymentMethodNote: text('payment_method_note'),
+    internalAdminNotes: text('internal_admin_notes'),
+    subscriptionPaymentMethod: text('subscription_payment_method'),
+    billingCycle: text('billing_cycle'),
+    assignedSalesperson: text('assigned_salesperson'),
+    renewalDate: timestamp('renewal_date', { mode: 'date' }),
+    subscriptionAmountUsd: integer('subscription_amount_usd'),
+    subscriptionStatus: text('subscription_status').default('trial').notNull(),
+    lastPaymentDate: timestamp('last_payment_date', { mode: 'date' }),
+    nextPaymentDueDate: timestamp('next_payment_due_date', { mode: 'date' }),
+    overdueSince: timestamp('overdue_since', { mode: 'date' }),
+    adminPaymentNotes: text('admin_payment_notes'),
+    accessSuspended: boolean('access_suspended').default(false).notNull(),
+    adminNotes: text('admin_notes'),
     stripeCustomerId: text('stripe_customer_id'),
     stripeSubscriptionId: text('stripe_subscription_id'),
     stripeSubscriptionPriceId: text('stripe_subscription_price_id'),
@@ -55,5 +97,96 @@ export const todoSchema = pgTable('todo', {
     .defaultNow()
     .$onUpdate(() => new Date())
     .notNull(),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+});
+
+export const saasSettingsSchema = pgTable('saas_settings', {
+  id: text('id').primaryKey(),
+  supportEmail: text('support_email'),
+  instagramUrl: text('instagram_url'),
+  whatsappNumberOrUrl: text('whatsapp_url'),
+  facebookUrl: text('facebook_url'),
+  updatedAt: timestamp('updated_at', { mode: 'date' })
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+});
+
+export const restaurantTableSchema = pgTable('restaurant_table', {
+  id: serial('id').primaryKey(),
+  organizationId: text('organization_id').notNull(),
+  tableNumber: integer('table_number').notNull(),
+  qrCode: text('qr_code'),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'date' })
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
+});
+
+export const menuCategorySchema = pgTable('menu_category', {
+  id: serial('id').primaryKey(),
+  organizationId: text('organization_id').notNull(),
+  name: text('name').notNull(),
+  nameEn: text('name_en'),
+  nameAr: text('name_ar'),
+  nameFr: text('name_fr'),
+  displayOrder: integer('display_order').default(0).notNull(),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'date' })
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
+});
+
+export const menuItemSchema = pgTable('menu_item', {
+  id: serial('id').primaryKey(),
+  organizationId: text('organization_id').notNull(),
+  categoryId: integer('category_id').notNull(),
+  name: text('name').notNull(),
+  nameEn: text('name_en'),
+  nameAr: text('name_ar'),
+  nameFr: text('name_fr'),
+  description: text('description'),
+  descriptionEn: text('description_en'),
+  descriptionAr: text('description_ar'),
+  descriptionFr: text('description_fr'),
+  imageUrl: text('image_url'),
+  priceUsdCents: integer('price_usd_cents'),
+  priceLbp: integer('price_lbp'),
+  isAvailable: boolean('is_available').default(true).notNull(),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'date' })
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
+});
+
+export const orderSchema = pgTable('order', {
+  id: serial('id').primaryKey(),
+  organizationId: text('organization_id').notNull(),
+  tableId: integer('table_id').notNull(),
+  customerName: text('customer_name'),
+  customerNote: text('customer_note'),
+  status: text('status').default('pending').notNull(),
+  paymentMethod: text('payment_method').default('cash').notNull(),
+  totalUsdCents: integer('total_usd_cents'),
+  totalLbp: integer('total_lbp'),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'date' })
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
+});
+
+export const orderItemSchema = pgTable('order_item', {
+  id: serial('id').primaryKey(),
+  orderId: integer('order_id').notNull(),
+  menuItemId: integer('menu_item_id').notNull(),
+  quantity: integer('quantity').notNull(),
+  customerNote: text('customer_note'),
+  unitPriceUsdCents: integer('unit_price_usd_cents'),
+  unitPriceLbp: integer('unit_price_lbp'),
   createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
 });
