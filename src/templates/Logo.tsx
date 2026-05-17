@@ -3,20 +3,34 @@ import { AppConfig } from '@/utils/AppConfig';
 export const Logo = (props: {
   isTextHidden?: boolean;
 }) => (
-  <div className="flex items-center text-xl font-semibold">
+  <div className="flex items-center gap-2 text-xl font-semibold tracking-normal">
     <svg
-      className="mr-1 size-8 stroke-current stroke-2"
+      className="size-9"
       xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
+      viewBox="0 0 36 36"
       fill="none"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      aria-hidden="true"
     >
-      <path d="M0 0h24v24H0z" stroke="none" />
-      <rect x="3" y="12" width="6" height="8" rx="1" />
-      <rect x="9" y="8" width="6" height="12" rx="1" />
-      <rect x="15" y="4" width="6" height="16" rx="1" />
-      <path d="M4 20h14" />
+      <rect width="36" height="36" rx="10" fill="#111827" />
+      <path
+        d="M10 19.4c3.9-8.1 12.1-8.1 16 0"
+        stroke="#F4D06F"
+        strokeWidth="2.4"
+        strokeLinecap="round"
+      />
+      <path
+        d="M11.5 23.5h13"
+        stroke="#F8FAFC"
+        strokeWidth="2.4"
+        strokeLinecap="round"
+      />
+      <path
+        d="M18 10.5v3.8"
+        stroke="#34D399"
+        strokeWidth="2.4"
+        strokeLinecap="round"
+      />
+      <circle cx="18" cy="8.5" r="1.8" fill="#34D399" />
     </svg>
     {!props.isTextHidden && AppConfig.name}
   </div>

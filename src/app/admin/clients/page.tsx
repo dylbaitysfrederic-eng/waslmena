@@ -1,18 +1,16 @@
-import { ArrowUpDown } from 'lucide-react';
 import Link from 'next/link';
 
 import { FormSubmitButton } from '@/components/FormSubmitButton';
-import { Input } from '@/components/ui/input';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
+import { Input } from '@/components/ui/input';
 
 import {
+  CLIENT_CATEGORIES,
   formatAdminLabel,
   formatDate,
   formatDateInputValue,
@@ -21,14 +19,19 @@ import {
   getStatusBadgeClassName,
 } from '../_helpers';
 import {
+  activateClientAccessAction,
   markClientPaymentPaidAction,
-  restoreClientAccessAction,
+  revokeClientAccessAction,
   suspendClientAccessAction,
   updateAdminClientAction,
 } from '../actions';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
+
+const statusBadgeClassName = (status: string) => {
+  return `inline-flex w-fit rounded-md border px-2 py-1 text-xs font-semibold ${getStatusBadgeClassName(status)}`;
+};
 
 const AdminClientsPage = async () => {
   const {
@@ -41,248 +44,291 @@ const AdminClientsPage = async () => {
       <div className="mb-5">
         <h2 className="text-xl font-semibold">Restaurant clients</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          Manage SaaS-owner client records and internal notes. Restaurant menus,
-          tables, and orders stay in the dashboard.
+          Manage client identity, contact details, billing shortcuts, and access
+          actions. Restaurant menus, tables, and orders stay in the dashboard.
         </p>
       </div>
 
-      <div className="overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="cursor-pointer">
-                <span className="inline-flex items-center gap-1">
-                  Restaurant / Organization
-                  <ArrowUpDown className="size-3" />
-                </span>
-              </TableHead>
-              <TableHead className="cursor-pointer">
-                <span className="inline-flex items-center gap-1">
-                  Salesperson
-                  <ArrowUpDown className="size-3" />
-                </span>
-              </TableHead>
-              <TableHead className="cursor-pointer">
-                <span className="inline-flex items-center gap-1">
-                  Subscription status
-                  <ArrowUpDown className="size-3" />
-                </span>
-              </TableHead>
-              <TableHead className="cursor-pointer">
-                <span className="inline-flex items-center gap-1">
-                  Payment status
-                  <ArrowUpDown className="size-3" />
-                </span>
-              </TableHead>
-              <TableHead className="cursor-pointer">
-                <span className="inline-flex items-center gap-1">
-                  Payment method
-                  <ArrowUpDown className="size-3" />
-                </span>
-              </TableHead>
-              <TableHead className="cursor-pointer">
-                <span className="inline-flex items-center gap-1">
-                  Billing cycle
-                  <ArrowUpDown className="size-3" />
-                </span>
-              </TableHead>
-              <TableHead className="cursor-pointer">
-                <span className="inline-flex items-center gap-1">
-                  Last payment
-                  <ArrowUpDown className="size-3" />
-                </span>
-              </TableHead>
-              <TableHead className="cursor-pointer">
-                <span className="inline-flex items-center gap-1">
-                  Renewal date
-                  <ArrowUpDown className="size-3" />
-                </span>
-              </TableHead>
-              <TableHead className="cursor-pointer">
-                <span className="inline-flex items-center gap-1">
-                  Next due
-                  <ArrowUpDown className="size-3" />
-                </span>
-              </TableHead>
-              <TableHead className="cursor-pointer">
-                <span className="inline-flex items-center gap-1">
-                  Overdue
-                  <ArrowUpDown className="size-3" />
-                </span>
-              </TableHead>
-              <TableHead className="cursor-pointer">
-                <span className="inline-flex items-center gap-1">
-                  Access
-                  <ArrowUpDown className="size-3" />
-                </span>
-              </TableHead>
-              <TableHead className="cursor-pointer">Actions / notes</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {ids.map((organizationId) => {
-              const organization = organizationRecords.get(organizationId);
-              const subscriptionStatus = organization?.subscriptionStatus ?? 'trial';
-              const paymentStatus = organization?.monthlySubscriptionStatus ?? 'paused';
-              const accessSuspended = organization?.accessSuspended ?? false;
+      {ids.length === 0 && (
+        <div className="rounded-md border p-8 text-center text-muted-foreground">
+          No restaurant clients found yet.
+        </div>
+      )}
 
-              return (
-                <TableRow key={organizationId}>
-                  <TableCell className="min-w-72 align-top">
-                    <div className="font-semibold">
-                      {organization?.restaurantDisplayName || 'Unnamed restaurant'}
+      {ids.length > 0 && (
+        <Accordion type="single" collapsible className="space-y-3">
+          {ids.map((organizationId) => {
+            const organization = organizationRecords.get(organizationId);
+            const subscriptionStatus = organization?.subscriptionStatus ?? 'trial';
+            const paymentStatus = organization?.monthlySubscriptionStatus ?? 'paused';
+            const accessStatus = organization?.accessStatus ?? 'pending';
+            const clientName = organization?.restaurantDisplayName || 'Unnamed restaurant';
+
+            return (
+              <AccordionItem
+                key={organizationId}
+                value={organizationId}
+                className="rounded-md border bg-card px-4"
+              >
+                <AccordionTrigger className="gap-4 py-4 text-left hover:no-underline">
+                  <div className="grid flex-1 gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
+                    <div className="min-w-0">
+                      <div className="truncate text-base font-semibold">
+                        {clientName}
+                      </div>
+                      <code className="mt-1 block truncate text-xs text-muted-foreground">
+                        {organizationId}
+                      </code>
                     </div>
-                    <code className="mt-1 block break-all text-xs text-muted-foreground">
-                      {organizationId}
-                    </code>
-                  </TableCell>
-                  <TableCell className="align-top text-sm">
-                    {organization?.assignedSalesperson || (
-                      <span className="text-muted-foreground">Unassigned</span>
-                    )}
-                  </TableCell>
-                  <TableCell className="align-top">
-                    <span
-                      className={`inline-flex w-fit rounded-md border px-2 py-1 text-xs font-semibold ${getStatusBadgeClassName(subscriptionStatus)}`}
-                    >
-                      {formatAdminLabel(subscriptionStatus)}
-                    </span>
-                  </TableCell>
-                  <TableCell className="align-top text-sm">
-                    {formatAdminLabel(paymentStatus)}
-                  </TableCell>
-                  <TableCell className="align-top text-sm">
-                    {formatAdminLabel(organization?.subscriptionPaymentMethod ?? 'cash')}
-                  </TableCell>
-                  <TableCell className="align-top text-sm">
-                    {formatAdminLabel(organization?.billingCycle ?? 'monthly')}
-                  </TableCell>
-                  <TableCell className="align-top text-sm">
-                    {formatDate(organization?.lastPaymentDate)}
-                  </TableCell>
-                  <TableCell className="align-top text-sm">
-                    {organization?.renewalDate
-                      ? formatDate(organization.renewalDate)
-                      : organization?.nextPaymentDueDate
-                        ? formatDate(organization.nextPaymentDueDate)
-                        : 'Not set'}
-                  </TableCell>
-                  <TableCell className="align-top text-sm">
-                    {organization?.nextPaymentDueDate
-                      ? formatDate(organization.nextPaymentDueDate)
-                      : 'Not set'}
-                  </TableCell>
-                  <TableCell className="align-top text-sm">
-                    {subscriptionStatus === 'overdue'
-                      ? getOverdueDuration(organization?.overdueSince)
-                      : '-'}
-                  </TableCell>
-                  <TableCell className="align-top text-sm">
-                    <span
-                      className={
-                        accessSuspended
-                          ? 'font-semibold text-red-700'
-                          : 'font-medium text-green-700'
-                      }
-                    >
-                      {accessSuspended ? 'Suspended' : 'Active'}
-                    </span>
-                  </TableCell>
-                  <TableCell className="min-w-[300px] space-y-3 align-top">
                     <div className="flex flex-wrap gap-2">
-                      <Link
-                        href={`/admin/billing?organizationId=${organizationId}`}
-                        className="rounded-md border border-input bg-background px-2 py-1 text-xs font-semibold hover:bg-muted"
-                      >
-                        Billing
-                      </Link>
-                      <Link
-                        href={`/admin/access?organizationId=${organizationId}`}
-                        className="rounded-md border border-input bg-background px-2 py-1 text-xs font-semibold hover:bg-muted"
-                      >
-                        Access
-                      </Link>
-                      <Link
-                        href={`/admin/templates?organizationId=${organizationId}`}
-                        className="rounded-md border border-input bg-background px-2 py-1 text-xs font-semibold hover:bg-muted"
-                      >
-                        Templates
-                      </Link>
+                      <span className={statusBadgeClassName(subscriptionStatus)}>
+                        {formatAdminLabel(subscriptionStatus)}
+                      </span>
+                      <span className={statusBadgeClassName(accessStatus)}>
+                        {formatAdminLabel(accessStatus)}
+                      </span>
+                      <span className="inline-flex w-fit rounded-md border bg-muted px-2 py-1 text-xs font-semibold text-muted-foreground">
+                        {formatAdminLabel(paymentStatus)}
+                      </span>
                     </div>
-                    <div className="grid gap-2">
-                      <form action={markClientPaymentPaidAction} className="grid gap-2">
-                        <input type="hidden" name="organizationId" value={organizationId} />
-                        <input type="hidden" name="billingCycle" value="monthly" />
-                        <FormSubmitButton size="sm" variant="secondary" pendingLabel="Processing...">
-                          Mark monthly paid
-                        </FormSubmitButton>
-                      </form>
-                      <form action={markClientPaymentPaidAction} className="grid gap-2">
-                        <input type="hidden" name="organizationId" value={organizationId} />
-                        <input type="hidden" name="billingCycle" value="yearly" />
-                        <FormSubmitButton size="sm" variant="secondary" pendingLabel="Processing...">
-                          Mark yearly paid
-                        </FormSubmitButton>
-                      </form>
-                      <form action={suspendClientAccessAction} className="grid gap-2">
-                        <input type="hidden" name="organizationId" value={organizationId} />
-                        <FormSubmitButton size="sm" variant="destructive" pendingLabel="Processing..." disabled={accessSuspended}>
-                          Suspend access
-                        </FormSubmitButton>
-                      </form>
-                      <form action={restoreClientAccessAction} className="grid gap-2">
-                        <input type="hidden" name="organizationId" value={organizationId} />
-                        <FormSubmitButton size="sm" variant="secondary" pendingLabel="Processing..." disabled={!accessSuspended}>
-                          Restore access
-                        </FormSubmitButton>
-                      </form>
-                    </div>
-                  </TableCell>
-                  <TableCell className="min-w-[420px] align-top">
-                    <form action={updateAdminClientAction} className="grid gap-3">
+                  </div>
+                </AccordionTrigger>
+
+                <AccordionContent className="pb-5 text-foreground">
+                  <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
+                    <form action={updateAdminClientAction} className="grid gap-4">
                       <input type="hidden" name="organizationId" value={organizationId} />
-                      <Input
-                        name="assignedSalesperson"
-                        defaultValue={organization?.assignedSalesperson ?? ''}
-                        placeholder="Assigned salesperson"
-                      />
-                      <Input
-                        type="date"
-                        name="renewalDate"
-                        defaultValue={formatDateInputValue(organization?.renewalDate)}
-                      />
-                      <Input
-                        name="internalAdminNotes"
-                        defaultValue={
-                          organization?.internalAdminNotes
-                          ?? organization?.adminNotes
-                          ?? ''
-                        }
-                        placeholder="Founder notes, onboarding context, relationship history..."
-                      />
+
+                      <div className="grid gap-3 md:grid-cols-2">
+                        <label
+                          htmlFor={`restaurant-display-name-${organizationId}`}
+                          className="grid gap-1 text-xs font-medium text-muted-foreground"
+                        >
+                          Restaurant display name
+                          <Input
+                            id={`restaurant-display-name-${organizationId}`}
+                            name="restaurantDisplayName"
+                            defaultValue={organization?.restaurantDisplayName ?? ''}
+                            placeholder="Cedar Bistro"
+                          />
+                        </label>
+                        <label
+                          htmlFor={`client-category-${organizationId}`}
+                          className="grid gap-1 text-xs font-medium text-muted-foreground"
+                        >
+                          Client category
+                          <select
+                            id={`client-category-${organizationId}`}
+                            name="clientCategory"
+                            defaultValue={organization?.clientCategory ?? 'restaurant'}
+                            className="h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground"
+                          >
+                            {CLIENT_CATEGORIES.map(category => (
+                              <option key={category} value={category}>
+                                {formatAdminLabel(category)}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                        <label
+                          htmlFor={`main-contact-first-name-${organizationId}`}
+                          className="grid gap-1 text-xs font-medium text-muted-foreground"
+                        >
+                          Main contact first name
+                          <Input
+                            id={`main-contact-first-name-${organizationId}`}
+                            name="mainContactFirstName"
+                            defaultValue={organization?.mainContactFirstName ?? ''}
+                            placeholder="First name"
+                          />
+                        </label>
+                        <label
+                          htmlFor={`main-contact-last-name-${organizationId}`}
+                          className="grid gap-1 text-xs font-medium text-muted-foreground"
+                        >
+                          Main contact last name
+                          <Input
+                            id={`main-contact-last-name-${organizationId}`}
+                            name="mainContactLastName"
+                            defaultValue={organization?.mainContactLastName ?? ''}
+                            placeholder="Last name"
+                          />
+                        </label>
+                        <label
+                          htmlFor={`main-contact-whatsapp-${organizationId}`}
+                          className="grid gap-1 text-xs font-medium text-muted-foreground md:col-span-2"
+                        >
+                          Main contact WhatsApp
+                          <Input
+                            id={`main-contact-whatsapp-${organizationId}`}
+                            name="mainContactWhatsappNumber"
+                            defaultValue={organization?.mainContactWhatsappNumber ?? ''}
+                            placeholder="+961 00 000 000"
+                          />
+                        </label>
+                      </div>
+
+                      <div className="grid gap-3 md:grid-cols-2">
+                        <label
+                          htmlFor={`assigned-salesperson-${organizationId}`}
+                          className="grid gap-1 text-xs font-medium text-muted-foreground"
+                        >
+                          Assigned salesperson
+                          <Input
+                            id={`assigned-salesperson-${organizationId}`}
+                            name="assignedSalesperson"
+                            defaultValue={organization?.assignedSalesperson ?? ''}
+                            placeholder="Assigned salesperson"
+                          />
+                        </label>
+                        <label
+                          htmlFor={`renewal-date-${organizationId}`}
+                          className="grid gap-1 text-xs font-medium text-muted-foreground"
+                        >
+                          Renewal date
+                          <Input
+                            id={`renewal-date-${organizationId}`}
+                            type="date"
+                            name="renewalDate"
+                            defaultValue={formatDateInputValue(organization?.renewalDate)}
+                          />
+                        </label>
+                      </div>
+
+                      <label
+                        htmlFor={`internal-admin-notes-${organizationId}`}
+                        className="grid gap-1 text-xs font-medium text-muted-foreground"
+                      >
+                        Internal notes
+                        <Input
+                          id={`internal-admin-notes-${organizationId}`}
+                          name="internalAdminNotes"
+                          defaultValue={
+                            organization?.internalAdminNotes
+                            ?? organization?.adminNotes
+                            ?? ''
+                          }
+                          placeholder="Founder notes, onboarding context, relationship history..."
+                        />
+                      </label>
+
                       <FormSubmitButton
                         pendingLabel="Saving..."
                         size="sm"
                         className="justify-self-end"
                       >
-                        Save client
+                        Save client details
                       </FormSubmitButton>
                     </form>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
 
-            {ids.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={12} className="py-8 text-center text-muted-foreground">
-                  No restaurant clients found yet.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
+                    <div className="grid content-start gap-4">
+                      <div className="rounded-md border bg-background p-4">
+                        <div className="text-sm font-semibold">Client summary</div>
+                        <dl className="mt-3 grid gap-2 text-sm">
+                          <div className="flex justify-between gap-3">
+                            <dt className="text-muted-foreground">Category</dt>
+                            <dd className="font-medium">
+                              {formatAdminLabel(organization?.clientCategory ?? 'restaurant')}
+                            </dd>
+                          </div>
+                          <div className="flex justify-between gap-3">
+                            <dt className="text-muted-foreground">Payment method</dt>
+                            <dd className="font-medium">
+                              {formatAdminLabel(organization?.subscriptionPaymentMethod ?? 'cash')}
+                            </dd>
+                          </div>
+                          <div className="flex justify-between gap-3">
+                            <dt className="text-muted-foreground">Billing cycle</dt>
+                            <dd className="font-medium">
+                              {formatAdminLabel(organization?.billingCycle ?? 'monthly')}
+                            </dd>
+                          </div>
+                          <div className="flex justify-between gap-3">
+                            <dt className="text-muted-foreground">Last payment</dt>
+                            <dd className="font-medium">
+                              {formatDate(organization?.lastPaymentDate)}
+                            </dd>
+                          </div>
+                          <div className="flex justify-between gap-3">
+                            <dt className="text-muted-foreground">Next due</dt>
+                            <dd className="font-medium">
+                              {formatDate(organization?.nextPaymentDueDate)}
+                            </dd>
+                          </div>
+                          <div className="flex justify-between gap-3">
+                            <dt className="text-muted-foreground">Overdue</dt>
+                            <dd className="font-medium">
+                              {subscriptionStatus === 'overdue'
+                                ? getOverdueDuration(organization?.overdueSince)
+                                : '-'}
+                            </dd>
+                          </div>
+                        </dl>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2">
+                        <Link
+                          href={`/admin/billing?organizationId=${organizationId}`}
+                          className="rounded-md border border-input bg-background px-3 py-2 text-xs font-semibold hover:bg-muted"
+                        >
+                          Billing
+                        </Link>
+                        <Link
+                          href={`/admin/access?organizationId=${organizationId}`}
+                          className="rounded-md border border-input bg-background px-3 py-2 text-xs font-semibold hover:bg-muted"
+                        >
+                          Access
+                        </Link>
+                        <Link
+                          href={`/admin/templates?organizationId=${organizationId}`}
+                          className="rounded-md border border-input bg-background px-3 py-2 text-xs font-semibold hover:bg-muted"
+                        >
+                          Templates
+                        </Link>
+                      </div>
+
+                      <div className="grid gap-2">
+                        <form action={markClientPaymentPaidAction} className="grid gap-2">
+                          <input type="hidden" name="organizationId" value={organizationId} />
+                          <input type="hidden" name="billingCycle" value="monthly" />
+                          <FormSubmitButton size="sm" variant="secondary" pendingLabel="Processing...">
+                            Mark monthly paid
+                          </FormSubmitButton>
+                        </form>
+                        <form action={markClientPaymentPaidAction} className="grid gap-2">
+                          <input type="hidden" name="organizationId" value={organizationId} />
+                          <input type="hidden" name="billingCycle" value="yearly" />
+                          <FormSubmitButton size="sm" variant="secondary" pendingLabel="Processing...">
+                            Mark yearly paid
+                          </FormSubmitButton>
+                        </form>
+                        <form action={activateClientAccessAction} className="grid gap-2">
+                          <input type="hidden" name="organizationId" value={organizationId} />
+                          <FormSubmitButton size="sm" variant="secondary" pendingLabel="Processing..." disabled={accessStatus === 'active'}>
+                            Activate client
+                          </FormSubmitButton>
+                        </form>
+                        <form action={suspendClientAccessAction} className="grid gap-2">
+                          <input type="hidden" name="organizationId" value={organizationId} />
+                          <FormSubmitButton size="sm" variant="destructive" pendingLabel="Processing..." disabled={accessStatus === 'suspended'}>
+                            Suspend access
+                          </FormSubmitButton>
+                        </form>
+                        <form action={revokeClientAccessAction} className="grid gap-2">
+                          <input type="hidden" name="organizationId" value={organizationId} />
+                          <FormSubmitButton size="sm" variant="destructive" pendingLabel="Processing..." disabled={accessStatus === 'revoked'}>
+                            Revoke access
+                          </FormSubmitButton>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            );
+          })}
+        </Accordion>
+      )}
     </section>
   );
 };

@@ -1,5 +1,14 @@
 import { eq } from 'drizzle-orm';
-import { Facebook, Instagram, MessageCircle } from 'lucide-react';
+import {
+  CheckCircle2,
+  Clock3,
+  Facebook,
+  Instagram,
+  MessageCircle,
+  QrCode,
+  Smartphone,
+  Utensils,
+} from 'lucide-react';
 import Link from 'next/link';
 import { getTranslations, unstable_setRequestLocale } from 'next-intl/server';
 
@@ -33,18 +42,58 @@ const MENA_KEYS = [
   'cash_reality',
 ] as const;
 
-const TEMPLATE_KEYS = [
-  'fast_food',
-  'cafe',
-  'table_service',
-  'shisha_lounge',
-] as const;
-
 const FAQ_KEYS = [
   'payments',
   'languages',
   'setup',
   'templates',
+] as const;
+
+const OWNER_EXAMPLES = [
+  {
+    orderId: '#104',
+    table: 'Table 7',
+    itemKey: 'owner_example_lebanon',
+    local: '1,080,000 LBP',
+    usd: '$12.00',
+  },
+  {
+    orderId: '#105',
+    table: 'Table 3',
+    itemKey: 'owner_example_dubai',
+    local: '44 AED',
+    usd: '$12.00',
+  },
+  {
+    orderId: '#106',
+    table: 'Table 1',
+    itemKey: 'owner_example_doha',
+    local: '44 QAR',
+    usd: '$12.00',
+  },
+] as const;
+
+const TEMPLATE_PRICE_EXAMPLES = [
+  {
+    key: 'fast_food',
+    local: '1,080,000 LBP',
+    usd: '$12',
+  },
+  {
+    key: 'cafe',
+    local: '38 AED',
+    usd: '$10',
+  },
+  {
+    key: 'table_service',
+    local: '44 QAR',
+    usd: '$12',
+  },
+  {
+    key: 'shisha_lounge',
+    local: '55 AED',
+    usd: '$15',
+  },
 ] as const;
 
 export async function generateMetadata(props: { params: { locale: string } }) {
@@ -150,8 +199,8 @@ const IndexPage = async (props: { params: { locale: string } }) => {
         </div>
       </header>
 
-      <section className="border-b bg-zinc-950 text-white">
-        <div className="mx-auto grid max-w-screen-xl gap-10 px-4 py-14 md:grid-cols-[minmax(0,1fr)_440px] md:items-center md:py-20">
+      <section className="border-b bg-[#111827] text-white">
+        <div className="mx-auto grid max-w-screen-xl gap-10 px-4 py-14 md:grid-cols-[minmax(0,1fr)_480px] md:items-center md:py-20">
           <div className="max-w-3xl">
             <p className="mb-4 text-sm font-semibold uppercase tracking-wide text-emerald-300">
               {t('hero_eyebrow')}
@@ -171,19 +220,98 @@ const IndexPage = async (props: { params: { locale: string } }) => {
               </Button>
             </div>
             <div className="mt-8 grid gap-3 text-sm text-zinc-300 sm:grid-cols-3">
-              <div className="rounded-md border border-zinc-700 bg-zinc-900 p-3">
+              <div className="rounded-md border border-zinc-700 bg-zinc-900/80 p-3">
                 {t('hero_signal_qr')}
               </div>
-              <div className="rounded-md border border-zinc-700 bg-zinc-900 p-3">
+              <div className="rounded-md border border-zinc-700 bg-zinc-900/80 p-3">
                 {t('hero_signal_languages')}
               </div>
-              <div className="rounded-md border border-zinc-700 bg-zinc-900 p-3">
+              <div className="rounded-md border border-zinc-700 bg-zinc-900/80 p-3">
                 {t('hero_signal_currency')}
               </div>
             </div>
           </div>
 
           <div className="grid gap-4">
+            <div className="overflow-hidden rounded-md border border-zinc-700 bg-zinc-900 shadow-2xl">
+              <div className="border-b border-zinc-700 bg-zinc-950/60 px-4 py-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <div className="text-xs font-semibold uppercase text-emerald-300">
+                      {t('customer_illustration_label')}
+                    </div>
+                    <div className="text-sm text-zinc-300">{t('customer_illustration_title')}</div>
+                  </div>
+                  <div className="flex items-center gap-2 rounded-md border border-emerald-400/40 px-2 py-1 text-xs font-semibold text-emerald-200">
+                    <QrCode className="size-4" />
+                    QR
+                  </div>
+                </div>
+              </div>
+              <div className="grid gap-4 p-4 sm:grid-cols-[160px_1fr]">
+                <div className="rounded-md border border-zinc-700 bg-white p-3 text-zinc-950">
+                  <div className="flex items-center justify-between">
+                    <Smartphone className="size-4 text-emerald-700" />
+                    <span className="text-xs font-semibold">Table 7</span>
+                  </div>
+                  <div className="mt-4 text-xs font-semibold uppercase text-emerald-700">
+                    {t('customer_menu_label')}
+                  </div>
+                  <div className="mt-1 text-lg font-semibold">{t('phone_category')}</div>
+                  <div className="mt-3 rounded-md border p-3">
+                    <div className="flex items-start gap-2">
+                      <Utensils className="mt-0.5 size-4 text-zinc-500" />
+                      <div>
+                        <div className="text-sm font-semibold">{t('phone_item')}</div>
+                        <div className="text-xs text-muted-foreground">{t('phone_item_note')}</div>
+                      </div>
+                    </div>
+                    <div className="mt-3 flex items-end justify-between gap-3 text-sm">
+                      <div className="text-xs text-muted-foreground">
+                        USD
+                        <div className="font-semibold text-zinc-950">$8.00</div>
+                      </div>
+                      <div className="text-right text-xs text-muted-foreground">
+                        LBP
+                        <div className="font-semibold text-zinc-950">720,000 LBP</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-3 rounded-md bg-emerald-600 px-3 py-2 text-center text-sm font-semibold text-white">
+                    {t('phone_add_button')}
+                  </div>
+                </div>
+                <div className="grid content-between gap-3">
+                  <div className="rounded-md border border-zinc-700 bg-zinc-950 p-3">
+                    <div className="text-sm font-semibold">{t('customer_progress_title')}</div>
+                    <div className="mt-3 grid gap-2">
+                      <div className="flex items-center gap-2 rounded-md bg-zinc-900 px-3 py-2 text-sm text-zinc-200">
+                        <CheckCircle2 className="size-4 text-emerald-300" />
+                        <span>{t('customer_progress_browse')}</span>
+                      </div>
+                      <div className="flex items-center gap-2 rounded-md bg-zinc-900 px-3 py-2 text-sm text-zinc-200">
+                        <CheckCircle2 className="size-4 text-emerald-300" />
+                        <span>{t('customer_progress_order')}</span>
+                      </div>
+                      <div className="flex items-center gap-2 rounded-md bg-zinc-900 px-3 py-2 text-sm text-zinc-200">
+                        <Clock3 className="size-4 text-amber-200" />
+                        <span>{t('customer_progress_live')}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="rounded-md border border-zinc-700 bg-zinc-950 p-3">
+                    <div className="text-xs font-semibold uppercase text-zinc-400">
+                      {t('customer_total_label')}
+                    </div>
+                    <div className="mt-2 flex items-end justify-between gap-3">
+                      <span className="text-2xl font-semibold">$12.00</span>
+                      <span className="text-sm font-semibold text-zinc-300">1,080,000 LBP</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div className="rounded-md border border-zinc-700 bg-zinc-900 p-4 shadow-2xl">
               <div className="mb-4 flex items-center justify-between border-b border-zinc-700 pb-3">
                 <div>
@@ -195,20 +323,20 @@ const IndexPage = async (props: { params: { locale: string } }) => {
                 </span>
               </div>
               <div className="space-y-3">
-                {[
-                  ['#104', 'Table 7', '$12.00', '42 AED'],
-                  ['#105', 'Table 3', '$10.00', '38 SAR'],
-                  ['#106', 'Table 1', '', '16 QAR'],
-                ].map(([orderId, table, usd, lbp]) => (
+                {OWNER_EXAMPLES.map(({ orderId, table, itemKey, local, usd }) => (
                   <div key={orderId} className="rounded-md border border-zinc-700 bg-zinc-950 p-3">
                     <div className="flex items-center justify-between gap-3">
                       <div>
                         <div className="font-semibold">{orderId}</div>
-                        <div className="text-sm text-zinc-400">{table}</div>
+                        <div className="text-sm text-zinc-400">
+                          {table}
+                          {' · '}
+                          {t(itemKey)}
+                        </div>
                       </div>
                       <div className="text-right text-sm font-semibold">
-                        {usd && <div>{usd}</div>}
-                        <div>{lbp}</div>
+                        <div>{local}</div>
+                        <div className="text-xs text-zinc-400">{usd}</div>
                       </div>
                     </div>
                     <div className="mt-3 grid grid-cols-3 gap-2 text-center text-xs">
@@ -224,36 +352,6 @@ const IndexPage = async (props: { params: { locale: string } }) => {
                     </div>
                   </div>
                 ))}
-              </div>
-            </div>
-
-            <div className="rounded-md border border-zinc-700 bg-white p-4 text-zinc-950">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="text-xs font-semibold uppercase text-emerald-700">
-                    {t('phone_mockup_label')}
-                  </div>
-                  <div className="mt-1 text-xl font-semibold">{t('phone_mockup_title')}</div>
-                </div>
-                <div className="rounded-md bg-zinc-950 px-2 py-1 text-xs font-semibold text-white">
-                  QR
-                </div>
-              </div>
-              <div className="mt-4 rounded-md border p-3">
-                <div className="text-sm font-semibold">{t('phone_category')}</div>
-                <div className="mt-3 flex items-center justify-between gap-3">
-                  <div>
-                    <div className="font-medium">{t('phone_item')}</div>
-                    <div className="text-xs text-muted-foreground">{t('phone_item_note')}</div>
-                  </div>
-                  <div className="text-right text-sm font-semibold">
-                    <div>$8.00</div>
-                    <div>42 AED</div>
-                  </div>
-                </div>
-                <div className="mt-3 rounded-md bg-emerald-600 px-3 py-2 text-center text-sm font-semibold text-white">
-                  {t('phone_add_button')}
-                </div>
               </div>
             </div>
           </div>
@@ -326,7 +424,7 @@ const IndexPage = async (props: { params: { locale: string } }) => {
             <p className="mt-3 text-zinc-300">{t('templates_description')}</p>
           </div>
           <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            {TEMPLATE_KEYS.map(key => (
+            {TEMPLATE_PRICE_EXAMPLES.map(({ key, local, usd }) => (
               <div key={key} className="rounded-md border border-zinc-700 bg-zinc-900 p-4">
                 <div className="rounded-md border border-zinc-700 bg-zinc-950 p-3">
                   <div className="text-xs text-zinc-400">
@@ -339,7 +437,10 @@ const IndexPage = async (props: { params: { locale: string } }) => {
                     <div className="text-sm font-medium">{t('template_sample_category')}</div>
                     <div className="mt-2 flex items-center justify-between gap-3 text-sm">
                       <span>{t('template_sample_item')}</span>
-                      <span className="font-semibold">$8</span>
+                      <span className="text-right font-semibold">
+                        <span className="block">{local}</span>
+                        <span className="block text-xs text-zinc-400">{usd}</span>
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -437,6 +538,7 @@ const IndexPage = async (props: { params: { locale: string } }) => {
         <div className="mx-auto flex max-w-screen-xl flex-col gap-4 px-4 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="font-semibold text-foreground">{AppConfig.name}</div>
+            <p>{t('footer_copyright', { year: new Date().getFullYear() })}</p>
             <p>{t('footer_text')}</p>
           </div>
           <div className="flex flex-wrap items-center gap-3">

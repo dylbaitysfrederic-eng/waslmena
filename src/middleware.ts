@@ -18,6 +18,8 @@ const isAdminRoute = createRouteMatcher(['/admin(.*)']);
 
 const isProtectedRoute = createRouteMatcher([
   '/admin(.*)',
+  '/post-login',
+  '/:locale/post-login',
   '/dashboard(.*)',
   '/:locale/dashboard(.*)',
   '/onboarding(.*)',

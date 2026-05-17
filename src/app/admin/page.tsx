@@ -193,6 +193,7 @@ const AdminOverviewPage = async () => {
           {ids.slice(0, 6).map((organizationId) => {
             const organization = organizationRecords.get(organizationId);
             const subscriptionStatus = organization?.subscriptionStatus ?? 'trial';
+            const accessStatus = organization?.accessStatus ?? 'pending';
 
             return (
               <div
@@ -207,7 +208,7 @@ const AdminOverviewPage = async () => {
                   <code className="text-xs text-muted-foreground">{organizationId}</code>
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  {organization?.accessSuspended ? 'Access suspended' : 'Access active'}
+                  {formatAdminLabel(accessStatus)}
                   {' · '}
                   {formatAdminLabel(subscriptionStatus)}
                 </div>

@@ -22,6 +22,17 @@
     "phone_item": "طاووق دجاج",
     "phone_item_note": "ثوم، مخلل، بطاطا",
     "phone_add_button": "أضف إلى الطلب",
+    "customer_illustration_label": "تجربة الزبون",
+    "customer_illustration_title": "طلب خفيف من المسح إلى الخدمة",
+    "customer_menu_label": "تصفح القائمة",
+    "customer_progress_title": "تقدم الطلب مباشرة",
+    "customer_progress_browse": "الزبون يتصفح القائمة",
+    "customer_progress_order": "تم إرسال الطلب من الطاولة",
+    "customer_progress_live": "المطبخ يحدّث التقدم مباشرة",
+    "customer_total_label": "يرى الزبون العملتين",
+    "owner_example_lebanon": "مشاوي بيروت",
+    "owner_example_dubai": "غداء دبي",
+    "owner_example_doha": "طلب طاولة الدوحة",
     "status_pending": "قيد الانتظار",
     "status_preparing": "قيد التحضير",
     "status_ready": "جاهز",
@@ -90,17 +101,18 @@
     "contact_email_label": "البريد الإلكتروني للدعم",
     "contact_whatsapp_label": "دعم واتساب",
     "contact_whatsapp_button": "راسلنا عبر واتساب",
+    "footer_copyright": "© {year} Wasl",
     "footer_text": "طلبات QR وتشغيل حديث للمطاعم عبر منطقة MENA.",
     "footer_social_label": "التواصل"
   },
   "Navbar": {
-    "sign_in": "Sign In",
-    "sign_up": "Sign Up",
-    "product": "Product",
-    "docs": "Docs",
-    "blog": "Blog",
-    "community": "Community",
-    "company": "Company"
+    "sign_in": "تسجيل الدخول",
+    "sign_up": "إنشاء حساب",
+    "product": "المنتج",
+    "docs": "الدليل",
+    "blog": "المدونة",
+    "community": "المجتمع",
+    "company": "الشركة"
   },
   "Hero": {
     "follow_twitter": "تابع تحديثات Wasl",
@@ -110,10 +122,10 @@
     "secondary_button": "التواصل مع الدعم"
   },
   "Sponsors": {
-    "title": "Sponsored by"
+    "title": "برعاية"
   },
   "Features": {
-    "section_subtitle": "Features",
+    "section_subtitle": "الميزات",
     "section_title": "أدوات مطاعم لتجربة مضبوطة",
     "section_description": "قوائم، رموز QR للطاولات، متابعة حالات الطلب، قوالب، ودعم العملة المحلية.",
     "feature1_title": "قوائم QR",
@@ -121,30 +133,30 @@
     "feature3_title": "حالات الطلب",
     "feature4_title": "عملة محلية",
     "feature5_title": "قوالب",
-    "feature6_title": "تحكم admin",
+    "feature6_title": "تحكم المدير",
     "feature_description": "وظائف MVP مركزة لإعداد المطعم وتشغيل الخدمة."
   },
   "Pricing": {
     "section_subtitle": "التجربة",
     "section_title": "تسعير يدوي بسيط للمطاعم الأولى",
     "section_description": "تابع رسوم الإعداد والاشتراك يدوياً أثناء التحقق من سير العمل.",
-    "button_text": "Get Started"
+    "button_text": "ابدأ الآن"
   },
   "PricingPlan": {
-    "free_plan_name": "Free",
-    "premium_plan_name": "Premium",
-    "enterprise_plan_name": "Enterprise",
-    "free_plan_description": "For individuals",
-    "premium_plan_description": "For small teams",
-    "enterprise_plan_description": "For industry leaders",
-    "feature_team_member": "{number} Team Members",
-    "feature_website": "{number} Websites",
-    "feature_storage": "{number} GB Storage",
-    "feature_transfer": "{number} TB Transfer",
-    "feature_email_support": "Email Support",
-    "plan_interval_month": "month",
-    "plan_interval_year": "year",
-    "next_renew_date": "Your subscription renews on {date}"
+    "free_plan_name": "مجانية",
+    "premium_plan_name": "احترافية",
+    "enterprise_plan_name": "مؤسسات",
+    "free_plan_description": "للأفراد",
+    "premium_plan_description": "للفرق الصغيرة",
+    "enterprise_plan_description": "للمؤسسات الأكبر",
+    "feature_team_member": "{number} أعضاء فريق",
+    "feature_website": "{number} مواقع",
+    "feature_storage": "{number} GB تخزين",
+    "feature_transfer": "{number} TB نقل بيانات",
+    "feature_email_support": "دعم عبر البريد الإلكتروني",
+    "plan_interval_month": "شهر",
+    "plan_interval_year": "سنة",
+    "next_renew_date": "يتجدد اشتراكك في {date}"
   },
   "FAQ": {
     "question": "هل يعمل Wasl بدون دفع إلكتروني؟",
@@ -156,17 +168,17 @@
     "button_text": "فتح لوحة التحكم"
   },
   "Footer": {
-    "product": "Product",
-    "docs": "Docs",
-    "blog": "Blog",
-    "community": "Community",
-    "company": "Company",
-    "terms_of_service": "Terms Of Service",
-    "privacy_policy": "Privacy Policy",
-    "footer_text": "© {year} {name}. Made with <author></author>."
+    "product": "المنتج",
+    "docs": "الدليل",
+    "blog": "المدونة",
+    "community": "المجتمع",
+    "company": "الشركة",
+    "terms_of_service": "شروط الخدمة",
+    "privacy_policy": "سياسة الخصوصية",
+    "footer_text": "© {year} {name}. صُنع بواسطة <author></author>."
   },
   "ProtectFallback": {
-    "not_enough_permission": "You do not have the permissions to perform this action"
+    "not_enough_permission": "ليست لديك الصلاحيات لتنفيذ هذا الإجراء"
   },
   "NetworkStatus": {
     "offline_banner": "أنت غير متصل بالإنترنت. قد لا تعمل بعض الإجراءات حتى تعود الشبكة."
@@ -204,12 +216,12 @@
     "restaurant_unavailable_description": "قائمة هذا المطعم غير متاحة حالياً. يرجى التواصل مع موظفي المطعم."
   },
   "SignIn": {
-    "meta_title": "Sign in",
-    "meta_description": "Seamlessly sign in to your account with our user-friendly login process."
+    "meta_title": "تسجيل الدخول",
+    "meta_description": "سجّل الدخول إلى حسابك لإدارة مطعمك."
   },
   "SignUp": {
-    "meta_title": "Sign up",
-    "meta_description": "Effortlessly create an account through our intuitive sign-up process."
+    "meta_title": "إنشاء حساب",
+    "meta_description": "أنشئ حساباً لبدء إعداد مطعمك على Wasl."
   },
   "DashboardLayout": {
     "home": "الرئيسية",
@@ -224,15 +236,23 @@
     "pilot_checklist": "التجربة",
     "pilot_feedback": "الملاحظات",
     "support": "الدعم",
-    "todos": "Todos",
+    "todos": "المهام",
     "members": "الأعضاء",
     "billing": "الفوترة",
     "settings": "الإعدادات",
     "restaurant_area_label": "مساحة {restaurantName}",
     "restaurant_dashboard_title": "لوحة تحكم {restaurantName}",
     "restaurant_dashboard_helper": "إدارة الطلبات والقائمة والطاولات/QR والإحصاءات والإعدادات.",
-    "access_suspended_title": "تم تعليق وصولك حالياً",
-    "access_suspended_description": "يرجى التواصل مع الدعم لاستعادة الوصول إلى لوحة تحكم المطعم."
+    "access_pending_title": "حسابك بانتظار التفعيل.",
+    "access_pending_description": "حسابك بانتظار التفعيل.",
+    "access_suspended_title": "تم تعليق اشتراكك.",
+    "access_suspended_description": "تم تعليق اشتراكك.",
+    "access_revoked_title": "تم إلغاء وصولك.",
+    "access_revoked_description": "تم إلغاء وصولك.",
+    "status_pending": "قيد الانتظار",
+    "status_active": "نشط",
+    "status_suspended": "معلق",
+    "status_revoked": "ملغى"
   },
   "Statistics": {
     "meta_title": "الإحصاءات",
@@ -299,12 +319,12 @@
     "settings_description": "عدّل الهوية، وتسميات العملات، وإعدادات المطعم."
   },
   "UserProfile": {
-    "title_bar": "User Profile",
-    "title_bar_description": "View and manage your user profile"
+    "title_bar": "الملف الشخصي",
+    "title_bar_description": "عرض وإدارة ملفك الشخصي"
   },
   "OrganizationProfile": {
-    "title_bar": "Organization Management",
-    "title_bar_description": "Manage your organization"
+    "title_bar": "إدارة المؤسسة",
+    "title_bar_description": "إدارة مؤسسة المطعم"
   },
   "MenuCategories": {
     "meta_title": "فئات القائمة",
@@ -611,53 +631,53 @@
     "troubleshooting_update_prices_description": "افتح الأصناف، وسّع تعديل على الصنف، حدّث المبلغ المحلي و/أو سنتات USD الاختيارية، ثم احفظ."
   },
   "Billing": {
-    "title_bar": "Billing",
-    "title_bar_description": "Manage your billing and subscription",
-    "current_section_title": "Current Plan",
-    "current_section_description": "Adjust your payment plan to best suit your requirements",
-    "manage_subscription_button": "Manage Subscription"
+    "title_bar": "الفوترة",
+    "title_bar_description": "إدارة الفوترة والاشتراك",
+    "current_section_title": "الخطة الحالية",
+    "current_section_description": "اضبط خطة الدفع بما يناسب احتياجاتك",
+    "manage_subscription_button": "إدارة الاشتراك"
   },
   "BillingOptions": {
-    "current_plan": "Current Plan",
-    "upgrade_plan": "Get Started"
+    "current_plan": "الخطة الحالية",
+    "upgrade_plan": "ابدأ الآن"
   },
   "CheckoutConfirmation": {
-    "title_bar": "Payment Confirmation",
-    "message_state_title": "Payment successful",
-    "message_state_description": "Your payment has been successfully processed. Thank you for your purchase!",
-    "message_state_button": "Go back to Billing"
+    "title_bar": "تأكيد الدفع",
+    "message_state_title": "تم الدفع بنجاح",
+    "message_state_description": "تمت معالجة دفعتك بنجاح. شكراً لك!",
+    "message_state_button": "العودة إلى الفوترة"
   },
   "DataTable": {
-    "no_results": "No results."
+    "no_results": "لا توجد نتائج."
   },
   "Todos": {
-    "title_bar": "Todo List",
-    "title_bar_description": "View and manage your todo list",
-    "add_todo_button": "New todo"
+    "title_bar": "قائمة المهام",
+    "title_bar_description": "عرض وإدارة قائمة المهام",
+    "add_todo_button": "مهمة جديدة"
   },
   "TodoTableColumns": {
-    "open_menu": "Open menu",
-    "edit": "Edit",
-    "delete": "Delete",
-    "title_header": "Title",
-    "message_header": "Message",
-    "created_at_header": "Created at"
+    "open_menu": "فتح القائمة",
+    "edit": "تعديل",
+    "delete": "حذف",
+    "title_header": "العنوان",
+    "message_header": "الرسالة",
+    "created_at_header": "تاريخ الإنشاء"
   },
   "AddTodo": {
-    "title_bar": "Add Todo",
-    "add_todo_section_title": "Create a new todo",
-    "add_todo_section_description": "Fill in the form below to create a new todo"
+    "title_bar": "إضافة مهمة",
+    "add_todo_section_title": "إنشاء مهمة جديدة",
+    "add_todo_section_description": "املأ النموذج أدناه لإنشاء مهمة جديدة"
   },
   "EditTodo": {
-    "title_bar": "Edit todo",
-    "edit_todo_section_title": "Modify todo",
-    "edit_todo_section_description": "Fill in the form below to edit the todo"
+    "title_bar": "تعديل المهمة",
+    "edit_todo_section_title": "تعديل المهمة",
+    "edit_todo_section_description": "املأ النموذج أدناه لتعديل المهمة"
   },
   "TodoForm": {
-    "title_label": "Title",
-    "title_description": "Enter a descriptive title for your todo.",
-    "message_title": "Message",
-    "message_description": "Enter a detailed message for your todo.",
-    "submit_button": "Submit"
+    "title_label": "العنوان",
+    "title_description": "أدخل عنواناً واضحاً للمهمة.",
+    "message_title": "الرسالة",
+    "message_description": "أدخل تفاصيل المهمة.",
+    "submit_button": "إرسال"
   }
 }

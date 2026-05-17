@@ -22,6 +22,17 @@
     "phone_item": "Tawouk poulet",
     "phone_item_note": "Ail, cornichons, frites",
     "phone_add_button": "Ajouter à la commande",
+    "customer_illustration_label": "Parcours client",
+    "customer_illustration_title": "Une commande légère du scan au service",
+    "customer_menu_label": "Consultation du menu",
+    "customer_progress_title": "Progression de commande en direct",
+    "customer_progress_browse": "Le client consulte le menu",
+    "customer_progress_order": "Commande envoyée depuis la table",
+    "customer_progress_live": "La cuisine met à jour le statut",
+    "customer_total_label": "Le client voit les deux devises",
+    "owner_example_lebanon": "Grillades à Beyrouth",
+    "owner_example_dubai": "Menu déjeuner Dubai",
+    "owner_example_doha": "Commande de table Doha",
     "status_pending": "En attente",
     "status_preparing": "En préparation",
     "status_ready": "Prête",
@@ -37,7 +48,7 @@
     "feature_usd_lbp_description": "Affichez la devise locale configurée du restaurant, USD, ou les deux. Aucune conversion automatique et aucun prix approximatif.",
     "feature_arabic_english_title": "Arabe et anglais",
     "feature_arabic_english_description": "L’arabe fonctionne en RTL, l’anglais reste la langue par défaut et le français reste disponible.",
-    "feature_dashboard_title": "Dashboard restaurant simple",
+    "feature_dashboard_title": "Tableau de bord restaurant simple",
     "feature_dashboard_description": "Gérez catégories, articles, tables, QR codes et commandes entrantes depuis un dashboard léger.",
     "how_title": "Comment ça marche",
     "how_setup_menu_title": "Configurer le menu",
@@ -90,6 +101,7 @@
     "contact_email_label": "Email support",
     "contact_whatsapp_label": "Support WhatsApp",
     "contact_whatsapp_button": "Envoyez-nous un message WhatsApp",
+    "footer_copyright": "© {year} Wasl",
     "footer_text": "Commande QR moderne et opérations pour les restaurants de la région MENA.",
     "footer_social_label": "Réseaux"
   },
@@ -218,21 +230,29 @@
     "menu_items": "Articles",
     "tables": "Tables",
     "tables_qr": "Tables / QR",
-    "branding": "Branding",
+    "branding": "Identité",
     "orders": "Commandes",
     "statistics": "Statistiques",
     "pilot_checklist": "Pilote",
     "pilot_feedback": "Feedback",
     "support": "Support",
-    "todos": "Todos",
+    "todos": "Tâches",
     "members": "Membres",
     "billing": "Facturation",
     "settings": "Réglages",
     "restaurant_area_label": "Espace client {restaurantName}",
     "restaurant_dashboard_title": "Tableau de bord {restaurantName}",
     "restaurant_dashboard_helper": "Gérez les commandes, le menu, les tables/QR, les statistiques et les réglages.",
-    "access_suspended_title": "Votre accès est actuellement suspendu",
-    "access_suspended_description": "Veuillez contacter le support pour rétablir l’accès au dashboard restaurant."
+    "access_pending_title": "Votre compte est en attente d’activation.",
+    "access_pending_description": "Votre compte est en attente d’activation.",
+    "access_suspended_title": "Votre abonnement a été suspendu.",
+    "access_suspended_description": "Votre abonnement a été suspendu.",
+    "access_revoked_title": "Votre accès a été révoqué.",
+    "access_revoked_description": "Votre accès a été révoqué.",
+    "status_pending": "En attente",
+    "status_active": "Actif",
+    "status_suspended": "Suspendu",
+    "status_revoked": "Révoqué"
   },
   "Statistics": {
     "meta_title": "Statistiques",
@@ -296,7 +316,7 @@
     "statistics_title": "Statistiques",
     "statistics_description": "Consultez les volumes de commandes, les totaux et l’historique récent.",
     "settings_title": "Réglages",
-    "settings_description": "Ajustez le branding, les libellés de devise et les réglages du restaurant."
+    "settings_description": "Ajustez l’identité, les libellés de devise et les réglages du restaurant."
   },
   "UserProfile": {
     "title_bar": "Profil utilisateur",
@@ -421,11 +441,11 @@
     "empty_state": "Aucune table pour le moment. Créez les tables que les clients scanneront au restaurant."
   },
   "RestaurantBranding": {
-    "meta_title": "Branding du restaurant",
-    "meta_description": "Configurer le branding du menu public de votre restaurant.",
-    "title_bar": "Branding du restaurant",
+    "meta_title": "Identité du restaurant",
+    "meta_description": "Configurer l’identité du menu public de votre restaurant.",
+    "title_bar": "Identité du restaurant",
     "title_bar_description": "Personnalisez l’apparence du menu QR public pour vos clients.",
-    "section_title": "Branding du menu public",
+    "section_title": "Identité du menu public",
     "section_description": "Tous les champs sont optionnels. Laissez-les vides pour utiliser le style par défaut.",
     "display_name_label": "Nom public du restaurant",
     "display_name_placeholder": "Cedar Bistro",
@@ -434,10 +454,10 @@
     "primary_color_label": "Couleur principale",
     "primary_color_help": "Utilisée pour les boutons principaux du menu public client.",
     "template_style_label": "Style du template",
-    "template_style_default": "Style restaurant par défaut",
+    "template_style_default": "Style de restaurant par défaut",
     "template_style_fast_food": "Fast-food",
     "template_style_cafe": "Café",
-    "template_style_casual_restaurant": "Restaurant casual",
+    "template_style_casual_restaurant": "Restaurant décontracté",
     "template_style_help": "Choisissez un style visuel léger pour le menu QR public.",
     "whatsapp_number_label": "Numéro WhatsApp",
     "whatsapp_number_placeholder": "+961 00 000 000",
@@ -449,9 +469,9 @@
     "local_currency_label_label": "Libellé devise locale",
     "local_currency_label_placeholder": "AED",
     "local_currency_help": "Optionnel. Les prix locaux existants sont conservés. Utilisez AED, SAR, QAR, KWD, EGP, MAD, ou LBP + LL pour le Liban. Les prix USD restent optionnels par article. Aucune conversion n’est effectuée.",
-    "save_button": "Enregistrer le branding",
+    "save_button": "Enregistrer l’identité",
     "save_pending_button": "Enregistrement...",
-    "saved_message": "Branding enregistré.",
+    "saved_message": "Identité enregistrée.",
     "error_invalid_branding": "Utilisez une URL de logo et une couleur principale valides."
   },
   "Orders": {
@@ -590,7 +610,7 @@
     "whatsapp_label": "Support WhatsApp",
     "whatsapp_link": "Envoyer un message WhatsApp au support",
     "whatsapp_unavailable": "Le support WhatsApp n’est pas encore configuré.",
-    "email_label": "Support email",
+    "email_label": "Support par e-mail",
     "faq_title": "FAQ courte",
     "faq_description": "Questions fréquentes pour le pilote MVP.",
     "faq_pilot_setup_question": "Que préparer avant le service ?",
@@ -631,9 +651,9 @@
     "no_results": "Aucun résultat."
   },
   "Todos": {
-    "title_bar": "Liste de Todos",
-    "title_bar_description": "Afficher et gérer votre liste de todos",
-    "add_todo_button": "Nouveau todo"
+    "title_bar": "Liste des tâches",
+    "title_bar_description": "Afficher et gérer votre liste de tâches",
+    "add_todo_button": "Nouvelle tâche"
   },
   "TodoTableColumns": {
     "open_menu": "Ouvrir le menu",
@@ -644,18 +664,18 @@
     "created_at_header": "Créé le"
   },
   "AddTodo": {
-    "title_bar": "Ajouter une todo",
-    "add_todo_section_title": "Créer une nouvelle todo",
-    "add_todo_section_description": "Remplissez le formulaire ci-dessous pour créer une nouvelle todo"
+    "title_bar": "Ajouter une tâche",
+    "add_todo_section_title": "Créer une nouvelle tâche",
+    "add_todo_section_description": "Remplissez le formulaire ci-dessous pour créer une nouvelle tâche"
   },
   "EditTodo": {
-    "title_bar": "Editer le todo",
-    "edit_todo_section_title": "Modifier le todo",
-    "edit_todo_section_description": "Remplissez le formulaire ci-dessous pour modifier la todo"
+    "title_bar": "Modifier la tâche",
+    "edit_todo_section_title": "Modifier la tâche",
+    "edit_todo_section_description": "Remplissez le formulaire ci-dessous pour modifier la tâche"
   },
   "TodoForm": {
     "title_label": "Titre",
-    "title_description": "Entrez un titre descriptif pour votre todo.",
+    "title_description": "Entrez un titre descriptif pour votre tâche.",
     "message_title": "Message",
     "message_description": "Entrez un message détaillé pour votre todo.",
     "submit_button": "Envoyer"

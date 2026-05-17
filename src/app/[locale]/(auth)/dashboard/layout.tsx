@@ -1,4 +1,4 @@
-import { auth } from '@clerk/nextjs/server';
+import { auth, clerkClient } from '@clerk/nextjs/server';
 import { eq } from 'drizzle-orm';
 import { getTranslations } from 'next-intl/server';
 
@@ -9,6 +9,32 @@ import {
 } from '@/features/dashboard/getRestaurantDisplayName';
 import { db } from '@/libs/DB';
 import { organizationSchema } from '@/models/Schema';
+
+const ensurePendingClientRecord = async (orgId: string) => {
+  let restaurantDisplayName: string | null = null;
+
+  try {
+    const client = await clerkClient();
+    const clerkOrganization = await client.organizations.getOrganization({
+      organizationId: orgId,
+    });
+
+    restaurantDisplayName = clerkOrganization.name;
+  } catch (error) {
+    console.error('Unable to load Clerk organization for pending client', error);
+  }
+
+  await db
+    .insert(organizationSchema)
+    .values({
+      id: orgId,
+      restaurantDisplayName,
+      accessStatus: 'pending',
+      accessSuspended: false,
+      subscriptionStatus: 'trial',
+    })
+    .onConflictDoNothing();
+};
 
 export async function generateMetadata(props: { params: { locale: string } }) {
   const t = await getTranslations({
@@ -33,9 +59,10 @@ export default async function DashboardLayout(props: {
     namespace: 'DashboardLayout',
   });
   const { orgId } = await auth();
-  const [organization] = orgId
+  let [organization] = orgId
     ? await db
       .select({
+        accessStatus: organizationSchema.accessStatus,
         accessSuspended: organizationSchema.accessSuspended,
         restaurantDisplayName: organizationSchema.restaurantDisplayName,
       })
@@ -43,8 +70,22 @@ export default async function DashboardLayout(props: {
       .where(eq(organizationSchema.id, orgId))
       .limit(1)
     : [];
-  const isPendingActivation = !orgId || !organization;
-  const accessSuspended = organization?.accessSuspended ?? false;
+
+  if (orgId && !organization) {
+    await ensurePendingClientRecord(orgId);
+    [organization] = await db
+      .select({
+        accessStatus: organizationSchema.accessStatus,
+        accessSuspended: organizationSchema.accessSuspended,
+        restaurantDisplayName: organizationSchema.restaurantDisplayName,
+      })
+      .from(organizationSchema)
+      .where(eq(organizationSchema.id, orgId))
+      .limit(1);
+  }
+
+  const accessStatus = organization?.accessStatus ?? 'pending';
+  const isPendingActivation = !orgId || !organization || accessStatus === 'pending';
   const restaurantDisplayName = await resolveRestaurantDisplayName(
     orgId,
     organization?.restaurantDisplayName,
@@ -56,14 +97,25 @@ export default async function DashboardLayout(props: {
     dashboardContent = (
       <div className="rounded-md border border-amber-300 bg-background p-6">
         <h1 className="text-xl font-semibold">
-          Your account is pending activation
+          {t('access_pending_title')}
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Your account is pending activation. Please contact support.
+          {t('access_pending_description')}
         </p>
       </div>
     );
-  } else if (accessSuspended) {
+  } else if (accessStatus === 'revoked') {
+    dashboardContent = (
+      <div className="rounded-md border border-destructive/30 bg-background p-6">
+        <h1 className="text-xl font-semibold">
+          {t('access_revoked_title')}
+        </h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          {t('access_revoked_description')}
+        </p>
+      </div>
+    );
+  } else if (accessStatus === 'suspended' || organization?.accessSuspended) {
     dashboardContent = (
       <div className="rounded-md border border-destructive/30 bg-background p-6">
         <h1 className="text-xl font-semibold">

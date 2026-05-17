@@ -13,6 +13,7 @@ export default function AuthLayout(props: {
   let signInUrl = '/sign-in';
   let signUpUrl = '/sign-up';
   let dashboardUrl = '/dashboard';
+  let postLoginUrl = '/post-login';
   let afterSignOutUrl = '/';
 
   if (props.params.locale === 'fr') {
@@ -23,6 +24,7 @@ export default function AuthLayout(props: {
     signInUrl = `/${props.params.locale}${signInUrl}`;
     signUpUrl = `/${props.params.locale}${signUpUrl}`;
     dashboardUrl = `/${props.params.locale}${dashboardUrl}`;
+    postLoginUrl = `/${props.params.locale}${postLoginUrl}`;
     afterSignOutUrl = `/${props.params.locale}${afterSignOutUrl}`;
   }
 
@@ -32,7 +34,7 @@ export default function AuthLayout(props: {
       localization={clerkLocale}
       signInUrl={signInUrl}
       signUpUrl={signUpUrl}
-      signInFallbackRedirectUrl={dashboardUrl}
+      signInFallbackRedirectUrl={postLoginUrl}
       signUpFallbackRedirectUrl={dashboardUrl}
       afterSignOutUrl={afterSignOutUrl}
     >

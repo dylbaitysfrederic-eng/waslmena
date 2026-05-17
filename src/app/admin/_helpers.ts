@@ -9,6 +9,7 @@ import {
   organizationSchema,
   restaurantTableSchema,
 } from '@/models/Schema';
+import { getAdminEmails } from '@/utils/AdminEmails';
 
 export const RESTAURANT_PROFILES = [
   'fast_food',
@@ -50,6 +51,21 @@ export const SUBSCRIPTION_PAYMENT_METHODS = [
 
 export const BILLING_CYCLES = ['monthly', 'yearly', 'custom'] as const;
 
+export const CLIENT_ACCESS_STATUSES = [
+  'pending',
+  'active',
+  'suspended',
+  'revoked',
+] as const;
+
+export const CLIENT_CATEGORIES = [
+  'restaurant',
+  'cafe',
+  'fast_food',
+  'shisha_lounge',
+  'other',
+] as const;
+
 export const SUBSCRIPTION_STATUSES = [
   'up_to_date',
   'overdue',
@@ -57,13 +73,6 @@ export const SUBSCRIPTION_STATUSES = [
   'cancelled',
   'trial',
 ] as const;
-
-const getAdminEmails = () => {
-  return (process.env.ADMIN_EMAILS ?? '')
-    .split(',')
-    .map(email => email.trim().toLowerCase())
-    .filter(Boolean);
-};
 
 export const getCurrentAdminEmail = async () => {
   const user = await currentUser();
@@ -159,11 +168,15 @@ export const getOverdueDuration = (date: Date | null | undefined) => {
 };
 
 export const getStatusBadgeClassName = (status: string) => {
-  if (status === 'up_to_date') {
+  if (status === 'up_to_date' || status === 'active') {
     return 'border-green-300 bg-green-50 text-green-900';
   }
 
-  if (status === 'overdue' || status === 'suspended') {
+  if (status === 'pending') {
+    return 'border-amber-300 bg-amber-50 text-amber-900';
+  }
+
+  if (status === 'overdue' || status === 'suspended' || status === 'revoked') {
     return 'border-red-300 bg-red-50 text-red-900';
   }
 
@@ -283,7 +296,7 @@ export const getAdminMetrics = ({
     (metrics, organizationId) => {
       const organization = organizationRecords.get(organizationId);
       const subscriptionStatus = organization?.subscriptionStatus ?? 'trial';
-      const accessSuspended = organization?.accessSuspended ?? false;
+      const accessStatus = organization?.accessStatus ?? 'pending';
       const estimatedMonthlyAmount = getEstimatedMonthlyAmount(organization);
       const setupFeeAmount = getSetupFeeAmount(organization);
       const setupFeeStatus = organization?.setupFeeStatus ?? 'unpaid';
@@ -292,14 +305,14 @@ export const getAdminMetrics = ({
       return {
         totalClients: metrics.totalClients + 1,
         activeClients: metrics.activeClients + (
-          !accessSuspended && subscriptionStatus !== 'cancelled' ? 1 : 0
+          accessStatus === 'active' && subscriptionStatus !== 'cancelled' ? 1 : 0
         ),
-        suspendedClients: metrics.suspendedClients + (accessSuspended ? 1 : 0),
+        suspendedClients: metrics.suspendedClients + (accessStatus === 'suspended' ? 1 : 0),
         overdueClients: metrics.overdueClients + (
           subscriptionStatus === 'overdue' ? 1 : 0
         ),
         estimatedMrr: metrics.estimatedMrr + (
-          !accessSuspended
+          accessStatus === 'active'
           && REVENUE_ACTIVE_STATUSES.includes(
             subscriptionStatus as (typeof REVENUE_ACTIVE_STATUSES)[number],
           )

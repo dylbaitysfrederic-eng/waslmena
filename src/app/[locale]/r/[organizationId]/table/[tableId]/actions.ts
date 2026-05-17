@@ -84,12 +84,19 @@ export const submitPublicOrderAction = async (
   }
 
   const [organization] = await db
-    .select({ accessSuspended: organizationSchema.accessSuspended })
+    .select({
+      accessStatus: organizationSchema.accessStatus,
+      accessSuspended: organizationSchema.accessSuspended,
+    })
     .from(organizationSchema)
     .where(eq(organizationSchema.id, input.organizationId))
     .limit(1);
 
-  if (!organization || organization.accessSuspended) {
+  if (
+    !organization
+    || organization.accessStatus !== 'active'
+    || organization.accessSuspended
+  ) {
     return { ok: false };
   }
 

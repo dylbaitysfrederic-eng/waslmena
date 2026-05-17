@@ -1,5 +1,4 @@
 import { FormSubmitButton } from '@/components/FormSubmitButton';
-import { SwitchField } from '@/components/SwitchField';
 import { Input } from '@/components/ui/input';
 import {
   Table,
@@ -11,6 +10,7 @@ import {
 } from '@/components/ui/table';
 
 import {
+  CLIENT_ACCESS_STATUSES,
   formatAdminLabel,
   formatDateInputValue,
   getAdminOrganizations,
@@ -51,7 +51,7 @@ const AdminAccessPage = async () => {
             {ids.map((organizationId) => {
               const organization = organizationRecords.get(organizationId);
               const subscriptionStatus = organization?.subscriptionStatus ?? 'trial';
-              const accessSuspended = organization?.accessSuspended ?? false;
+              const accessStatus = organization?.accessStatus ?? 'pending';
 
               return (
                 <TableRow key={organizationId}>
@@ -64,15 +64,11 @@ const AdminAccessPage = async () => {
                     </code>
                   </TableCell>
                   <TableCell className="align-top">
-                    <div
-                      className={
-                        accessSuspended
-                          ? 'font-semibold text-red-700'
-                          : 'font-medium text-green-700'
-                      }
+                    <span
+                      className={`inline-flex rounded-md border px-2 py-1 text-xs font-semibold ${getStatusBadgeClassName(accessStatus)}`}
                     >
-                      {accessSuspended ? 'Suspended' : 'Active'}
-                    </div>
+                      {formatAdminLabel(accessStatus)}
+                    </span>
                     <span
                       className={`mt-2 inline-flex rounded-md border px-2 py-1 text-xs font-semibold ${getStatusBadgeClassName(subscriptionStatus)}`}
                     >
@@ -92,6 +88,24 @@ const AdminAccessPage = async () => {
                         value={organizationId}
                       />
                       <div className="grid gap-3 md:grid-cols-3">
+                        <label
+                          htmlFor={`access-status-${organizationId}`}
+                          className="grid gap-1 text-xs font-medium text-muted-foreground"
+                        >
+                          Client access status
+                          <select
+                            id={`access-status-${organizationId}`}
+                            name="accessStatus"
+                            defaultValue={accessStatus}
+                            className="h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground"
+                          >
+                            {CLIENT_ACCESS_STATUSES.map(status => (
+                              <option key={status} value={status}>
+                                {formatAdminLabel(status)}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
                         <label
                           htmlFor={`access-subscription-status-${organizationId}`}
                           className="grid gap-1 text-xs font-medium text-muted-foreground"
@@ -122,15 +136,6 @@ const AdminAccessPage = async () => {
                             defaultValue={formatDateInputValue(organization?.overdueSince)}
                           />
                         </label>
-                        <div className="md:pt-4">
-                          <SwitchField
-                            id={`access-suspended-${organizationId}`}
-                            name="accessSuspended"
-                            label="Access suspended"
-                            description="Block this client from the restaurant dashboard."
-                            defaultChecked={accessSuspended}
-                          />
-                        </div>
                       </div>
                       <Input
                         name="adminNotes"

@@ -152,6 +152,7 @@ const PublicTableMenuPage = async (props: PublicMenuPageProps) => {
       restaurantWhatsappNumber: organizationSchema.restaurantWhatsappNumber,
       enableWhatsappContact: organizationSchema.enableWhatsappContact,
       localCurrencyLabel: organizationSchema.localCurrencyLabel,
+      accessStatus: organizationSchema.accessStatus,
       accessSuspended: organizationSchema.accessSuspended,
     })
     .from(organizationSchema)
@@ -162,7 +163,7 @@ const PublicTableMenuPage = async (props: PublicMenuPageProps) => {
     notFound();
   }
 
-  if (organization?.accessSuspended) {
+  if (organization.accessStatus !== 'active' || organization.accessSuspended) {
     return (
       <main className="min-h-screen bg-background">
         <div className="mx-auto flex min-h-screen w-full max-w-xl flex-col justify-center px-4 py-10">

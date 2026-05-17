@@ -121,7 +121,7 @@ const AdminUsagePage = async () => {
               const organization = organizationRecords.get(organizationId);
               const orderStat = orderStatsByOrganizationId.get(organizationId);
               const subscriptionStatus = organization?.subscriptionStatus ?? 'trial';
-              const accessSuspended = organization?.accessSuspended ?? false;
+              const accessStatus = organization?.accessStatus ?? 'pending';
 
               return (
                 <TableRow key={organizationId}>
@@ -145,13 +145,9 @@ const AdminUsagePage = async () => {
                   </TableCell>
                   <TableCell>
                     <span
-                      className={
-                        accessSuspended
-                          ? 'font-semibold text-red-700'
-                          : 'font-medium text-green-700'
-                      }
+                      className={`inline-flex rounded-md border px-2 py-1 text-xs font-semibold ${getStatusBadgeClassName(accessStatus)}`}
                     >
-                      {accessSuspended ? 'Suspended' : 'Active'}
+                      {formatAdminLabel(accessStatus)}
                     </span>
                   </TableCell>
                   <TableCell className="min-w-40">

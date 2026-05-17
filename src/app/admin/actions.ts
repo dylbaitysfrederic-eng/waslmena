@@ -6,6 +6,8 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
 import { db } from '@/libs/DB';
+import { sendEmail } from '@/libs/Email';
+import { getSuspensionEmailTemplate } from '@/libs/EmailTemplates';
 import {
   menuCategorySchema,
   menuItemSchema,
@@ -22,6 +24,8 @@ import {
 import {
   assertAdmin,
   BILLING_CYCLES,
+  CLIENT_ACCESS_STATUSES,
+  CLIENT_CATEGORIES,
   MONTHLY_SUBSCRIPTION_STATUSES,
   ORDERING_MODES,
   QR_MODES,
@@ -85,6 +89,10 @@ const getOrganizationId = (formData: FormData) => {
   return normalizeOptionalText(formData.get('organizationId'));
 };
 
+const isClientAccessBlocked = (status: string) => {
+  return status === 'suspended' || status === 'revoked';
+};
+
 const getMenuNamesFromForm = (formData: FormData) => ({
   en: normalizeMenuText(formData.get('nameEn')),
   ar: normalizeMenuText(formData.get('nameAr')),
@@ -121,6 +129,142 @@ const normalizeEmail = (value: FormDataEntryValue | null) => {
   }
 
   return email;
+};
+
+const normalizeEmailText = (value: unknown) => {
+  return typeof value === 'string' ? normalizeEmail(value) : null;
+};
+
+const getMetadataValue = (metadata: unknown, key: string) => {
+  if (!metadata || typeof metadata !== 'object') {
+    return null;
+  }
+
+  const value = (metadata as Record<string, unknown>)[key];
+
+  return typeof value === 'string' ? value : null;
+};
+
+const getSuspensionEmailLocale = (metadata: unknown): 'en' | 'fr' | 'ar' => {
+  const locale = getMetadataValue(metadata, 'locale');
+
+  return locale === 'fr' || locale === 'ar' ? locale : 'en';
+};
+
+const getOrganizationOwnerEmail = async (organizationId: string) => {
+  try {
+    const client = await clerkClient();
+    const clerkOrganization = await client.organizations.getOrganization({
+      organizationId,
+    });
+    const metadataOwnerEmail = normalizeEmailText(
+      getMetadataValue(clerkOrganization.privateMetadata, 'ownerEmail'),
+    );
+
+    if (metadataOwnerEmail) {
+      return {
+        email: metadataOwnerEmail,
+        locale: getSuspensionEmailLocale(clerkOrganization.publicMetadata),
+      };
+    }
+
+    const memberships = await client.organizations.getOrganizationMembershipList({
+      organizationId,
+      limit: 100,
+    });
+    const ownerMembership = memberships.data.find(
+      membership => membership.role === ORG_ROLE.ADMIN,
+    ) ?? memberships.data.at(0);
+    const membershipEmail = normalizeEmailText(
+      ownerMembership?.publicUserData?.identifier,
+    );
+
+    if (!membershipEmail) {
+      return null;
+    }
+
+    return {
+      email: membershipEmail,
+      locale: getSuspensionEmailLocale(clerkOrganization.publicMetadata),
+    };
+  } catch (error) {
+    console.error('Unable to resolve restaurant owner email', error);
+    return null;
+  }
+};
+
+type SuspensionOrganizationContext = {
+  restaurantDisplayName: string | null;
+  subscriptionStatus: string;
+  monthlySubscriptionStatus: string | null;
+  setupFeeStatus: string | null;
+  overdueSince: Date | null;
+  nextPaymentDueDate: Date | null;
+};
+
+const isBillingRelatedSuspension = (
+  organization: SuspensionOrganizationContext | undefined,
+) => {
+  if (!organization) {
+    return false;
+  }
+
+  const isPastDue = organization.nextPaymentDueDate
+    ? organization.nextPaymentDueDate.getTime() < Date.now()
+    : false;
+
+  return organization.subscriptionStatus === 'overdue'
+    || organization.monthlySubscriptionStatus === 'overdue'
+    || organization.setupFeeStatus === 'unpaid'
+    || Boolean(organization.overdueSince)
+    || isPastDue;
+};
+
+const sendSuspensionNotificationEmail = async (
+  organizationId: string,
+  organization: SuspensionOrganizationContext | undefined,
+) => {
+  const owner = await getOrganizationOwnerEmail(organizationId);
+
+  if (!owner) {
+    console.warn(
+      `Suspension email skipped: no owner email found for ${organizationId}`,
+    );
+    return;
+  }
+
+  const template = getSuspensionEmailTemplate(owner.locale, {
+    restaurantName:
+      organization?.restaurantDisplayName || 'your restaurant',
+    billingRelated: isBillingRelatedSuspension(organization),
+  });
+
+  try {
+    await sendEmail({
+      to: owner.email,
+      subject: template.subject,
+      text: template.text,
+    });
+  } catch (error) {
+    console.error('Suspension email failed', error);
+  }
+};
+
+const getSuspensionOrganizationContext = async (organizationId: string) => {
+  const [organization] = await db
+    .select({
+      restaurantDisplayName: organizationSchema.restaurantDisplayName,
+      subscriptionStatus: organizationSchema.subscriptionStatus,
+      monthlySubscriptionStatus: organizationSchema.monthlySubscriptionStatus,
+      setupFeeStatus: organizationSchema.setupFeeStatus,
+      overdueSince: organizationSchema.overdueSince,
+      nextPaymentDueDate: organizationSchema.nextPaymentDueDate,
+    })
+    .from(organizationSchema)
+    .where(eq(organizationSchema.id, organizationId))
+    .limit(1);
+
+  return organization;
 };
 
 const isValidPublicUrl = (value: string | null) => {
@@ -282,6 +426,8 @@ export const createAdminOnboardingAction = async (formData: FormData) => {
         formData.get('subscriptionAmountUsd'),
       ),
       subscriptionStatus,
+      accessStatus: 'active',
+      accessSuspended: false,
       setupFeeAmountUsd: normalizeOptionalInteger(
         formData.get('setupFeeAmountUsd'),
       ),
@@ -321,6 +467,8 @@ export const createAdminOnboardingAction = async (formData: FormData) => {
           formData.get('subscriptionAmountUsd'),
         ),
         subscriptionStatus,
+        accessStatus: 'active',
+        accessSuspended: false,
       },
     });
 
@@ -358,6 +506,23 @@ export const updateAdminClientAction = async (formData: FormData) => {
   }
 
   const values = {
+    restaurantDisplayName: normalizeOptionalText(
+      formData.get('restaurantDisplayName'),
+    ),
+    clientCategory: normalizeEnumValue(
+      formData.get('clientCategory'),
+      CLIENT_CATEGORIES,
+      'restaurant',
+    ),
+    mainContactFirstName: normalizeOptionalText(
+      formData.get('mainContactFirstName'),
+    ),
+    mainContactLastName: normalizeOptionalText(
+      formData.get('mainContactLastName'),
+    ),
+    mainContactWhatsappNumber: normalizeOptionalText(
+      formData.get('mainContactWhatsappNumber'),
+    ),
     internalAdminNotes: normalizeOptionalText(
       formData.get('internalAdminNotes'),
     ),
@@ -438,7 +603,9 @@ export const suspendClientAccessAction = async (formData: FormData) => {
     return;
   }
 
+  const organization = await getSuspensionOrganizationContext(organizationId);
   const values = {
+    accessStatus: 'suspended' as const,
     accessSuspended: true,
     subscriptionStatus: 'suspended' as const,
   };
@@ -454,10 +621,11 @@ export const suspendClientAccessAction = async (formData: FormData) => {
       set: values,
     });
 
-  revalidateAdminPaths('/admin/clients', '/admin/access');
+  await sendSuspensionNotificationEmail(organizationId, organization);
+  revalidateAdminPaths('/admin/clients', '/admin/access', '/dashboard');
 };
 
-export const restoreClientAccessAction = async (formData: FormData) => {
+export const activateClientAccessAction = async (formData: FormData) => {
   await assertAdmin();
 
   const organizationId = getOrganizationId(formData);
@@ -467,6 +635,7 @@ export const restoreClientAccessAction = async (formData: FormData) => {
   }
 
   const values = {
+    accessStatus: 'active' as const,
     accessSuspended: false,
     subscriptionStatus: 'up_to_date' as const,
     overdueSince: null,
@@ -483,7 +652,36 @@ export const restoreClientAccessAction = async (formData: FormData) => {
       set: values,
     });
 
-  revalidateAdminPaths('/admin/clients', '/admin/access');
+  revalidateAdminPaths('/admin/clients', '/admin/access', '/dashboard');
+};
+
+export const revokeClientAccessAction = async (formData: FormData) => {
+  await assertAdmin();
+
+  const organizationId = getOrganizationId(formData);
+
+  if (!organizationId) {
+    return;
+  }
+
+  const values = {
+    accessStatus: 'revoked' as const,
+    accessSuspended: true,
+    subscriptionStatus: 'cancelled' as const,
+  };
+
+  await db
+    .insert(organizationSchema)
+    .values({
+      id: organizationId,
+      ...values,
+    })
+    .onConflictDoUpdate({
+      target: organizationSchema.id,
+      set: values,
+    });
+
+  revalidateAdminPaths('/admin/clients', '/admin/access', '/dashboard');
 };
 
 export const updateAdminBillingAction = async (formData: FormData) => {
@@ -563,8 +761,25 @@ export const updateAdminAccessAction = async (formData: FormData) => {
     return;
   }
 
+  const previousOrganization = await db
+    .select({
+      accessStatus: organizationSchema.accessStatus,
+      restaurantDisplayName: organizationSchema.restaurantDisplayName,
+      subscriptionStatus: organizationSchema.subscriptionStatus,
+      monthlySubscriptionStatus: organizationSchema.monthlySubscriptionStatus,
+      setupFeeStatus: organizationSchema.setupFeeStatus,
+      overdueSince: organizationSchema.overdueSince,
+      nextPaymentDueDate: organizationSchema.nextPaymentDueDate,
+    })
+    .from(organizationSchema)
+    .where(eq(organizationSchema.id, organizationId))
+    .limit(1);
   const values = {
-    accessSuspended: formData.get('accessSuspended') === 'on',
+    accessStatus: normalizeEnumValue(
+      formData.get('accessStatus'),
+      CLIENT_ACCESS_STATUSES,
+      'pending',
+    ),
     subscriptionStatus: normalizeEnumValue(
       formData.get('subscriptionStatus'),
       SUBSCRIPTION_STATUSES,
@@ -573,17 +788,35 @@ export const updateAdminAccessAction = async (formData: FormData) => {
     overdueSince: normalizeOptionalDate(formData.get('overdueSince')),
     adminNotes: normalizeOptionalText(formData.get('adminNotes')),
   };
+  const accessSuspended = isClientAccessBlocked(values.accessStatus);
 
   await db
     .insert(organizationSchema)
     .values({
       id: organizationId,
       ...values,
+      accessSuspended,
     })
     .onConflictDoUpdate({
       target: organizationSchema.id,
-      set: values,
+      set: {
+        ...values,
+        accessSuspended,
+      },
     });
+
+  const [previous] = previousOrganization;
+
+  if (values.accessStatus === 'suspended' && previous?.accessStatus !== 'suspended') {
+    await sendSuspensionNotificationEmail(organizationId, {
+      restaurantDisplayName: previous?.restaurantDisplayName ?? null,
+      subscriptionStatus: values.subscriptionStatus,
+      monthlySubscriptionStatus: previous?.monthlySubscriptionStatus ?? null,
+      setupFeeStatus: previous?.setupFeeStatus ?? null,
+      overdueSince: values.overdueSince ?? previous?.overdueSince ?? null,
+      nextPaymentDueDate: previous?.nextPaymentDueDate ?? null,
+    });
+  }
 
   revalidateAdminPaths('/admin/access', '/dashboard');
 };

@@ -26,6 +26,10 @@ export const organizationSchema = pgTable(
   {
     id: text('id').primaryKey(),
     restaurantDisplayName: text('restaurant_display_name'),
+    clientCategory: text('client_category').default('restaurant').notNull(),
+    mainContactFirstName: text('main_contact_first_name'),
+    mainContactLastName: text('main_contact_last_name'),
+    mainContactWhatsappNumber: text('main_contact_whatsapp_number'),
     restaurantLogoUrl: text('restaurant_logo_url'),
     restaurantPrimaryColor: text('restaurant_primary_color'),
     restaurantTemplateStyle: text('restaurant_template_style'),
@@ -63,6 +67,7 @@ export const organizationSchema = pgTable(
     nextPaymentDueDate: timestamp('next_payment_due_date', { mode: 'date' }),
     overdueSince: timestamp('overdue_since', { mode: 'date' }),
     adminPaymentNotes: text('admin_payment_notes'),
+    accessStatus: text('access_status').default('pending').notNull(),
     accessSuspended: boolean('access_suspended').default(false).notNull(),
     adminNotes: text('admin_notes'),
     stripeCustomerId: text('stripe_customer_id'),
