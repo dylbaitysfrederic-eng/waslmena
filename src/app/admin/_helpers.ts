@@ -66,6 +66,13 @@ export const CLIENT_CATEGORIES = [
   'other',
 ] as const;
 
+export const MENU_TEMPLATE_TYPES = [
+  'restaurant',
+  'cafe',
+  'fast_food',
+  'shisha_lounge',
+] as const;
+
 export const SUBSCRIPTION_STATUSES = [
   'up_to_date',
   'overdue',

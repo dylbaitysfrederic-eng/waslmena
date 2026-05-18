@@ -11,26 +11,32 @@ export const Logo = (props: {
       fill="none"
       aria-hidden="true"
     >
-      <rect width="36" height="36" rx="10" fill="#111827" />
+      <rect width="36" height="36" rx="8" fill="#0F172A" />
       <path
-        d="M10 19.4c3.9-8.1 12.1-8.1 16 0"
-        stroke="#F4D06F"
-        strokeWidth="2.4"
-        strokeLinecap="round"
-      />
-      <path
-        d="M11.5 23.5h13"
+        d="M10 13h16"
         stroke="#F8FAFC"
-        strokeWidth="2.4"
+        strokeWidth="2.2"
         strokeLinecap="round"
       />
       <path
-        d="M18 10.5v3.8"
+        d="M13 18h10"
         stroke="#34D399"
-        strokeWidth="2.4"
+        strokeWidth="2.2"
         strokeLinecap="round"
       />
-      <circle cx="18" cy="8.5" r="1.8" fill="#34D399" />
+      <path
+        d="M10 23h16"
+        stroke="#F4D06F"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+      />
+      <path
+        d="M25 10.5l3 2.5-3 2.5"
+        stroke="#F8FAFC"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
     {!props.isTextHidden && AppConfig.name}
   </div>

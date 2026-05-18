@@ -6,6 +6,7 @@ import { getTranslations } from 'next-intl/server';
 import { ConfirmSubmitButton } from '@/components/ConfirmSubmitButton';
 import { FormSubmitButton } from '@/components/FormSubmitButton';
 import { MenuItemImagePreview } from '@/components/MenuItemImagePreview';
+import { SwitchField } from '@/components/SwitchField';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -66,7 +67,35 @@ const VALID_FORM_ERRORS = [
   'invalid_price',
   'negative_price',
   'missing_price',
+  'currency_mismatch',
 ] as const;
+
+type MenuCategoryOption = {
+  id: number;
+  name: string;
+  nameEn: string | null;
+  nameAr: string | null;
+  nameFr: string | null;
+  parentCategoryId: number | null;
+};
+
+const getCategoryLabel = (
+  locale: string,
+  category: Pick<MenuCategoryOption, 'name' | 'nameEn' | 'nameAr' | 'nameFr' | 'parentCategoryId'>,
+) => {
+  const label = getLocalizedMenuText(
+    locale,
+    {
+      en: category.nameEn,
+      ar: category.nameAr,
+      fr: category.nameFr,
+      legacy: category.name,
+    },
+    category.name,
+  );
+
+  return category.parentCategoryId === null ? label : `- ${label}`;
+};
 
 const MenuItemLanguageFields = (props: {
   baseId: string;
@@ -186,6 +215,7 @@ const MenuItemsPage = async (props: {
   const categories = await db
     .select({
       id: menuCategorySchema.id,
+      parentCategoryId: menuCategorySchema.parentCategoryId,
       name: menuCategorySchema.name,
       nameEn: menuCategorySchema.nameEn,
       nameAr: menuCategorySchema.nameAr,
@@ -275,16 +305,7 @@ const MenuItemsPage = async (props: {
                       </option>
                       {categories.map(category => (
                         <option key={category.id} value={category.id}>
-                          {getLocalizedMenuText(
-                            props.params.locale,
-                            {
-                              en: category.nameEn,
-                              ar: category.nameAr,
-                              fr: category.nameFr,
-                              legacy: category.name,
-                            },
-                            category.name,
-                          )}
+                          {getCategoryLabel(props.params.locale, category)}
                         </option>
                       ))}
                     </select>
@@ -341,18 +362,12 @@ const MenuItemsPage = async (props: {
                     {t('price_requirement', { currency: localCurrencyLabel })}
                   </p>
 
-                  <div className="flex items-center gap-2">
-                    <input
-                      id="isAvailable"
-                      name="isAvailable"
-                      type="checkbox"
-                      defaultChecked
-                      className="size-4 rounded border-input"
-                    />
-                    <Label htmlFor="isAvailable">
-                      {t('is_available_label')}
-                    </Label>
-                  </div>
+                  <SwitchField
+                    id="isAvailable"
+                    name="isAvailable"
+                    label={t('is_available_label')}
+                    defaultChecked
+                  />
 
                   <FormSubmitButton pendingLabel={t('create_pending_button')}>
                     {t('create_button')}
@@ -461,16 +476,7 @@ const MenuItemsPage = async (props: {
                                     >
                                       {categories.map(category => (
                                         <option key={category.id} value={category.id}>
-                                          {getLocalizedMenuText(
-                                            props.params.locale,
-                                            {
-                                              en: category.nameEn,
-                                              ar: category.nameAr,
-                                              fr: category.nameFr,
-                                              legacy: category.name,
-                                            },
-                                            category.name,
-                                          )}
+                                          {getCategoryLabel(props.params.locale, category)}
                                         </option>
                                       ))}
                                     </select>
@@ -517,10 +523,10 @@ const MenuItemsPage = async (props: {
                                             },
                                             item.name,
                                           )}
-                                          className="size-16 bg-background"
+                                          className="size-16"
                                         />
-                                        <p className="text-xs text-muted-foreground">
-                                          {t('image_preview_helper')}
+                                        <p className="min-w-0 truncate text-xs text-muted-foreground">
+                                          {item.imageUrl}
                                         </p>
                                       </div>
                                     )}
@@ -529,6 +535,9 @@ const MenuItemsPage = async (props: {
                                     <Label htmlFor={`item-usd-${item.id}`}>
                                       {t('price_usd_cents_label')}
                                     </Label>
+                                    <p className="text-xs text-muted-foreground">
+                                      {t('price_usd_cents_help')}
+                                    </p>
                                     <Input
                                       id={`item-usd-${item.id}`}
                                       name="priceUsdCents"
@@ -553,18 +562,12 @@ const MenuItemsPage = async (props: {
                                       defaultValue={item.priceLbp ?? ''}
                                     />
                                   </div>
-                                  <div className="flex items-center gap-2">
-                                    <input
-                                      id={`item-available-${item.id}`}
-                                      name="isAvailable"
-                                      type="checkbox"
-                                      defaultChecked={item.isAvailable}
-                                      className="size-4 rounded border-input"
-                                    />
-                                    <Label htmlFor={`item-available-${item.id}`}>
-                                      {t('is_available_label')}
-                                    </Label>
-                                  </div>
+                                  <SwitchField
+                                    id={`item-available-${item.id}`}
+                                    name="isAvailable"
+                                    label={t('is_available_label')}
+                                    defaultChecked={item.isAvailable}
+                                  />
                                   <FormSubmitButton
                                     pendingLabel={t('update_pending_button')}
                                     size="sm"
@@ -606,6 +609,14 @@ const MenuItemsPage = async (props: {
                           </TableCell>
                           <TableCell className="text-right">
                             <form action={deleteMenuItemAction}>
+                              <input
+                                type="hidden"
+                                name="returnPath"
+                                value={getI18nPath(
+                                  '/dashboard/menu-items',
+                                  props.params.locale,
+                                )}
+                              />
                               <input
                                 type="hidden"
                                 name="itemId"

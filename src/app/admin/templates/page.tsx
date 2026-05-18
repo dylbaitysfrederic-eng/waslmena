@@ -148,6 +148,7 @@ const AdminTemplatesPage = async () => {
                 defaultForegroundColor={organization?.qrForegroundColor}
                 defaultFrameColor={organization?.qrFrameColor}
                 defaultLabelText={organization?.qrLabelText}
+                defaultLogoUrl={organization?.restaurantLogoUrl}
                 defaultShowRestaurantName={organization?.qrShowRestaurantName}
                 defaultShowTableNumber={organization?.qrShowTableNumber}
                 defaultStyleTemplate={organization?.qrStyleTemplate}

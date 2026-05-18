@@ -12,6 +12,7 @@ type QrCustomizationFieldsProps = {
   defaultForegroundColor?: string;
   defaultFrameColor?: string;
   defaultLabelText?: string | null;
+  defaultLogoUrl?: string | null;
   defaultShowRestaurantName?: boolean;
   defaultShowTableNumber?: boolean;
   defaultStyleTemplate?: string | null;
@@ -53,6 +54,7 @@ export const QrCustomizationFields = ({
   defaultForegroundColor = '#111827',
   defaultFrameColor = '#111827',
   defaultLabelText,
+  defaultLogoUrl,
   defaultShowRestaurantName = true,
   defaultShowTableNumber = true,
   defaultStyleTemplate,
@@ -68,6 +70,7 @@ export const QrCustomizationFields = ({
   const [foregroundColor, setForegroundColor] = useState(defaultForegroundColor);
   const [backgroundColor, setBackgroundColor] = useState(defaultBackgroundColor);
   const [labelText, setLabelText] = useState(defaultLabelText ?? 'Scan to order');
+  const [logoUrl, setLogoUrl] = useState(defaultLogoUrl ?? '');
   const [showRestaurantName, setShowRestaurantName] = useState(
     defaultShowRestaurantName,
   );
@@ -159,21 +162,39 @@ export const QrCustomizationFields = ({
           </label>
         </div>
 
-        <label
-          htmlFor={`qr-label-text-${organizationId}`}
-          className="grid gap-1 text-xs font-medium text-muted-foreground"
-        >
-          Label text
-          <input
-            id={`qr-label-text-${organizationId}`}
-            name="qrLabelText"
-            type="text"
-            value={labelText}
-            onChange={event => setLabelText(event.target.value)}
-            placeholder="Scan to order"
-            className="h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground"
-          />
-        </label>
+        <div className="grid gap-3 md:grid-cols-2">
+          <label
+            htmlFor={`qr-label-text-${organizationId}`}
+            className="grid gap-1 text-xs font-medium text-muted-foreground"
+          >
+            Label text
+            <input
+              id={`qr-label-text-${organizationId}`}
+              name="qrLabelText"
+              type="text"
+              value={labelText}
+              onChange={event => setLabelText(event.target.value)}
+              placeholder="Scan to order"
+              className="h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground"
+            />
+          </label>
+
+          <label
+            htmlFor={`qr-logo-url-${organizationId}`}
+            className="grid gap-1 text-xs font-medium text-muted-foreground"
+          >
+            Logo/image URL
+            <input
+              id={`qr-logo-url-${organizationId}`}
+              name="restaurantLogoUrl"
+              type="url"
+              value={logoUrl}
+              onChange={event => setLogoUrl(event.target.value)}
+              placeholder="https://example.com/logo.png"
+              className="h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground"
+            />
+          </label>
+        </div>
 
         <div className="grid gap-3 sm:grid-cols-2">
           <SwitchField
@@ -212,13 +233,21 @@ export const QrCustomizationFields = ({
               {restaurantName}
             </div>
           )}
+          {logoUrl && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={logoUrl}
+              alt=""
+              className="mx-auto size-10 rounded-md object-contain"
+            />
+          )}
           <QRCodeCanvas
             value="https://waslmena.com/menu-preview"
             size={132}
             marginSize={2}
-            level="M"
             fgColor={hasLowContrast ? '#111827' : foregroundColor}
             bgColor={hasLowContrast ? '#ffffff' : backgroundColor}
+            level={logoUrl ? 'H' : 'M'}
           />
           {labelText && (
             <div className="text-xs font-medium" style={{ color: frameColor }}>

@@ -1,12 +1,18 @@
 import { asc } from 'drizzle-orm';
+import Link from 'next/link';
 
 import { FormSubmitButton } from '@/components/FormSubmitButton';
 import { db } from '@/libs/DB';
 import { menuCategorySchema, menuItemSchema } from '@/models/Schema';
 import { getLocalizedMenuText } from '@/utils/MenuTranslations';
 
-import { getAdminOrganizations } from '../_helpers';
 import {
+  formatAdminLabel,
+  getAdminOrganizations,
+  MENU_TEMPLATE_TYPES,
+} from '../_helpers';
+import {
+  applyAdminMenuTemplateAction,
   createAdminMenuCategoryAction,
   createAdminMenuItemAction,
   updateAdminMenuCategoryAction,
@@ -116,7 +122,12 @@ const formatUsdCents = (amount: number | null) => {
   return String(amount);
 };
 
-const AdminMenuPage = async () => {
+const AdminMenuPage = async (props: {
+  searchParams?: {
+    organizationId?: string;
+    templateStatus?: string;
+  };
+}) => {
   const { ids, organizationRecords } = await getAdminOrganizations();
   const [categories, items] = await Promise.all([
     db
@@ -154,19 +165,129 @@ const AdminMenuPage = async () => {
         const organizationCategories = categories.filter(
           category => category.organizationId === organizationId,
         );
+        const mainCategories = organizationCategories.filter(
+          category => category.parentCategoryId === null,
+        );
         const organizationItems = items.filter(
           item => item.organizationId === organizationId,
         );
         const localCurrencyLabel = organization?.localCurrencyLabel ?? 'LL';
+        const templateStatus = props.searchParams?.organizationId === organizationId
+          ? props.searchParams.templateStatus
+          : null;
 
         return (
           <div key={organizationId} className="grid gap-4 rounded-md bg-background p-5">
-            <div>
-              <h3 className="font-semibold">
-                {organization?.restaurantDisplayName || 'Unnamed restaurant'}
-              </h3>
-              <code className="text-xs text-muted-foreground">{organizationId}</code>
+            <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+              <div>
+                <h3 className="font-semibold">
+                  {organization?.restaurantDisplayName || 'Unnamed restaurant'}
+                </h3>
+                <code className="text-xs text-muted-foreground">{organizationId}</code>
+              </div>
+              <Link
+                href={`/en/r/${organizationId}/menu`}
+                className="w-fit rounded-md border border-input bg-background px-3 py-2 text-xs font-semibold hover:bg-muted"
+              >
+                Preview customer menu
+              </Link>
             </div>
+
+            {templateStatus === 'confirm' && (
+              <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm font-medium text-amber-950">
+                This restaurant already has menu data. Tick the replacement
+                checkbox before applying a starter template.
+              </div>
+            )}
+
+            {templateStatus === 'applied' && (
+              <div className="rounded-md border border-green-300 bg-green-50 p-3 text-sm font-medium text-green-950">
+                Starter menu template applied.
+              </div>
+            )}
+
+            <form action={applyAdminMenuTemplateAction} className="grid gap-3 rounded-md border p-4">
+              <input type="hidden" name="organizationId" value={organizationId} />
+              <div>
+                <div className="font-medium">Apply starter menu template</div>
+                <p className="text-xs text-muted-foreground">
+                  Creates category and subcategory structure only. Restaurant
+                  users can add items and prices later from their dashboard.
+                </p>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+                <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                  Template
+                  <select name="menuTemplate" defaultValue="restaurant" className={inputClassName}>
+                    {MENU_TEMPLATE_TYPES.map(template => (
+                      <option key={template} value={template}>
+                        {formatAdminLabel(template)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <FormSubmitButton pendingLabel="Applying..." size="sm">
+                  Apply template
+                </FormSubmitButton>
+              </div>
+              {organizationCategories.length > 0 || organizationItems.length > 0
+                ? (
+                    <label className="flex items-start gap-2 text-xs font-medium text-muted-foreground">
+                      <input
+                        name="replaceExistingMenu"
+                        type="checkbox"
+                        className="mt-0.5 size-4"
+                      />
+                      Replace existing categories and items with this starter
+                      structure.
+                    </label>
+                  )
+                : null}
+            </form>
+
+            {organizationCategories.length > 0 && (
+              <div className="rounded-md border bg-muted/30 p-4">
+                <div className="font-medium">Customer menu structure preview</div>
+                <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {mainCategories.map(category => (
+                    <div key={category.id} className="rounded-md border bg-background p-3">
+                      <div className="font-semibold">
+                        {getLocalizedMenuText(
+                          'en',
+                          {
+                            en: category.nameEn,
+                            ar: category.nameAr,
+                            fr: category.nameFr,
+                            legacy: category.name,
+                          },
+                          category.name,
+                        )}
+                      </div>
+                      <div className="mt-2 grid gap-1 text-xs text-muted-foreground">
+                        {organizationCategories
+                          .filter(subcategory =>
+                            subcategory.parentCategoryId === category.id,
+                          )
+                          .map(subcategory => (
+                            <div key={subcategory.id}>
+                              {getLocalizedMenuText(
+                                'en',
+                                {
+                                  en: subcategory.nameEn,
+                                  ar: subcategory.nameAr,
+                                  fr: subcategory.nameFr,
+                                  legacy: subcategory.name,
+                                },
+                                subcategory.name,
+                              )}
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <form action={createAdminMenuCategoryAction} className="grid gap-3 rounded-md border p-4">
               <input type="hidden" name="organizationId" value={organizationId} />

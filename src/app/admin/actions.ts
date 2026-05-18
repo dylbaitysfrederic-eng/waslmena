@@ -26,6 +26,7 @@ import {
   BILLING_CYCLES,
   CLIENT_ACCESS_STATUSES,
   CLIENT_CATEGORIES,
+  MENU_TEMPLATE_TYPES,
   MONTHLY_SUBSCRIPTION_STATUSES,
   ORDERING_MODES,
   QR_MODES,
@@ -36,6 +37,137 @@ import {
   SUBSCRIPTION_PAYMENT_METHODS,
   SUBSCRIPTION_STATUSES,
 } from './_helpers';
+
+type MenuTemplateType = (typeof MENU_TEMPLATE_TYPES)[number];
+
+type MenuTemplateCategory = {
+  names: {
+    en: string;
+    ar: string;
+    fr: string;
+  };
+  subcategories?: MenuTemplateCategory[];
+};
+
+const MENU_TEMPLATES: Record<MenuTemplateType, MenuTemplateCategory[]> = {
+  restaurant: [
+    {
+      names: { en: 'Starters', ar: 'المقبلات', fr: 'Entrées' },
+      subcategories: [
+        { names: { en: 'Cold mezze', ar: 'مازة باردة', fr: 'Mezzés froids' } },
+        { names: { en: 'Hot mezze', ar: 'مازة ساخنة', fr: 'Mezzés chauds' } },
+      ],
+    },
+    {
+      names: { en: 'Main plates', ar: 'الأطباق الرئيسية', fr: 'Plats principaux' },
+      subcategories: [
+        { names: { en: 'Grills', ar: 'مشاوي', fr: 'Grillades' } },
+        { names: { en: 'House specials', ar: 'أطباق البيت', fr: 'Spécialités' } },
+      ],
+    },
+    {
+      names: { en: 'Drinks', ar: 'المشروبات', fr: 'Boissons' },
+      subcategories: [
+        { names: { en: 'Soft drinks', ar: 'مشروبات غازية', fr: 'Boissons fraîches' } },
+        { names: { en: 'Hot drinks', ar: 'مشروبات ساخنة', fr: 'Boissons chaudes' } },
+      ],
+    },
+    { names: { en: 'Desserts', ar: 'الحلويات', fr: 'Desserts' } },
+  ],
+  cafe: [
+    {
+      names: { en: 'Coffee', ar: 'القهوة', fr: 'Café' },
+      subcategories: [
+        { names: { en: 'Espresso bar', ar: 'إسبريسو', fr: 'Bar espresso' } },
+        { names: { en: 'Iced coffee', ar: 'قهوة باردة', fr: 'Cafés glacés' } },
+      ],
+    },
+    {
+      names: { en: 'Tea and cold drinks', ar: 'الشاي والمشروبات الباردة', fr: 'Thés et boissons froides' },
+    },
+    {
+      names: { en: 'Bakery', ar: 'المخبوزات', fr: 'Boulangerie' },
+      subcategories: [
+        { names: { en: 'Pastries', ar: 'معجنات', fr: 'Viennoiseries' } },
+        { names: { en: 'Cakes', ar: 'كيك', fr: 'Gâteaux' } },
+      ],
+    },
+    { names: { en: 'Light bites', ar: 'وجبات خفيفة', fr: 'Petites faims' } },
+  ],
+  fast_food: [
+    {
+      names: { en: 'Burgers and sandwiches', ar: 'برغر وساندويتش', fr: 'Burgers et sandwiches' },
+      subcategories: [
+        { names: { en: 'Burgers', ar: 'برغر', fr: 'Burgers' } },
+        { names: { en: 'Wraps', ar: 'راب', fr: 'Wraps' } },
+      ],
+    },
+    {
+      names: { en: 'Combos', ar: 'وجبات كومبو', fr: 'Menus combo' },
+    },
+    {
+      names: { en: 'Sides', ar: 'إضافات', fr: 'Accompagnements' },
+      subcategories: [
+        { names: { en: 'Fries', ar: 'بطاطا', fr: 'Frites' } },
+        { names: { en: 'Sauces', ar: 'صلصات', fr: 'Sauces' } },
+      ],
+    },
+    { names: { en: 'Drinks', ar: 'المشروبات', fr: 'Boissons' } },
+  ],
+  shisha_lounge: [
+    {
+      names: { en: 'Shisha', ar: 'الشيشة', fr: 'Chicha' },
+      subcategories: [
+        { names: { en: 'Classic flavors', ar: 'نكهات كلاسيكية', fr: 'Saveurs classiques' } },
+        { names: { en: 'Premium mixes', ar: 'خلطات مميزة', fr: 'Mélanges premium' } },
+      ],
+    },
+    {
+      names: { en: 'Hot drinks', ar: 'مشروبات ساخنة', fr: 'Boissons chaudes' },
+    },
+    {
+      names: { en: 'Cold drinks', ar: 'مشروبات باردة', fr: 'Boissons froides' },
+    },
+    { names: { en: 'Snacks', ar: 'سناكات', fr: 'Snacks' } },
+  ],
+};
+
+const insertMenuTemplateCategories = async (
+  organizationId: string,
+  templateType: MenuTemplateType,
+) => {
+  const template = MENU_TEMPLATES[templateType];
+
+  for (const [categoryIndex, category] of template.entries()) {
+    const [createdCategory] = await db
+      .insert(menuCategorySchema)
+      .values({
+        organizationId,
+        name: category.names.en,
+        nameEn: category.names.en,
+        nameAr: category.names.ar,
+        nameFr: category.names.fr,
+        displayOrder: categoryIndex,
+      })
+      .returning();
+
+    if (!createdCategory || !category.subcategories) {
+      continue;
+    }
+
+    await db.insert(menuCategorySchema).values(
+      category.subcategories.map((subcategory, subcategoryIndex) => ({
+        organizationId,
+        parentCategoryId: createdCategory.id,
+        name: subcategory.names.en,
+        nameEn: subcategory.names.en,
+        nameAr: subcategory.names.ar,
+        nameFr: subcategory.names.fr,
+        displayOrder: subcategoryIndex,
+      })),
+    );
+  }
+};
 
 const normalizeOptionalText = (value: FormDataEntryValue | null) => {
   const textValue = typeof value === 'string' ? value.trim() : '';
@@ -400,6 +532,11 @@ export const createAdminOnboardingAction = async (formData: FormData) => {
     'table_ordering',
   );
   const qrMode = normalizeEnumValue(formData.get('qrMode'), QR_MODES, 'per_table');
+  const menuTemplate = normalizeEnumValue(
+    formData.get('menuTemplate'),
+    MENU_TEMPLATE_TYPES,
+    'restaurant',
+  ) as MenuTemplateType;
   const subscriptionPaymentMethod = normalizeEnumValue(
     formData.get('subscriptionPaymentMethod'),
     SUBSCRIPTION_PAYMENT_METHODS,
@@ -500,6 +637,8 @@ export const createAdminOnboardingAction = async (formData: FormData) => {
         accessSuspended: false,
       },
     });
+
+  await insertMenuTemplateCategories(clerkOrganizationId, menuTemplate);
 
   let inviteStatus = 'created';
 
@@ -609,7 +748,28 @@ export const updateAdminClientAction = async (formData: FormData) => {
       set: values,
     });
 
-  revalidateAdminPaths('/admin/clients');
+  if (values.restaurantDisplayName) {
+    try {
+      const client = await clerkClient();
+
+      await client.organizations.updateOrganization(organizationId, {
+        name: values.restaurantDisplayName,
+      });
+    } catch (error) {
+      console.error('Unable to update Clerk organization name', error);
+    }
+  }
+
+  revalidateAdminPaths(
+    '/admin/clients',
+    `/admin/clients/${organizationId}`,
+    '/admin/billing',
+    '/admin/access',
+    '/admin/templates',
+    '/dashboard',
+    '/dashboard/tables',
+    '/dashboard/orders',
+  );
 };
 
 const getNextPaymentDueDate = (billingCycle: string) => {
@@ -656,7 +816,11 @@ export const markClientPaymentPaidAction = async (formData: FormData) => {
       set: values,
     });
 
-  revalidateAdminPaths('/admin/clients', '/admin/billing');
+  revalidateAdminPaths(
+    '/admin/clients',
+    `/admin/clients/${organizationId}`,
+    '/admin/billing',
+  );
 };
 
 export const suspendClientAccessAction = async (formData: FormData) => {
@@ -687,7 +851,12 @@ export const suspendClientAccessAction = async (formData: FormData) => {
     });
 
   await sendSuspensionNotificationEmail(organizationId, organization);
-  revalidateAdminPaths('/admin/clients', '/admin/access', '/dashboard');
+  revalidateAdminPaths(
+    '/admin/clients',
+    `/admin/clients/${organizationId}`,
+    '/admin/access',
+    '/dashboard',
+  );
 };
 
 export const activateClientAccessAction = async (formData: FormData) => {
@@ -717,7 +886,12 @@ export const activateClientAccessAction = async (formData: FormData) => {
       set: values,
     });
 
-  revalidateAdminPaths('/admin/clients', '/admin/access', '/dashboard');
+  revalidateAdminPaths(
+    '/admin/clients',
+    `/admin/clients/${organizationId}`,
+    '/admin/access',
+    '/dashboard',
+  );
 };
 
 export const revokeClientAccessAction = async (formData: FormData) => {
@@ -746,7 +920,12 @@ export const revokeClientAccessAction = async (formData: FormData) => {
       set: values,
     });
 
-  revalidateAdminPaths('/admin/clients', '/admin/access', '/dashboard');
+  revalidateAdminPaths(
+    '/admin/clients',
+    `/admin/clients/${organizationId}`,
+    '/admin/access',
+    '/dashboard',
+  );
 };
 
 export const updateAdminBillingAction = async (formData: FormData) => {
@@ -905,6 +1084,7 @@ export const updateAdminTemplatesAction = async (formData: FormData) => {
       QR_COLOR_DEFAULTS.background,
     ),
   );
+  const restaurantLogoUrl = normalizeOptionalText(formData.get('restaurantLogoUrl'));
 
   const values = {
     restaurantProfile: normalizeEnumValue(
@@ -934,6 +1114,7 @@ export const updateAdminTemplatesAction = async (formData: FormData) => {
     qrForegroundColor: qrColors.foregroundColor,
     qrBackgroundColor: qrColors.backgroundColor,
     qrLabelText: normalizeOptionalText(formData.get('qrLabelText')),
+    restaurantLogoUrl: isValidPublicUrl(restaurantLogoUrl) ? restaurantLogoUrl : null,
     qrShowRestaurantName: formData.get('qrShowRestaurantName') === 'on',
     qrShowTableNumber: formData.get('qrShowTableNumber') === 'on',
     qrStyleTemplate: normalizeEnumValue(
@@ -954,7 +1135,62 @@ export const updateAdminTemplatesAction = async (formData: FormData) => {
       set: values,
     });
 
-  revalidateAdminPaths('/admin/templates', '/dashboard/tables');
+  revalidateAdminPaths(
+    '/admin/templates',
+    '/dashboard/tables',
+    `/r/${organizationId}/menu`,
+  );
+};
+
+export const applyAdminMenuTemplateAction = async (formData: FormData) => {
+  await assertAdmin();
+
+  const organizationId = getOrganizationId(formData);
+  const menuTemplate = normalizeEnumValue(
+    formData.get('menuTemplate'),
+    MENU_TEMPLATE_TYPES,
+    'restaurant',
+  ) as MenuTemplateType;
+  const replaceExistingMenu = formData.get('replaceExistingMenu') === 'on';
+
+  if (!organizationId) {
+    return;
+  }
+
+  const [existingCategories, existingItems] = await Promise.all([
+    db
+      .select({ id: menuCategorySchema.id })
+      .from(menuCategorySchema)
+      .where(eq(menuCategorySchema.organizationId, organizationId)),
+    db
+      .select({ id: menuItemSchema.id })
+      .from(menuItemSchema)
+      .where(eq(menuItemSchema.organizationId, organizationId)),
+  ]);
+  const hasExistingMenu = existingCategories.length > 0 || existingItems.length > 0;
+
+  if (hasExistingMenu && !replaceExistingMenu) {
+    redirect(`/admin/menu?templateStatus=confirm&organizationId=${organizationId}`);
+  }
+
+  if (replaceExistingMenu) {
+    await db
+      .delete(menuItemSchema)
+      .where(eq(menuItemSchema.organizationId, organizationId));
+    await db
+      .delete(menuCategorySchema)
+      .where(eq(menuCategorySchema.organizationId, organizationId));
+  }
+
+  await insertMenuTemplateCategories(organizationId, menuTemplate);
+
+  revalidateAdminPaths(
+    '/admin/menu',
+    '/dashboard/menu-categories',
+    `/r/${organizationId}/menu`,
+  );
+
+  redirect(`/admin/menu?templateStatus=applied&organizationId=${organizationId}`);
 };
 
 export const createAdminMenuCategoryAction = async (formData: FormData) => {

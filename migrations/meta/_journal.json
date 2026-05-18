@@ -148,6 +148,27 @@
       "when": 1779041000000,
       "tag": "0020_admin_client_contact_fields",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1779120000000,
+      "tag": "0021_menu_subcategories",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1779121000000,
+      "tag": "0022_order_notification_settings",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1779122000000,
+      "tag": "0023_restaurant_brand_theme",
+      "breakpoints": true
     }
   ]
 }

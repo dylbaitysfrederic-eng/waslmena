@@ -95,6 +95,62 @@ const MenuCategoryLanguageFields = (props: {
 
 const VALID_FORM_ERRORS = ['missing_name'] as const;
 
+type MenuCategoryRow = {
+  id: number;
+  name: string;
+  nameEn: string | null;
+  nameAr: string | null;
+  nameFr: string | null;
+  parentCategoryId: number | null;
+};
+
+const getCategoryLabel = (
+  locale: string,
+  category: Pick<MenuCategoryRow, 'name' | 'nameEn' | 'nameAr' | 'nameFr'>,
+) => getLocalizedMenuText(
+  locale,
+  {
+    en: category.nameEn,
+    ar: category.nameAr,
+    fr: category.nameFr,
+    legacy: category.name,
+  },
+  category.name,
+);
+
+const ParentCategorySelect = (props: {
+  id: string;
+  categories: MenuCategoryRow[];
+  currentCategoryId?: number;
+  defaultValue?: number | null;
+  locale: string;
+  t: (key: string) => string;
+}) => {
+  const availableParents = props.categories.filter(category =>
+    category.id !== props.currentCategoryId
+    && category.parentCategoryId === null,
+  );
+
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={props.id}>{props.t('parent_category_label')}</Label>
+      <select
+        id={props.id}
+        name="parentCategoryId"
+        defaultValue={props.defaultValue ?? ''}
+        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+      >
+        <option value="">{props.t('parent_category_none')}</option>
+        {availableParents.map(category => (
+          <option key={category.id} value={category.id}>
+            {getCategoryLabel(props.locale, category)}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+};
+
 const MenuCategoriesPage = async (props: {
   params: { locale: string };
   searchParams: { error?: string };
@@ -118,6 +174,7 @@ const MenuCategoriesPage = async (props: {
   const categories = await db
     .select({
       id: menuCategorySchema.id,
+      parentCategoryId: menuCategorySchema.parentCategoryId,
       name: menuCategorySchema.name,
       nameEn: menuCategorySchema.nameEn,
       nameAr: menuCategorySchema.nameAr,
@@ -152,6 +209,12 @@ const MenuCategoriesPage = async (props: {
               </div>
             )}
             <MenuCategoryLanguageFields baseId="category-create" t={t} />
+            <ParentCategorySelect
+              id="parentCategoryId"
+              categories={categories}
+              locale={props.params.locale}
+              t={t}
+            />
 
             <div className="space-y-2">
               <Label htmlFor="displayOrder">{t('display_order_label')}</Label>
@@ -204,6 +267,11 @@ const MenuCategoriesPage = async (props: {
                                   },
                                   category.name,
                                 )}
+                                {category.parentCategoryId !== null && (
+                                  <div className="mt-1 text-xs font-normal text-muted-foreground">
+                                    {t('subcategory_badge')}
+                                  </div>
+                                )}
                               </div>
                               <details className="rounded-md border p-3">
                                 <summary className="cursor-pointer text-sm font-medium">
@@ -232,6 +300,14 @@ const MenuCategoriesPage = async (props: {
                                       nameFr: category.nameFr,
                                       legacyName: category.name,
                                     }}
+                                  />
+                                  <ParentCategorySelect
+                                    id={`category-parent-${category.id}`}
+                                    categories={categories}
+                                    currentCategoryId={category.id}
+                                    defaultValue={category.parentCategoryId}
+                                    locale={props.params.locale}
+                                    t={t}
                                   />
                                   <div className="space-y-2">
                                     <Label htmlFor={`category-order-${category.id}`}>

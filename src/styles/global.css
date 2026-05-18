@@ -71,3 +71,40 @@
     @apply border-border;
   }
 }
+
+@layer components {
+  .restaurant-theme-day {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+  }
+
+  .restaurant-theme-night {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 8%;
+    --card-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 76%;
+    --border: 240 3.7% 20%;
+    --input: 240 3.7% 20%;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .restaurant-theme-auto {
+      --background: 240 10% 3.9%;
+      --foreground: 0 0% 98%;
+      --card: 240 10% 8%;
+      --card-foreground: 0 0% 98%;
+      --muted: 240 3.7% 15.9%;
+      --muted-foreground: 240 5% 76%;
+      --border: 240 3.7% 20%;
+      --input: 240 3.7% 20%;
+    }
+  }
+}

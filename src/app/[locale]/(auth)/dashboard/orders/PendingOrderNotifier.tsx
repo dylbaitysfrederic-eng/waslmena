@@ -1,16 +1,19 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 
-const STORAGE_ENABLED_KEY = 'wasl-orders-new-pending-sound-enabled';
-const STORAGE_COUNT_KEY = 'wasl-orders-last-pending-count';
+const getStorageKey = (organizationId: string, key: string) => {
+  return `wasl:${organizationId}:orders:${key}`;
+};
 
 const playNotificationSound = () => {
   try {
-    const AudioContextClass = window.AudioContext ?? (window as any).webkitAudioContext;
+    const AudioContextClass = window.AudioContext
+      ?? (window as any).webkitAudioContext;
+
     if (!AudioContextClass) {
       return;
     }
@@ -27,33 +30,48 @@ const playNotificationSound = () => {
     gain.connect(context.destination);
 
     oscillator.start();
-    oscillator.stop(context.currentTime + 0.12);
+    oscillator.stop(context.currentTime + 0.16);
     oscillator.onended = () => context.close();
   } catch {
     // Browser may block audio until user interaction or may not support AudioContext.
   }
 };
 
-const showBrowserNotification = (pendingDelta: number) => {
+const showBrowserNotification = (title: string, body: string) => {
   if ('Notification' in window && Notification.permission === 'granted') {
-    void new Notification('New pending orders', {
-      body: pendingDelta === 1
-        ? '1 new pending order arrived.'
-        : `${pendingDelta} new pending orders arrived.`,
+    void new Notification(title, {
+      body,
       silent: true,
     });
   }
 };
 
 type PendingOrderNotifierProps = {
+  latestPendingOrderId: number | null;
+  organizationId: string;
   pendingCount: number;
+  soundEnabled: boolean;
+  visualEnabled: boolean;
 };
 
-export const PendingOrderNotifier = ({ pendingCount }: PendingOrderNotifierProps) => {
+export const PendingOrderNotifier = ({
+  latestPendingOrderId,
+  organizationId,
+  pendingCount,
+  soundEnabled,
+  visualEnabled,
+}: PendingOrderNotifierProps) => {
   const t = useTranslations('Orders');
-  const [enabled, setEnabled] = useState(false);
   const [permission, setPermission] = useState<NotificationPermission>('default');
+  const [hasNewOrders, setHasNewOrders] = useState(false);
+  const [newOrderCount, setNewOrderCount] = useState(0);
   const [hydrated, setHydrated] = useState(false);
+
+  const storageKeys = useMemo(() => ({
+    count: getStorageKey(organizationId, 'last-pending-count'),
+    latestId: getStorageKey(organizationId, 'latest-pending-id'),
+    interacted: getStorageKey(organizationId, 'notification-interacted'),
+  }), [organizationId]);
 
   useEffect(() => {
     setHydrated(true);
@@ -61,9 +79,6 @@ export const PendingOrderNotifier = ({ pendingCount }: PendingOrderNotifierProps
     if ('Notification' in window) {
       setPermission(Notification.permission);
     }
-
-    const storedEnabled = window.localStorage.getItem(STORAGE_ENABLED_KEY);
-    setEnabled(storedEnabled === 'true');
   }, []);
 
   useEffect(() => {
@@ -71,48 +86,147 @@ export const PendingOrderNotifier = ({ pendingCount }: PendingOrderNotifierProps
       return;
     }
 
-    const previousRaw = window.localStorage.getItem(STORAGE_COUNT_KEY);
-    const parsedCount = Number(previousRaw);
-    const previousCount = Number.isFinite(parsedCount) ? parsedCount : null;
+    const previousCount = Number(window.localStorage.getItem(storageKeys.count));
+    const previousLatestId = Number(
+      window.localStorage.getItem(storageKeys.latestId),
+    );
+    const hasPreviousCount = Number.isFinite(previousCount);
+    const hasPreviousLatestId = Number.isFinite(previousLatestId);
+    const latestOrderIncreased = latestPendingOrderId !== null
+      && hasPreviousLatestId
+      && latestPendingOrderId > previousLatestId;
+    const pendingCountIncreased = hasPreviousCount
+      && pendingCount > previousCount;
+    const detectedNewOrders = latestOrderIncreased || pendingCountIncreased;
+    const detectedCount = pendingCountIncreased
+      ? pendingCount - previousCount
+      : latestOrderIncreased
+        ? 1
+        : 0;
 
-    if (enabled && previousCount !== null && pendingCount > previousCount) {
-      const delta = pendingCount - previousCount;
-      playNotificationSound();
-      showBrowserNotification(delta);
+    if (detectedNewOrders) {
+      setHasNewOrders(visualEnabled);
+      setNewOrderCount(Math.max(1, detectedCount));
+
+      if (visualEnabled) {
+        const newCards = document.querySelectorAll<HTMLElement>(
+          '[data-pending-order-id]',
+        );
+
+        newCards.forEach((card) => {
+          const orderId = Number(card.dataset.pendingOrderId);
+
+          if (
+            Number.isFinite(orderId)
+            && (!hasPreviousLatestId || orderId > previousLatestId)
+          ) {
+            card.classList.add('ring-4', 'ring-emerald-400', 'ring-offset-2');
+          }
+        });
+      }
+
+      if (soundEnabled) {
+        playNotificationSound();
+      }
+
+      if (visualEnabled) {
+        showBrowserNotification(
+          t('pending_notification_browser_title'),
+          t('pending_notification_browser_body', {
+            count: Math.max(1, detectedCount),
+          }),
+        );
+      }
     }
 
-    window.localStorage.setItem(STORAGE_COUNT_KEY, String(pendingCount));
-  }, [hydrated, enabled, pendingCount]);
+    window.localStorage.setItem(storageKeys.count, String(pendingCount));
+    window.localStorage.setItem(
+      storageKeys.latestId,
+      String(latestPendingOrderId ?? 0),
+    );
+  }, [
+    hydrated,
+    latestPendingOrderId,
+    pendingCount,
+    soundEnabled,
+    storageKeys,
+    t,
+    visualEnabled,
+  ]);
 
-  const toggleEnabled = async () => {
-    const nextEnabled = !enabled;
-    setEnabled(nextEnabled);
-    window.localStorage.setItem(STORAGE_ENABLED_KEY, String(nextEnabled));
+  const requestPermission = async () => {
+    window.localStorage.setItem(storageKeys.interacted, 'true');
 
-    if (nextEnabled && 'Notification' in window && Notification.permission === 'default') {
+    if ('Notification' in window && Notification.permission === 'default') {
       const result = await Notification.requestPermission();
       setPermission(result);
     }
   };
 
+  const testNotification = () => {
+    window.localStorage.setItem(storageKeys.interacted, 'true');
+
+    if (soundEnabled) {
+      playNotificationSound();
+    }
+
+    if (visualEnabled) {
+      setHasNewOrders(true);
+      setNewOrderCount(1);
+      showBrowserNotification(
+        t('pending_notification_browser_title'),
+        t('pending_notification_browser_body', { count: 1 }),
+      );
+    }
+  };
+
   return (
-    <div className="flex flex-col items-end gap-2 text-right">
-      <Button
-        size="sm"
-        variant={enabled ? 'secondary' : 'outline'}
-        onClick={toggleEnabled}
-      >
-        {enabled
-          ? t('pending_notification_disable')
-          : t('pending_notification_enable')}
-      </Button>
-      <p className="max-w-xs text-xs text-muted-foreground">
-        {enabled
-          ? permission === 'denied'
-            ? t('pending_notification_blocked')
-            : t('pending_notification_enabled')
-          : t('pending_notification_disabled')}
-      </p>
+    <div className="grid gap-3">
+      {hasNewOrders && visualEnabled && (
+        <div className="sticky top-2 z-20 rounded-md border border-emerald-300 bg-emerald-50 p-3 text-sm font-medium text-emerald-950 shadow-sm">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <span>
+              {t('pending_notification_banner', { count: newOrderCount })}
+            </span>
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              onClick={() => setHasNewOrders(false)}
+            >
+              {t('pending_notification_dismiss')}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      <div className="flex flex-col items-start gap-2 rounded-md border bg-background p-3 text-left sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <div className="text-sm font-semibold">
+            {t('pending_notification_settings_title')}
+          </div>
+          <p className="max-w-2xl text-xs leading-5 text-muted-foreground">
+            {soundEnabled
+              ? t('pending_notification_sound_helper')
+              : t('pending_notification_visual_helper')}
+          </p>
+          {visualEnabled && permission === 'denied' && (
+            <p className="mt-1 text-xs font-medium text-destructive">
+              {t('pending_notification_blocked')}
+            </p>
+          )}
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {visualEnabled && 'Notification' in globalThis && permission === 'default' && (
+            <Button type="button" size="sm" variant="outline" onClick={requestPermission}>
+              {t('pending_notification_permission_button')}
+            </Button>
+          )}
+          <Button type="button" size="sm" variant="secondary" onClick={testNotification}>
+            {t('pending_notification_test_button')}
+          </Button>
+        </div>
+      </div>
     </div>
   );
 };

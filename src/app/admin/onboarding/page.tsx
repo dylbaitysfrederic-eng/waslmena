@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import {
   BILLING_CYCLES,
   formatAdminLabel,
+  MENU_TEMPLATE_TYPES,
   MONTHLY_SUBSCRIPTION_STATUSES,
   ORDERING_MODES,
   QR_MODES,
@@ -201,6 +202,25 @@ const AdminOnboardingPage = (props: AdminOnboardingPageProps) => {
           Use AED, SAR, QAR, KWD, EGP, MAD, or any local code/label. For Lebanon,
           use code LBP and label LL. USD prices stay optional per menu item.
         </p>
+
+        <label htmlFor="menuTemplate" className="grid gap-1 text-sm font-medium">
+          Starter menu template
+          <select
+            id="menuTemplate"
+            name="menuTemplate"
+            defaultValue="restaurant"
+            className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+          >
+            {MENU_TEMPLATE_TYPES.map(template => (
+              <option key={template} value={template}>
+                {formatAdminLabel(template)}
+              </option>
+            ))}
+          </select>
+          <span className="text-xs font-normal text-muted-foreground">
+            Creates starter categories and subcategories only. No fake items or prices.
+          </span>
+        </label>
 
         <div>
           <h3 className="text-lg font-semibold">Initial manual billing</h3>

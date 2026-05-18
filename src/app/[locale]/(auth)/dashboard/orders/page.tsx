@@ -149,6 +149,12 @@ const formatElapsedTime = (date: Date, now: Date, t: Awaited<ReturnType<typeof g
   return t('elapsed_hours', { count: elapsedHours });
 };
 
+const RECEIPT_DIVIDER = '--------------------------------';
+
+const getFinalStatusCompletedAt = (status: string, updatedAt: Date) => {
+  return status === 'served' || status === 'cancelled' ? updatedAt : null;
+};
+
 const OrdersPage = async (props: { params: { locale: string } }) => {
   noStore();
 
@@ -162,12 +168,33 @@ const OrdersPage = async (props: { params: { locale: string } }) => {
 
   const [organization] = await db
     .select({
+      restaurantDisplayName: organizationSchema.restaurantDisplayName,
+      restaurantLogoUrl: organizationSchema.restaurantLogoUrl,
+      restaurantPrimaryColor: organizationSchema.restaurantPrimaryColor,
+      restaurantAccentColor: organizationSchema.restaurantAccentColor,
       localCurrencyLabel: organizationSchema.localCurrencyLabel,
+      restaurantWhatsappNumber: organizationSchema.restaurantWhatsappNumber,
+      orderVisualNotificationsEnabled:
+        organizationSchema.orderVisualNotificationsEnabled,
+      orderSoundNotificationsEnabled:
+        organizationSchema.orderSoundNotificationsEnabled,
     })
     .from(organizationSchema)
     .where(eq(organizationSchema.id, orgId))
     .limit(1);
   const localCurrencyLabel = organization?.localCurrencyLabel ?? 'LL';
+  const restaurantDisplayName = organization?.restaurantDisplayName ?? 'Restaurant';
+  const restaurantLogoUrl = organization?.restaurantLogoUrl ?? null;
+  const restaurantPrimaryColor = organization?.restaurantPrimaryColor ?? null;
+  const restaurantAccentColor = organization?.restaurantAccentColor
+    ?? restaurantPrimaryColor;
+  const restaurantContact = organization?.restaurantWhatsappNumber ?? null;
+  const orderVisualNotificationsEnabled = (
+    organization?.orderVisualNotificationsEnabled ?? true
+  );
+  const orderSoundNotificationsEnabled = (
+    organization?.orderSoundNotificationsEnabled ?? false
+  );
 
   const orders = await db
     .select({
@@ -180,6 +207,7 @@ const OrdersPage = async (props: { params: { locale: string } }) => {
       totalUsdCents: orderSchema.totalUsdCents,
       totalLbp: orderSchema.totalLbp,
       createdAt: orderSchema.createdAt,
+      updatedAt: orderSchema.updatedAt,
     })
     .from(orderSchema)
     .leftJoin(
@@ -240,6 +268,11 @@ const OrdersPage = async (props: { params: { locale: string } }) => {
     });
     ordersByStatus.set(status, currentOrders);
   }
+  const pendingOrders = ordersByStatus.get('pending') ?? [];
+  const latestPendingOrderId = pendingOrders.reduce<number | null>(
+    (latestId, order) => Math.max(latestId ?? 0, order.id),
+    null,
+  );
 
   return (
     <>
@@ -262,8 +295,16 @@ const OrdersPage = async (props: { params: { locale: string } }) => {
                 {t('refresh_button')}
               </Link>
             </Button>
-            <PendingOrderNotifier pendingCount={ordersByStatus.get('pending')?.length ?? 0} />
           </div>
+        </div>
+        <div className="mb-5">
+          <PendingOrderNotifier
+            latestPendingOrderId={latestPendingOrderId}
+            organizationId={orgId}
+            pendingCount={pendingOrders.length}
+            soundEnabled={orderSoundNotificationsEnabled}
+            visualEnabled={orderVisualNotificationsEnabled}
+          />
         </div>
 
         {orders.length > 0
@@ -319,6 +360,10 @@ const OrdersPage = async (props: { params: { locale: string } }) => {
                                   && order.status !== 'served';
                                 const tableNumber = order.tableNumber
                                   ?? t('deleted_table');
+                                const completedAt = getFinalStatusCompletedAt(
+                                  order.status,
+                                  order.updatedAt,
+                                );
                                 const hasStoredTotal = order.totalUsdCents !== null
                                   || order.totalLbp !== null;
                                 const hasUsdAndLocalPrice = (
@@ -329,22 +374,35 @@ const OrdersPage = async (props: { params: { locale: string } }) => {
                                 const canEdit = order.status !== 'served'
                                   && order.status !== 'cancelled';
                                 const copyTicketText = [
-                                  t('ticket_title'),
+                                  restaurantDisplayName,
+                                  restaurantContact
+                                    ? t('ticket_contact', {
+                                      contact: restaurantContact,
+                                    })
+                                    : null,
+                                  RECEIPT_DIVIDER,
                                   t('order_title', { orderId: order.id }),
+                                  `${t('ticket_sent_at')}: ${
+                                    formatDateTime(order.createdAt, props.params.locale)
+                                  }`,
+                                  completedAt
+                                    ? `${t('ticket_completed_at')}: ${
+                                      formatDateTime(completedAt, props.params.locale)
+                                    }`
+                                    : null,
+                                  `${t('status_label')}: ${t(`status_${order.status}`)}`,
+                                  t('table_label', { tableNumber }),
                                   order.customerName
                                     ? t('ticket_customer', {
                                       customerName: order.customerName,
                                     })
                                     : t('no_customer_name'),
-                                  t('table_label', { tableNumber }),
                                   ...(order.customerNote
                                     ? [
                                         `${t('ticket_order_note')}: ${order.customerNote}`,
                                       ]
                                     : []),
-                                  formatDateTime(order.createdAt, props.params.locale),
-                                  `${t('status_label')}: ${t(`status_${order.status}`)}`,
-                                  '',
+                                  RECEIPT_DIVIDER,
                                   t('items_label'),
                                   ...items.map((item) => {
                                     const prices = [
@@ -376,7 +434,7 @@ const OrdersPage = async (props: { params: { locale: string } }) => {
                                     .map(item => `${t('ticket_item_note')} - ${
                                       item.itemName ?? t('deleted_menu_item')
                                     }: ${item.customerNote}`),
-                                  '',
+                                  RECEIPT_DIVIDER,
                                   ...(order.totalUsdCents !== null
                                     ? [
                                         `${t('ticket_total_usd')}: ${
@@ -402,11 +460,15 @@ const OrdersPage = async (props: { params: { locale: string } }) => {
                                         }`,
                                       ]
                                     : []),
-                                ].join('\n');
+                                  !hasStoredTotal ? t('no_order_total') : null,
+                                ].filter(Boolean).join('\n');
 
                                 return (
                                   <article
                                     key={order.id}
+                                    data-pending-order-id={
+                                      order.status === 'pending' ? order.id : undefined
+                                    }
                                     className={cn(
                                       'rounded-md border bg-background p-3 sm:p-4',
                                       orderStatusStyle.card,
@@ -788,35 +850,77 @@ const OrdersPage = async (props: { params: { locale: string } }) => {
                                         )}
 
                                     <div id={ticketId} className="hidden">
-                                      <div className="text-center text-base font-bold uppercase">
-                                        {t('ticket_title')}
+                                      {restaurantLogoUrl && (
+                                        // eslint-disable-next-line @next/next/no-img-element
+                                        <img
+                                          src={restaurantLogoUrl}
+                                          alt=""
+                                          className="mx-auto mb-2 size-12 object-contain"
+                                        />
+                                      )}
+                                      <div
+                                        className="text-center text-lg font-bold uppercase"
+                                        style={restaurantPrimaryColor
+                                          ? { color: restaurantPrimaryColor }
+                                          : undefined}
+                                      >
+                                        {restaurantDisplayName}
                                       </div>
-                                      <div className="mt-2 text-center">
-                                        {t('order_title', { orderId: order.id })}
-                                      </div>
-
-                                      <div className="my-3" data-order-ticket-divider />
-
-                                      <div>
-                                        {order.customerName
-                                          ? t('ticket_customer', {
-                                            customerName: order.customerName,
-                                          })
-                                          : t('no_customer_name')}
-                                      </div>
-                                      <div>
-                                        {t('table_label', { tableNumber })}
-                                      </div>
-                                      {order.customerNote && (
-                                        <div>
-                                          {t('ticket_order_note')}
-                                          {': '}
-                                          {order.customerNote}
+                                      {restaurantContact && (
+                                        <div className="mt-1 text-center text-xs">
+                                          {t('ticket_contact', {
+                                            contact: restaurantContact,
+                                          })}
                                         </div>
                                       )}
-                                      <div>
-                                        {formatDateTime(order.createdAt, props.params.locale)}
+
+                                      <div
+                                        className="my-3"
+                                        data-order-ticket-divider
+                                        style={restaurantAccentColor
+                                          ? { borderColor: restaurantAccentColor }
+                                          : undefined}
+                                      />
+
+                                      <div className="space-y-1">
+                                        <div className="flex justify-between gap-3">
+                                          <span>
+                                            {t('order_title', { orderId: order.id })}
+                                          </span>
+                                          <span>{t(`status_${order.status}`)}</span>
+                                        </div>
+                                        <div>
+                                          {t('ticket_sent_at')}
+                                          {': '}
+                                          {formatDateTime(order.createdAt, props.params.locale)}
+                                        </div>
+                                        {completedAt && (
+                                          <div>
+                                            {t('ticket_completed_at')}
+                                            {': '}
+                                            {formatDateTime(completedAt, props.params.locale)}
+                                          </div>
+                                        )}
+                                        <div>
+                                          {t('table_label', { tableNumber })}
+                                        </div>
+                                        <div>
+                                          {order.customerName
+                                            ? t('ticket_customer', {
+                                              customerName: order.customerName,
+                                            })
+                                            : t('no_customer_name')}
+                                        </div>
                                       </div>
+
+                                      {order.customerNote && (
+                                        <div className="mt-2">
+                                          <div className="font-bold">
+                                            {t('ticket_order_note')}
+                                          </div>
+                                          <div>{order.customerNote}</div>
+                                        </div>
+                                      )}
 
                                       <div className="my-3" data-order-ticket-divider />
 
@@ -824,7 +928,7 @@ const OrdersPage = async (props: { params: { locale: string } }) => {
                                         {items.map(item => (
                                           <div key={item.orderItemId}>
                                             <div className="flex justify-between gap-3">
-                                              <span>
+                                              <span className="font-bold">
                                                 {item.itemName ?? t('deleted_menu_item')}
                                               </span>
                                               <span>

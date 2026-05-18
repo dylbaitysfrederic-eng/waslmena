@@ -32,6 +32,8 @@ export const organizationSchema = pgTable(
     mainContactWhatsappNumber: text('main_contact_whatsapp_number'),
     restaurantLogoUrl: text('restaurant_logo_url'),
     restaurantPrimaryColor: text('restaurant_primary_color'),
+    restaurantAccentColor: text('restaurant_accent_color'),
+    restaurantThemeMode: text('restaurant_theme_mode').default('day').notNull(),
     restaurantTemplateStyle: text('restaurant_template_style'),
     restaurantWhatsappNumber: text('restaurant_whatsapp_number'),
     localCurrencyCode: text('local_currency_code'),
@@ -42,6 +44,12 @@ export const organizationSchema = pgTable(
     enableNamedTables: boolean('enable_named_tables').default(false).notNull(),
     enableCustomerName: boolean('enable_customer_name').default(true).notNull(),
     enableWhatsappContact: boolean('enable_whatsapp_contact').default(true).notNull(),
+    orderVisualNotificationsEnabled: boolean('order_visual_notifications_enabled')
+      .default(true)
+      .notNull(),
+    orderSoundNotificationsEnabled: boolean('order_sound_notifications_enabled')
+      .default(false)
+      .notNull(),
     qrMode: text('qr_mode').default('per_table').notNull(),
     qrFrameColor: text('qr_frame_color').default('#111827').notNull(),
     qrForegroundColor: text('qr_foreground_color').default('#111827').notNull(),
@@ -133,6 +141,7 @@ export const restaurantTableSchema = pgTable('restaurant_table', {
 export const menuCategorySchema = pgTable('menu_category', {
   id: serial('id').primaryKey(),
   organizationId: text('organization_id').notNull(),
+  parentCategoryId: integer('parent_category_id'),
   name: text('name').notNull(),
   nameEn: text('name_en'),
   nameAr: text('name_ar'),

@@ -12,6 +12,10 @@ import { TitleBar } from '@/features/dashboard/TitleBar';
 import { db } from '@/libs/DB';
 import { organizationSchema } from '@/models/Schema';
 import { getI18nPath } from '@/utils/Helpers';
+import {
+  getRestaurantThemeMode,
+  RESTAURANT_THEME_MODES,
+} from '@/utils/RestaurantTheme';
 
 import { updateRestaurantBrandingAction } from './actions';
 
@@ -45,8 +49,14 @@ const RestaurantBrandingPage = async (props: {
       restaurantDisplayName: organizationSchema.restaurantDisplayName,
       restaurantLogoUrl: organizationSchema.restaurantLogoUrl,
       restaurantPrimaryColor: organizationSchema.restaurantPrimaryColor,
+      restaurantAccentColor: organizationSchema.restaurantAccentColor,
+      restaurantThemeMode: organizationSchema.restaurantThemeMode,
       restaurantWhatsappNumber: organizationSchema.restaurantWhatsappNumber,
       enableWhatsappContact: organizationSchema.enableWhatsappContact,
+      orderVisualNotificationsEnabled:
+        organizationSchema.orderVisualNotificationsEnabled,
+      orderSoundNotificationsEnabled:
+        organizationSchema.orderSoundNotificationsEnabled,
       localCurrencyCode: organizationSchema.localCurrencyCode,
       localCurrencyLabel: organizationSchema.localCurrencyLabel,
     })
@@ -110,19 +120,64 @@ const RestaurantBrandingPage = async (props: {
             />
           </div>
 
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="restaurantPrimaryColor">
+                {t('primary_color_label')}
+              </Label>
+              <Input
+                id="restaurantPrimaryColor"
+                name="restaurantPrimaryColor"
+                type="color"
+                defaultValue={organization?.restaurantPrimaryColor ?? '#111827'}
+                className="h-11 w-24 p-1"
+              />
+              <p className="text-sm text-muted-foreground">
+                {t('primary_color_help')}
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="restaurantAccentColor">
+                {t('accent_color_label')}
+              </Label>
+              <Input
+                id="restaurantAccentColor"
+                name="restaurantAccentColor"
+                type="color"
+                defaultValue={
+                  organization?.restaurantAccentColor
+                  ?? organization?.restaurantPrimaryColor
+                  ?? '#111827'
+                }
+                className="h-11 w-24 p-1"
+              />
+              <p className="text-sm text-muted-foreground">
+                {t('accent_color_help')}
+              </p>
+            </div>
+          </div>
+
           <div className="space-y-2">
-            <Label htmlFor="restaurantPrimaryColor">
-              {t('primary_color_label')}
+            <Label htmlFor="restaurantThemeMode">
+              {t('theme_mode_label')}
             </Label>
-            <Input
-              id="restaurantPrimaryColor"
-              name="restaurantPrimaryColor"
-              type="color"
-              defaultValue={organization?.restaurantPrimaryColor ?? '#111827'}
-              className="h-11 w-24 p-1"
-            />
+            <select
+              id="restaurantThemeMode"
+              name="restaurantThemeMode"
+              defaultValue={getRestaurantThemeMode(
+                organization?.restaurantThemeMode,
+              )}
+              className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            >
+              {RESTAURANT_THEME_MODES.map(mode => (
+                <option key={mode} value={mode}>
+                  {t(`theme_mode_${mode}`)}
+                </option>
+              ))}
+            </select>
             <p className="text-sm text-muted-foreground">
-              {t('primary_color_help')}
+              {t('theme_mode_help')}
             </p>
           </div>
 
@@ -150,6 +205,35 @@ const RestaurantBrandingPage = async (props: {
             description={t('whatsapp_enabled_help')}
             defaultChecked={organization?.enableWhatsappContact ?? true}
           />
+
+          <div className="rounded-md border bg-muted/30 p-4">
+            <div className="font-semibold">
+              {t('order_notifications_title')}
+            </div>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {t('order_notifications_description')}
+            </p>
+            <div className="mt-4 grid gap-3">
+              <SwitchField
+                id="orderVisualNotificationsEnabled"
+                name="orderVisualNotificationsEnabled"
+                label={t('visual_notifications_label')}
+                description={t('visual_notifications_help')}
+                defaultChecked={
+                  organization?.orderVisualNotificationsEnabled ?? true
+                }
+              />
+              <SwitchField
+                id="orderSoundNotificationsEnabled"
+                name="orderSoundNotificationsEnabled"
+                label={t('sound_notifications_label')}
+                description={t('sound_notifications_help')}
+                defaultChecked={
+                  organization?.orderSoundNotificationsEnabled ?? false
+                }
+              />
+            </div>
+          </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">

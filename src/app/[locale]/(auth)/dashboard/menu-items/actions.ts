@@ -29,6 +29,76 @@ const redirectWithError = (returnPath: string, error: string): never => {
   redirect(`${returnPath}?error=${error}`);
 };
 
+type CurrencyMode = 'usd' | 'local' | 'both';
+
+const getCurrencyMode = (item: {
+  priceUsdCents: number | null;
+  priceLbp: number | null;
+}): CurrencyMode | null => {
+  if (item.priceUsdCents !== null && item.priceLbp !== null) {
+    return 'both';
+  }
+
+  if (item.priceUsdCents !== null) {
+    return 'usd';
+  }
+
+  if (item.priceLbp !== null) {
+    return 'local';
+  }
+
+  return null;
+};
+
+const getExistingCurrencyMode = async (
+  organizationId: string,
+  excludedItemId?: number,
+) => {
+  const existingItems = await db
+    .select({
+      id: menuItemSchema.id,
+      priceUsdCents: menuItemSchema.priceUsdCents,
+      priceLbp: menuItemSchema.priceLbp,
+    })
+    .from(menuItemSchema)
+    .where(eq(menuItemSchema.organizationId, organizationId));
+  const modes = new Set(
+    existingItems
+      .filter(item => item.id !== excludedItemId)
+      .map(getCurrencyMode)
+      .filter((mode): mode is CurrencyMode => mode !== null),
+  );
+
+  if (modes.size === 0) {
+    return null;
+  }
+
+  return modes.size === 1 ? [...modes][0]! : 'mixed';
+};
+
+const validateCurrencyMode = async (
+  organizationId: string,
+  returnPath: string,
+  priceUsdCents: number | null,
+  priceLbp: number | null,
+  excludedItemId?: number,
+) => {
+  const itemMode = getCurrencyMode({ priceUsdCents, priceLbp });
+
+  if (!itemMode) {
+    redirectWithError(returnPath, 'missing_price');
+  }
+
+  const existingMode = await getExistingCurrencyMode(
+    organizationId,
+    excludedItemId,
+  );
+
+  if (existingMode === 'mixed' || (existingMode && itemMode !== existingMode)) {
+    redirectWithError(returnPath, 'currency_mismatch');
+  }
+};
+
 const parseOptionalPrice = (value: FormDataEntryValue | null) => {
   const textValue = value?.toString().trim();
 
@@ -117,6 +187,13 @@ export const createMenuItemAction = async (formData: FormData) => {
     redirectWithError(returnPath, 'missing_price');
   }
 
+  await validateCurrencyMode(
+    organizationId,
+    returnPath,
+    priceUsdCents.value,
+    priceLbp.value,
+  );
+
   const [category] = await db
     .select({ id: menuCategorySchema.id })
     .from(menuCategorySchema)
@@ -150,6 +227,7 @@ export const createMenuItemAction = async (formData: FormData) => {
   });
 
   revalidatePath(MENU_ITEMS_PATH);
+  revalidatePath(returnPath);
   redirect(returnPath);
 };
 
@@ -207,6 +285,14 @@ export const updateMenuItemAction = async (formData: FormData) => {
     redirectWithError(returnPath, 'missing_price');
   }
 
+  await validateCurrencyMode(
+    organizationId,
+    returnPath,
+    priceUsdCents.value,
+    priceLbp.value,
+    itemId,
+  );
+
   const [category] = await db
     .select({ id: menuCategorySchema.id })
     .from(menuCategorySchema)
@@ -247,10 +333,12 @@ export const updateMenuItemAction = async (formData: FormData) => {
     );
 
   revalidatePath(MENU_ITEMS_PATH);
+  revalidatePath(returnPath);
   redirect(returnPath);
 };
 
 export const deleteMenuItemAction = async (formData: FormData) => {
+  const returnPath = getReturnPath(formData);
   const organizationId = await getActiveRestaurantOrganizationId();
   const itemId = Number.parseInt(
     formData.get('itemId')?.toString() ?? '',
@@ -271,4 +359,6 @@ export const deleteMenuItemAction = async (formData: FormData) => {
     );
 
   revalidatePath(MENU_ITEMS_PATH);
+  revalidatePath(returnPath);
+  redirect(returnPath);
 };

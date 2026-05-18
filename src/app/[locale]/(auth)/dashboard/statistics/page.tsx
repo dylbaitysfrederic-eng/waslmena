@@ -30,15 +30,24 @@ export async function generateMetadata(props: { params: { locale: string } }) {
   };
 }
 
-const PERIODS = ['today', '7d', '30d'] as const;
+const PERIODS = ['today', '7d', '30d', '365d'] as const;
 
 type Period = typeof PERIODS[number];
+type TrackedStatus = 'pending' | 'preparing' | 'served' | 'cancelled';
 
 const PERIOD_START_OFFSETS = {
   'today': 0,
   '7d': 6,
   '30d': 29,
+  '365d': 364,
 } as const;
+
+const TRACKED_STATUSES = [
+  'pending',
+  'preparing',
+  'served',
+  'cancelled',
+] as const;
 
 const getPeriodStart = (period: Period, now: Date) => {
   const start = new Date(now);
@@ -78,6 +87,26 @@ const formatLocalCurrency = (
   return `${new Intl.NumberFormat(locale).format(amount)} ${localCurrencyLabel}`;
 };
 
+const normalizeStatusForStats = (status: string): TrackedStatus | null => {
+  if (status === 'pending') {
+    return 'pending';
+  }
+
+  if (status === 'validated' || status === 'preparing' || status === 'ready') {
+    return 'preparing';
+  }
+
+  if (status === 'served' || status === 'delivered') {
+    return 'served';
+  }
+
+  if (status === 'cancelled') {
+    return 'cancelled';
+  }
+
+  return null;
+};
+
 const StatisticsPage = async (props: {
   params: { locale: string };
   searchParams?: { period?: string };
@@ -88,7 +117,7 @@ const StatisticsPage = async (props: {
   const t = await getTranslations('Statistics');
   const now = new Date();
   const selectedPeriod = getSelectedPeriod(props.searchParams?.period);
-  const thirtyDaysStart = getPeriodStart('30d', now);
+  const longestPeriodStart = getPeriodStart('365d', now);
   const selectedPeriodStart = getPeriodStart(selectedPeriod, now);
 
   if (!orgId) {
@@ -123,7 +152,7 @@ const StatisticsPage = async (props: {
     .where(
       and(
         eq(orderSchema.organizationId, orgId),
-        gte(orderSchema.createdAt, thirtyDaysStart),
+        gte(orderSchema.createdAt, longestPeriodStart),
       ),
     )
     .orderBy(desc(orderSchema.createdAt));
@@ -131,6 +160,13 @@ const StatisticsPage = async (props: {
   const getPeriodSummary = (period: Period) => {
     const start = getPeriodStart(period, now);
     const periodOrders = orders.filter(order => order.createdAt >= start);
+    const statusCounts = TRACKED_STATUSES.reduce(
+      (counts, status) => ({
+        ...counts,
+        [status]: 0,
+      }),
+      {} as Record<TrackedStatus, number>,
+    );
     const usdOrders = periodOrders.filter(order => order.totalUsdCents !== null);
     const lbpOrders = periodOrders.filter(order => order.totalLbp !== null);
     const totalUsdCents = usdOrders.reduce(
@@ -141,6 +177,14 @@ const StatisticsPage = async (props: {
       (total, order) => total + (order.totalLbp ?? 0),
       0,
     );
+
+    for (const order of periodOrders) {
+      const status = normalizeStatusForStats(order.status);
+
+      if (status) {
+        statusCounts[status] += 1;
+      }
+    }
 
     return {
       period,
@@ -153,6 +197,7 @@ const StatisticsPage = async (props: {
       averageLbp: lbpOrders.length > 0
         ? Math.round(totalLbp / lbpOrders.length)
         : null,
+      statusCounts,
     };
   };
 
@@ -182,7 +227,7 @@ const StatisticsPage = async (props: {
         title={t('overview_section_title')}
         description={t('overview_section_description')}
       >
-        <div className="grid gap-4 lg:grid-cols-3">
+        <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
           {summaries.map(summary => (
             <div key={summary.period} className="rounded-md border bg-background p-4">
               <div>
@@ -218,6 +263,19 @@ const StatisticsPage = async (props: {
                   </span>
                   <span className="font-medium">{formatOptionalLbp(summary.averageLbp)}</span>
                 </div>
+              </div>
+
+              <div className="mt-4 grid grid-cols-2 gap-2 border-t pt-4 text-sm">
+                {TRACKED_STATUSES.map(status => (
+                  <div key={status} className="rounded-md bg-muted/40 p-2">
+                    <div className="text-xs text-muted-foreground">
+                      {t(`status_count_${status}`)}
+                    </div>
+                    <div className="mt-1 text-lg font-semibold">
+                      {summary.statusCounts[status]}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           ))}

@@ -9,7 +9,6 @@ import {
   menuCategorySchema,
   menuItemSchema,
   organizationSchema,
-  restaurantTableSchema,
 } from '@/models/Schema';
 import { cn } from '@/utils/Helpers';
 import { getLocalizedMenuText } from '@/utils/MenuTranslations';
@@ -18,16 +17,15 @@ import {
   getRestaurantThemeClassName,
 } from '@/utils/RestaurantTheme';
 
-import { PublicMenuCart } from './PublicMenuCart';
+import { PublicMenuCart } from '../table/[tableId]/PublicMenuCart';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-type PublicMenuPageProps = {
+type PublicGeneralMenuPageProps = {
   params: {
     locale: string;
     organizationId: string;
-    tableId: string;
   };
 };
 
@@ -54,98 +52,48 @@ const TEMPLATE_CLASS_NAMES = {
     page: 'bg-red-50',
     shell: 'max-w-3xl',
     header: 'rounded-md border-2 bg-background p-4 shadow-sm',
-    tableBadge: 'rounded-md bg-red-100 px-3 py-1 text-red-950',
     title: 'uppercase',
     logo: 'rounded-md',
     contactButton: 'rounded-md border-2',
-    category: 'text-2xl font-black uppercase',
-    list: 'divide-y-2 rounded-md border-2 bg-card',
   },
   cafe: {
     page: 'bg-stone-50',
     shell: 'max-w-2xl',
     header: 'rounded-md border bg-background p-4',
-    tableBadge: 'rounded-md bg-stone-100 px-3 py-1 text-stone-800',
     title: 'font-serif',
     logo: 'rounded-full',
     contactButton: 'rounded-full',
-    category: 'font-serif text-2xl font-semibold',
-    list: 'divide-y rounded-lg border bg-card',
   },
   casual_restaurant: {
     page: 'bg-background',
     shell: 'max-w-2xl',
     header: 'border-b pb-5',
-    tableBadge: '',
     title: '',
     logo: 'rounded-md',
     contactButton: 'rounded-md',
-    category: 'text-xl font-semibold',
-    list: 'divide-y rounded-md border bg-card',
   },
   table_service: {
     page: 'bg-slate-50',
     shell: 'max-w-3xl',
     header: 'rounded-md border bg-white p-5 shadow-sm',
-    tableBadge: 'rounded-md border bg-white px-3 py-1 text-slate-700',
     title: '',
     logo: 'rounded-md',
     contactButton: 'rounded-md border-slate-900',
-    category: 'text-xl font-semibold',
-    list: 'divide-y rounded-md border bg-white shadow-sm',
   },
   shisha_lounge: {
     page: 'bg-zinc-950 text-zinc-50',
-    shell: 'max-w-2xl',
-    header: 'rounded-md border border-zinc-700 bg-zinc-900 p-5',
-    tableBadge: 'rounded-md bg-zinc-800 px-3 py-1 text-amber-100',
-    title: '',
+    shell: 'max-w-3xl',
+    header: 'rounded-md border border-zinc-700 bg-zinc-900 p-5 shadow-sm',
+    title: 'text-amber-100',
     logo: 'rounded-md border-zinc-700',
-    contactButton: 'rounded-md border-amber-300 text-amber-200',
-    category: 'text-xl font-semibold text-amber-200',
-    list: 'divide-y divide-zinc-700 rounded-md border border-zinc-700 bg-zinc-900',
+    contactButton: 'rounded-md border-amber-200 text-amber-100',
   },
 } as const;
 
-export async function generateMetadata(props: PublicMenuPageProps) {
-  const t = await getTranslations({
-    locale: props.params.locale,
-    namespace: 'PublicMenu',
-  });
-
-  return {
-    title: t('meta_title'),
-    description: t('meta_description'),
-  };
-}
-
-const PublicTableMenuPage = async (props: PublicMenuPageProps) => {
+const PublicGeneralMenuPage = async (props: PublicGeneralMenuPageProps) => {
   noStore();
 
   const t = await getTranslations('PublicMenu');
-  const tableId = Number.parseInt(props.params.tableId, 10);
-
-  if (Number.isNaN(tableId)) {
-    notFound();
-  }
-
-  const [restaurantTable] = await db
-    .select({
-      id: restaurantTableSchema.id,
-      tableNumber: restaurantTableSchema.tableNumber,
-    })
-    .from(restaurantTableSchema)
-    .where(
-      and(
-        eq(restaurantTableSchema.id, tableId),
-        eq(restaurantTableSchema.organizationId, props.params.organizationId),
-      ),
-    )
-    .limit(1);
-
-  if (!restaurantTable) {
-    notFound();
-  }
 
   const [organization] = await db
     .select({
@@ -308,21 +256,20 @@ const PublicTableMenuPage = async (props: PublicMenuPageProps) => {
     .filter(category =>
       category.items.length > 0 || category.subcategories.length > 0,
     );
-  const templateStyle = getTemplateStyle(organization?.restaurantTemplateStyle);
+  const templateStyle = getTemplateStyle(organization.restaurantTemplateStyle);
   const templateClassNames = TEMPLATE_CLASS_NAMES[templateStyle];
-  const primaryColorStyle = organization?.restaurantPrimaryColor
+  const primaryColorStyle = organization.restaurantPrimaryColor
     ? { color: organization.restaurantPrimaryColor }
     : undefined;
-  const whatsappDigits = organization?.enableWhatsappContact === false
+  const whatsappDigits = organization.enableWhatsappContact === false
     ? null
-    : organization?.restaurantWhatsappNumber
-      ?.replace(/\D/g, '');
+    : organization.restaurantWhatsappNumber?.replace(/\D/g, '');
   const whatsappUrl = whatsappDigits
     ? `https://wa.me/${whatsappDigits}?text=${encodeURIComponent(
       t('whatsapp_prefilled_message'),
     )}`
     : null;
-  const localCurrencyLabel = organization?.localCurrencyLabel ?? 'LL';
+  const localCurrencyLabel = organization.localCurrencyLabel ?? 'LL';
 
   return (
     <main
@@ -343,20 +290,11 @@ const PublicTableMenuPage = async (props: PublicMenuPageProps) => {
         )}
       >
         <header className={cn('space-y-2', templateClassNames.header)}>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <p
-              className={cn(
-                'text-sm font-medium text-muted-foreground',
-                templateClassNames.tableBadge,
-              )}
-              style={primaryColorStyle}
-            >
-              {t('table_label', { tableNumber: restaurantTable.tableNumber })}
-            </p>
+          <div className="flex justify-end">
             <LocaleSwitcher />
           </div>
           <div className="flex items-center gap-3">
-            {organization?.restaurantLogoUrl && (
+            {organization.restaurantLogoUrl && (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={organization.restaurantLogoUrl}
@@ -368,7 +306,7 @@ const PublicTableMenuPage = async (props: PublicMenuPageProps) => {
               />
             )}
             <div>
-              {organization?.restaurantDisplayName && (
+              {organization.restaurantDisplayName && (
                 <p className="text-sm font-semibold text-muted-foreground">
                   {organization.restaurantDisplayName}
                 </p>
@@ -396,7 +334,7 @@ const PublicTableMenuPage = async (props: PublicMenuPageProps) => {
                 'inline-flex min-h-11 items-center justify-center border px-4 py-2 text-sm font-semibold text-foreground',
                 templateClassNames.contactButton,
               )}
-              style={organization?.restaurantPrimaryColor
+              style={organization.restaurantPrimaryColor
                 ? {
                     borderColor: organization.restaurantAccentColor
                       ?? organization.restaurantPrimaryColor,
@@ -415,10 +353,10 @@ const PublicTableMenuPage = async (props: PublicMenuPageProps) => {
                 categories={categoriesWithItems}
                 locale={props.params.locale}
                 organizationId={props.params.organizationId}
-                accentColor={organization?.restaurantAccentColor ?? null}
-                primaryColor={organization?.restaurantPrimaryColor ?? null}
-                tableId={restaurantTable.id}
-                orderingEnabled
+                accentColor={organization.restaurantAccentColor ?? null}
+                primaryColor={organization.restaurantPrimaryColor ?? null}
+                tableId={null}
+                orderingEnabled={false}
                 templateStyle={templateStyle}
                 localCurrencyLabel={localCurrencyLabel}
               />
@@ -433,4 +371,4 @@ const PublicTableMenuPage = async (props: PublicMenuPageProps) => {
   );
 };
 
-export default PublicTableMenuPage;
+export default PublicGeneralMenuPage;

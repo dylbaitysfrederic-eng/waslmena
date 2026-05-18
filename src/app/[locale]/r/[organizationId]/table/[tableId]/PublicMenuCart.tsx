@@ -24,6 +24,11 @@ type MenuCategory = {
   id: number;
   name: string;
   items: MenuItem[];
+  subcategories: {
+    id: number;
+    name: string;
+    items: MenuItem[];
+  }[];
 };
 
 type CartItem = MenuItem & {
@@ -35,8 +40,10 @@ type PublicMenuCartProps = {
   categories: MenuCategory[];
   locale: string;
   organizationId: string;
+  accentColor: string | null;
   primaryColor: string | null;
-  tableId: number;
+  tableId: number | null;
+  orderingEnabled: boolean;
   templateStyle:
     | 'fast_food'
     | 'cafe'
@@ -135,8 +142,17 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
   const [customerName, setCustomerName] = useState('');
   const [orderNote, setOrderNote] = useState('');
   const [hasCustomerNameError, setHasCustomerNameError] = useState(false);
+  const [selectedCategoryId, setSelectedCategoryId] = useState(
+    props.categories[0]?.id ?? 0,
+  );
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   const cart = useMemo(() => Object.values(cartItems), [cartItems]);
+  const selectedCategory = useMemo(
+    () => props.categories.find(category => category.id === selectedCategoryId)
+      ?? props.categories[0],
+    [props.categories, selectedCategoryId],
+  );
   const cartQuantity = cart.reduce((total, item) => total + item.quantity, 0);
   const cartTotalUsdCents = cart.reduce(
     (total, item) => total + (item.priceUsdCents ?? 0) * item.quantity,
@@ -149,7 +165,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
   const primaryButtonStyle = props.primaryColor
     ? {
         backgroundColor: props.primaryColor,
-        borderColor: props.primaryColor,
+        borderColor: props.accentColor ?? props.primaryColor,
         color: '#ffffff',
       }
     : undefined;
@@ -219,7 +235,9 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
   };
 
   const submitOrder = () => {
-    if (isSubmitting) {
+    const tableId = props.tableId;
+
+    if (isSubmitting || !props.orderingEnabled || tableId === null) {
       return;
     }
 
@@ -237,7 +255,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
     startTransition(async () => {
       const result = await submitPublicOrderAction({
         organizationId: props.organizationId,
-        tableId: props.tableId,
+        tableId,
         customerName: trimmedCustomerName,
         customerNote: orderNote,
         items: cart.map(item => ({
@@ -252,6 +270,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
         setCustomerName('');
         setOrderNote('');
         setSuccessOrderId(result.orderId);
+        setIsCartOpen(false);
         return;
       }
 
@@ -259,96 +278,249 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
     });
   };
 
+  const renderMenuItem = (item: MenuItem) => {
+    const quantity = cartItems[item.id]?.quantity ?? 0;
+
+    return (
+      <article
+        key={item.id}
+        className={cn(
+          'flex flex-col gap-4 p-4 sm:flex-row sm:items-start',
+          templateClassNames.item,
+        )}
+      >
+        {item.imageUrl && (
+          <div className="shrink-0 sm:order-last">
+            <MenuItemImagePreview
+              src={item.imageUrl}
+              alt={item.name}
+              className="w-28 sm:size-24 sm:w-24"
+            />
+          </div>
+        )}
+
+        <div className="min-w-0 flex-1">
+          <h3 className={templateClassNames.itemName}>
+            {item.name}
+          </h3>
+          {item.description && (
+            <p className="mt-1 text-sm leading-6 text-muted-foreground">
+              {item.description}
+            </p>
+          )}
+          <div className={cn('mt-2', templateClassNames.price)}>
+            <PriceLines
+              priceUsdCents={item.priceUsdCents}
+              priceLbp={item.priceLbp}
+              locale={props.locale}
+              localCurrencyLabel={props.localCurrencyLabel}
+            />
+          </div>
+        </div>
+
+        {props.orderingEnabled && (
+          <div className="flex shrink-0 items-center justify-between gap-2 sm:justify-end">
+            {quantity > 0 && (
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => decreaseItem(item.id)}
+                  aria-label={t('decrease_item_label', {
+                    itemName: item.name,
+                  })}
+                >
+                  -
+                </Button>
+                <span className="w-6 text-center text-sm font-medium">
+                  {quantity}
+                </span>
+              </div>
+            )}
+
+            <Button
+              type="button"
+              size="sm"
+              className={templateClassNames.button}
+              style={primaryButtonStyle}
+              onClick={() => addItem(item)}
+            >
+              {quantity > 0 ? t('increase_button') : t('add_button')}
+            </Button>
+          </div>
+        )}
+      </article>
+    );
+  };
+
+  const renderCartContents = () => (
+    <>
+      <div className="space-y-3">
+        {cart.map(item => (
+          <div key={item.id} className="grid gap-2 rounded-md border p-3">
+            <div className="flex items-center gap-3">
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-sm font-medium">
+                  {item.name}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {item.quantity}
+                  {' x '}
+                  <PriceLines
+                    priceUsdCents={item.priceUsdCents}
+                    priceLbp={item.priceLbp}
+                    locale={props.locale}
+                    localCurrencyLabel={props.localCurrencyLabel}
+                  />
+                </div>
+              </div>
+
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => decreaseItem(item.id)}
+              >
+                -
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => addItem(item)}
+              >
+                +
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => removeItem(item.id)}
+              >
+                {t('remove_button')}
+              </Button>
+            </div>
+            <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+              {t('item_note_label')}
+              <textarea
+                value={item.customerNote}
+                maxLength={200}
+                rows={2}
+                placeholder={t('item_note_placeholder')}
+                className="min-h-16 rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
+                onChange={event => updateItemNote(
+                  item.id,
+                  event.target.value,
+                )}
+              />
+            </label>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-4 space-y-2">
+        <Label htmlFor="customerName">
+          {t('customer_name_label')}
+        </Label>
+        <Input
+          id="customerName"
+          value={customerName}
+          maxLength={50}
+          required
+          placeholder={t('customer_name_placeholder')}
+          onChange={(event) => {
+            setCustomerName(event.target.value);
+            setHasCustomerNameError(false);
+          }}
+        />
+        {hasCustomerNameError && (
+          <p className="text-sm font-medium text-destructive">
+            {t('customer_name_error')}
+          </p>
+        )}
+      </div>
+
+      <div className="mt-4 space-y-2">
+        <Label htmlFor="orderNote">
+          {t('order_note_label')}
+        </Label>
+        <textarea
+          id="orderNote"
+          value={orderNote}
+          maxLength={200}
+          rows={3}
+          placeholder={t('order_note_placeholder')}
+          className="min-h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
+          onChange={event => setOrderNote(event.target.value)}
+        />
+      </div>
+
+      <Button
+        type="button"
+        className="mt-4 w-full"
+        disabled={isSubmitting}
+        style={primaryButtonStyle}
+        onClick={submitOrder}
+      >
+        {isSubmitting ? t('submit_order_pending') : t('submit_order_button')}
+      </Button>
+    </>
+  );
+
   return (
-    <div className="space-y-8 pb-56 sm:pb-8">
-      <div className="space-y-8">
+    <div className="space-y-6 pb-40 sm:pb-8">
+      <div
+        className="hidden flex-wrap gap-2 sm:flex"
+        aria-label={t('category_nav_label')}
+      >
         {props.categories.map(category => (
-          <section key={category.id} className="space-y-3">
+          <Button
+            key={category.id}
+            type="button"
+            size="sm"
+            variant={category.id === selectedCategory?.id ? 'default' : 'outline'}
+            style={
+              category.id === selectedCategory?.id
+                ? primaryButtonStyle
+                : undefined
+            }
+            onClick={() => setSelectedCategoryId(category.id)}
+          >
+            {category.name}
+          </Button>
+        ))}
+      </div>
+
+      {selectedCategory && (
+        <div className="max-h-[calc(100vh-220px)] overflow-y-auto pr-1 sm:max-h-none sm:overflow-visible sm:pr-0">
+          <section className="space-y-4">
             <h2
               className={templateClassNames.category}
               style={props.primaryColor ? { color: props.primaryColor } : undefined}
             >
-              {category.name}
+              {selectedCategory.name}
             </h2>
 
-            <div className={templateClassNames.list}>
-              {category.items.map((item) => {
-                const quantity = cartItems[item.id]?.quantity ?? 0;
+            {selectedCategory.items.length > 0 && (
+              <div className={templateClassNames.list}>
+                {selectedCategory.items.map(renderMenuItem)}
+              </div>
+            )}
 
-                return (
-                  <article
-                    key={item.id}
-                    className={cn(
-                      'flex flex-col gap-4 p-4 sm:flex-row sm:items-start',
-                      templateClassNames.item,
-                    )}
-                  >
-                    {item.imageUrl && (
-                      <div className="shrink-0 sm:order-last">
-                        <MenuItemImagePreview
-                          src={item.imageUrl}
-                          alt={item.name}
-                          className="w-28 sm:size-24 sm:w-24"
-                        />
-                      </div>
-                    )}
-
-                    <div className="min-w-0 flex-1">
-                      <h3 className={templateClassNames.itemName}>
-                        {item.name}
-                      </h3>
-                      {item.description && (
-                        <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                          {item.description}
-                        </p>
-                      )}
-                      <div className={cn('mt-2', templateClassNames.price)}>
-                        <PriceLines
-                          priceUsdCents={item.priceUsdCents}
-                          priceLbp={item.priceLbp}
-                          locale={props.locale}
-                          localCurrencyLabel={props.localCurrencyLabel}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="flex shrink-0 items-center justify-between gap-2 sm:justify-end">
-                      {quantity > 0 && (
-                        <div className="flex items-center gap-2">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => decreaseItem(item.id)}
-                            aria-label={t('decrease_item_label', {
-                              itemName: item.name,
-                            })}
-                          >
-                            -
-                          </Button>
-                          <span className="w-6 text-center text-sm font-medium">
-                            {quantity}
-                          </span>
-                        </div>
-                      )}
-
-                      <Button
-                        type="button"
-                        size="sm"
-                        className={templateClassNames.button}
-                        style={primaryButtonStyle}
-                        onClick={() => addItem(item)}
-                      >
-                        {quantity > 0 ? t('increase_button') : t('add_button')}
-                      </Button>
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
+            {selectedCategory.subcategories.map(subcategory => (
+              <section key={subcategory.id} className="space-y-2">
+                <h3 className="px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  {subcategory.name}
+                </h3>
+                <div className={templateClassNames.list}>
+                  {subcategory.items.map(renderMenuItem)}
+                </div>
+              </section>
+            ))}
           </section>
-        ))}
-      </div>
+        </div>
+      )}
 
       {cart.length > 0 && (
         <section className="hidden rounded-md border bg-card p-4 sm:block">
@@ -369,116 +541,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
               )}
             </div>
           </div>
-
-          <div className="space-y-3">
-            {cart.map(item => (
-              <div key={item.id} className="grid gap-2 rounded-md border p-3">
-                <div className="flex items-center gap-3">
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm font-medium">
-                      {item.name}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {item.quantity}
-                      {' x '}
-                      <PriceLines
-                        priceUsdCents={item.priceUsdCents}
-                        priceLbp={item.priceLbp}
-                        locale={props.locale}
-                        localCurrencyLabel={props.localCurrencyLabel}
-                      />
-                    </div>
-                  </div>
-
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => decreaseItem(item.id)}
-                  >
-                    -
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => addItem(item)}
-                  >
-                    +
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => removeItem(item.id)}
-                  >
-                    {t('remove_button')}
-                  </Button>
-                </div>
-                <label className="grid gap-1 text-xs font-medium text-muted-foreground">
-                  {t('item_note_label')}
-                  <textarea
-                    value={item.customerNote}
-                    maxLength={200}
-                    rows={2}
-                    placeholder={t('item_note_placeholder')}
-                    className="min-h-16 rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
-                    onChange={event => updateItemNote(
-                      item.id,
-                      event.target.value,
-                    )}
-                  />
-                </label>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-4 space-y-2">
-            <Label htmlFor="customerName">
-              {t('customer_name_label')}
-            </Label>
-            <Input
-              id="customerName"
-              value={customerName}
-              maxLength={50}
-              required
-              placeholder={t('customer_name_placeholder')}
-              onChange={(event) => {
-                setCustomerName(event.target.value);
-                setHasCustomerNameError(false);
-              }}
-            />
-            {hasCustomerNameError && (
-              <p className="text-sm font-medium text-destructive">
-                {t('customer_name_error')}
-              </p>
-            )}
-          </div>
-
-          <div className="mt-4 space-y-2">
-            <Label htmlFor="orderNote">
-              {t('order_note_label')}
-            </Label>
-            <textarea
-              id="orderNote"
-              value={orderNote}
-              maxLength={200}
-              rows={3}
-              placeholder={t('order_note_placeholder')}
-              className="min-h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
-              onChange={event => setOrderNote(event.target.value)}
-            />
-          </div>
-
-          <Button
-            type="button"
-            className="mt-4 w-full"
-            disabled={isSubmitting}
-            style={primaryButtonStyle}
-            onClick={submitOrder}
-          >
-            {isSubmitting ? t('submit_order_pending') : t('submit_order_button')}
-          </Button>
+          {renderCartContents()}
         </section>
       )}
 
@@ -500,8 +563,37 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
         </div>
       )}
 
+      <nav
+        className="fixed inset-x-0 bottom-0 z-30 border-t bg-background/95 px-3 py-2 shadow-lg backdrop-blur sm:hidden"
+        aria-label={t('category_nav_label')}
+      >
+        <div className="mx-auto flex max-w-2xl gap-2 overflow-x-auto pb-1">
+          {props.categories.map(category => (
+            <Button
+              key={category.id}
+              type="button"
+              size="sm"
+              variant={category.id === selectedCategory?.id ? 'default' : 'outline'}
+              className="shrink-0"
+              style={
+                category.id === selectedCategory?.id
+                  ? primaryButtonStyle
+                  : undefined
+              }
+              onClick={() => setSelectedCategoryId(category.id)}
+            >
+              {category.name}
+            </Button>
+          ))}
+        </div>
+      </nav>
+
       {cart.length > 0 && (
-        <div className="fixed inset-x-0 bottom-0 z-40 max-h-[70vh] overflow-y-auto border-t bg-background/95 px-4 py-3 shadow-lg backdrop-blur sm:hidden">
+        <button
+          type="button"
+          className="fixed inset-x-3 bottom-16 z-40 rounded-md border bg-background px-4 py-3 text-left shadow-lg sm:hidden"
+          onClick={() => setIsCartOpen(true)}
+        >
           <div className="mx-auto flex max-w-2xl items-center justify-between gap-3">
             <div>
               <div className="text-sm font-semibold">{t('cart_title')}</div>
@@ -523,76 +615,48 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
                 </div>
               )}
             </div>
+            <div className="text-sm font-semibold">
+              {t('cart_bar_button')}
+            </div>
           </div>
+        </button>
+      )}
 
-          <div className="mx-auto mt-3 max-w-2xl space-y-2">
-            <div className="max-h-44 space-y-2 overflow-y-auto pr-1">
-              {cart.map(item => (
-                <div key={item.id} className="rounded-md border bg-card p-2">
-                  <div className="flex items-center justify-between gap-2 text-sm">
-                    <span className="font-medium">{item.name}</span>
-                    <span className="text-muted-foreground">
-                      {t('quantity_label', { quantity: item.quantity })}
-                    </span>
-                  </div>
-                  <textarea
-                    value={item.customerNote}
-                    maxLength={200}
-                    rows={2}
-                    placeholder={t('item_note_placeholder')}
-                    className="mt-2 min-h-14 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
-                    aria-label={t('item_note_label')}
-                    onChange={event => updateItemNote(
-                      item.id,
-                      event.target.value,
-                    )}
-                  />
+      {isCartOpen && cart.length > 0 && (
+        <div
+          className="fixed inset-0 z-50 bg-black/40 px-3 py-6 sm:hidden"
+          role="dialog"
+          aria-modal="true"
+          aria-label={t('cart_title')}
+        >
+          <button
+            type="button"
+            className="absolute inset-0 size-full cursor-default border-0 bg-transparent p-0"
+            aria-label={t('cart_close_button')}
+            onClick={() => setIsCartOpen(false)}
+          />
+          <section
+            className="relative mx-auto max-h-[90vh] max-w-2xl overflow-y-auto rounded-md border bg-background p-4 shadow-xl"
+          >
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div>
+                <h2 className="font-semibold">{t('cart_title')}</h2>
+                <div className="text-xs text-muted-foreground">
+                  {t('cart_items_count', { count: cartQuantity })}
                 </div>
-              ))}
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsCartOpen(false)}
+              >
+                {t('cart_close_button')}
+              </Button>
             </div>
 
-            <Label htmlFor="mobileCustomerName">
-              {t('customer_name_label')}
-            </Label>
-            <Input
-              id="mobileCustomerName"
-              value={customerName}
-              maxLength={50}
-              required
-              placeholder={t('customer_name_placeholder')}
-              onChange={(event) => {
-                setCustomerName(event.target.value);
-                setHasCustomerNameError(false);
-              }}
-            />
-            {hasCustomerNameError && (
-              <p className="text-sm font-medium text-destructive">
-                {t('customer_name_error')}
-              </p>
-            )}
-
-            <Label htmlFor="mobileOrderNote">
-              {t('order_note_label')}
-            </Label>
-            <textarea
-              id="mobileOrderNote"
-              value={orderNote}
-              maxLength={200}
-              rows={2}
-              placeholder={t('order_note_placeholder')}
-              className="min-h-16 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
-              onChange={event => setOrderNote(event.target.value)}
-            />
-          </div>
-          <Button
-            type="button"
-            className="mx-auto mt-3 flex w-full max-w-2xl"
-            disabled={isSubmitting}
-            style={primaryButtonStyle}
-            onClick={submitOrder}
-          >
-            {isSubmitting ? t('submit_order_pending') : t('submit_order_button')}
-          </Button>
+            {renderCartContents()}
+          </section>
         </div>
       )}
     </div>

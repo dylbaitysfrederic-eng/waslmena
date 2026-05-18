@@ -53,30 +53,33 @@ const OWNER_EXAMPLES = [
   {
     orderId: '#104',
     table: 'Table 7',
+    sizeKey: 'basket_small',
     itemKey: 'owner_example_lebanon',
-    local: '1,080,000 LBP',
+    local: '1,080,000 LBP / LL',
     usd: '$12.00',
   },
   {
     orderId: '#105',
     table: 'Table 3',
+    sizeKey: 'basket_medium',
     itemKey: 'owner_example_dubai',
-    local: '44 AED',
-    usd: '$12.00',
+    local: '92 AED',
+    usd: '$25.00',
   },
   {
     orderId: '#106',
     table: 'Table 1',
+    sizeKey: 'basket_large',
     itemKey: 'owner_example_doha',
-    local: '44 QAR',
-    usd: '$12.00',
+    local: '218 QAR',
+    usd: '$60.00',
   },
 ] as const;
 
 const TEMPLATE_PRICE_EXAMPLES = [
   {
     key: 'fast_food',
-    local: '1,080,000 LBP',
+    local: '1,080,000 LBP / LL',
     usd: '$12',
   },
   {
@@ -233,6 +236,54 @@ const IndexPage = async (props: { params: { locale: string } }) => {
           </div>
 
           <div className="grid gap-4">
+            <div className="rounded-md border border-zinc-700 bg-zinc-900 p-4">
+              <div className="flex items-center gap-3">
+                <div className="grid size-16 place-items-center rounded-md border border-emerald-400/40 bg-zinc-950">
+                  <svg
+                    viewBox="0 0 64 64"
+                    className="size-12"
+                    fill="none"
+                    aria-hidden="true"
+                  >
+                    <rect x="10" y="12" width="44" height="40" rx="10" fill="#F8FAFC" />
+                    <path
+                      d="M20 24h24"
+                      stroke="#0F172A"
+                      strokeWidth="4"
+                      strokeLinecap="round"
+                    />
+                    <path
+                      d="M24 32h16"
+                      stroke="#10B981"
+                      strokeWidth="4"
+                      strokeLinecap="round"
+                    />
+                    <path
+                      d="M20 40h24"
+                      stroke="#F4D06F"
+                      strokeWidth="4"
+                      strokeLinecap="round"
+                    />
+                    <path
+                      d="M44 20l6 4-6 4"
+                      stroke="#0F172A"
+                      strokeWidth="4"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <div className="text-xs font-semibold uppercase text-emerald-300">
+                    {t('brand_mark_label')}
+                  </div>
+                  <div className="text-sm leading-6 text-zinc-300">
+                    {t('brand_mark_description')}
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div className="overflow-hidden rounded-md border border-zinc-700 bg-zinc-900 shadow-2xl">
               <div className="border-b border-zinc-700 bg-zinc-950/60 px-4 py-3">
                 <div className="flex items-center justify-between gap-3">
@@ -273,7 +324,7 @@ const IndexPage = async (props: { params: { locale: string } }) => {
                       </div>
                       <div className="text-right text-xs text-muted-foreground">
                         LBP
-                        <div className="font-semibold text-zinc-950">720,000 LBP</div>
+                        <div className="font-semibold text-zinc-950">720,000 LBP / LL</div>
                       </div>
                     </div>
                   </div>
@@ -285,6 +336,10 @@ const IndexPage = async (props: { params: { locale: string } }) => {
                   <div className="rounded-md border border-zinc-700 bg-zinc-950 p-3">
                     <div className="text-sm font-semibold">{t('customer_progress_title')}</div>
                     <div className="mt-3 grid gap-2">
+                      <div className="flex items-center gap-2 rounded-md bg-zinc-900 px-3 py-2 text-sm text-zinc-200">
+                        <QrCode className="size-4 text-emerald-300" />
+                        <span>{t('customer_progress_scan')}</span>
+                      </div>
                       <div className="flex items-center gap-2 rounded-md bg-zinc-900 px-3 py-2 text-sm text-zinc-200">
                         <CheckCircle2 className="size-4 text-emerald-300" />
                         <span>{t('customer_progress_browse')}</span>
@@ -305,7 +360,7 @@ const IndexPage = async (props: { params: { locale: string } }) => {
                     </div>
                     <div className="mt-2 flex items-end justify-between gap-3">
                       <span className="text-2xl font-semibold">$12.00</span>
-                      <span className="text-sm font-semibold text-zinc-300">1,080,000 LBP</span>
+                      <span className="text-sm font-semibold text-zinc-300">1,080,000 LBP / LL</span>
                     </div>
                   </div>
                 </div>
@@ -323,11 +378,15 @@ const IndexPage = async (props: { params: { locale: string } }) => {
                 </span>
               </div>
               <div className="space-y-3">
-                {OWNER_EXAMPLES.map(({ orderId, table, itemKey, local, usd }) => (
+                {OWNER_EXAMPLES.map(({ orderId, table, sizeKey, itemKey, local, usd }) => (
                   <div key={orderId} className="rounded-md border border-zinc-700 bg-zinc-950 p-3">
                     <div className="flex items-center justify-between gap-3">
                       <div>
-                        <div className="font-semibold">{orderId}</div>
+                        <div className="font-semibold">
+                          {t(sizeKey)}
+                          {' '}
+                          {orderId}
+                        </div>
                         <div className="text-sm text-zinc-400">
                           {table}
                           {' · '}

@@ -1,6 +1,6 @@
 'use server';
 
-import { and, eq } from 'drizzle-orm';
+import { and, eq, isNull } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
@@ -29,6 +29,33 @@ const redirectWithError = (returnPath: string, error: string): never => {
   redirect(`${returnPath}?error=${error}`);
 };
 
+const getValidParentCategoryId = async (
+  organizationId: string,
+  parentCategoryId: number,
+  currentCategoryId?: number,
+) => {
+  if (
+    Number.isNaN(parentCategoryId)
+    || parentCategoryId === currentCategoryId
+  ) {
+    return null;
+  }
+
+  const [parentCategory] = await db
+    .select({ id: menuCategorySchema.id })
+    .from(menuCategorySchema)
+    .where(
+      and(
+        eq(menuCategorySchema.id, parentCategoryId),
+        eq(menuCategorySchema.organizationId, organizationId),
+        isNull(menuCategorySchema.parentCategoryId),
+      ),
+    )
+    .limit(1);
+
+  return parentCategory?.id ?? null;
+};
+
 export const createMenuCategoryAction = async (formData: FormData) => {
   const returnPath = getReturnPath(formData);
   const organizationId = await getActiveRestaurantOrganizationId();
@@ -39,6 +66,8 @@ export const createMenuCategoryAction = async (formData: FormData) => {
   };
   const displayOrderValue = formData.get('displayOrder')?.toString() ?? '0';
   const displayOrder = Number.parseInt(displayOrderValue, 10);
+  const parentCategoryIdValue = formData.get('parentCategoryId')?.toString();
+  const parentCategoryId = Number.parseInt(parentCategoryIdValue ?? '', 10);
 
   if (!organizationId) {
     return;
@@ -48,8 +77,14 @@ export const createMenuCategoryAction = async (formData: FormData) => {
     redirectWithError(returnPath, 'missing_name');
   }
 
+  const validParentCategoryId = await getValidParentCategoryId(
+    organizationId,
+    parentCategoryId,
+  );
+
   await db.insert(menuCategorySchema).values({
     organizationId,
+    parentCategoryId: validParentCategoryId,
     name: getPrimaryMenuText(names, 'Untitled category'),
     nameEn: names.en,
     nameAr: names.ar,
@@ -76,6 +111,8 @@ export const updateMenuCategoryAction = async (formData: FormData) => {
   };
   const displayOrderValue = formData.get('displayOrder')?.toString() ?? '0';
   const displayOrder = Number.parseInt(displayOrderValue, 10);
+  const parentCategoryIdValue = formData.get('parentCategoryId')?.toString();
+  const parentCategoryId = Number.parseInt(parentCategoryIdValue ?? '', 10);
 
   if (!organizationId) {
     return;
@@ -89,10 +126,17 @@ export const updateMenuCategoryAction = async (formData: FormData) => {
     return;
   }
 
+  const validParentCategoryId = await getValidParentCategoryId(
+    organizationId,
+    parentCategoryId,
+    categoryId,
+  );
+
   await db
     .update(menuCategorySchema)
     .set({
       name: getPrimaryMenuText(names, 'Untitled category'),
+      parentCategoryId: validParentCategoryId,
       nameEn: names.en,
       nameAr: names.ar,
       nameFr: names.fr,

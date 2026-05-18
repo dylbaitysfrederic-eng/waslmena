@@ -9,6 +9,11 @@ import {
 } from '@/features/dashboard/getRestaurantDisplayName';
 import { db } from '@/libs/DB';
 import { organizationSchema } from '@/models/Schema';
+import { cn } from '@/utils/Helpers';
+import {
+  getRestaurantBrandStyle,
+  getRestaurantThemeClassName,
+} from '@/utils/RestaurantTheme';
 
 const ensurePendingClientRecord = async (orgId: string) => {
   let restaurantDisplayName: string | null = null;
@@ -65,6 +70,10 @@ export default async function DashboardLayout(props: {
         accessStatus: organizationSchema.accessStatus,
         accessSuspended: organizationSchema.accessSuspended,
         restaurantDisplayName: organizationSchema.restaurantDisplayName,
+        restaurantLogoUrl: organizationSchema.restaurantLogoUrl,
+        restaurantPrimaryColor: organizationSchema.restaurantPrimaryColor,
+        restaurantAccentColor: organizationSchema.restaurantAccentColor,
+        restaurantThemeMode: organizationSchema.restaurantThemeMode,
       })
       .from(organizationSchema)
       .where(eq(organizationSchema.id, orgId))
@@ -78,6 +87,10 @@ export default async function DashboardLayout(props: {
         accessStatus: organizationSchema.accessStatus,
         accessSuspended: organizationSchema.accessSuspended,
         restaurantDisplayName: organizationSchema.restaurantDisplayName,
+        restaurantLogoUrl: organizationSchema.restaurantLogoUrl,
+        restaurantPrimaryColor: organizationSchema.restaurantPrimaryColor,
+        restaurantAccentColor: organizationSchema.restaurantAccentColor,
+        restaurantThemeMode: organizationSchema.restaurantThemeMode,
       })
       .from(organizationSchema)
       .where(eq(organizationSchema.id, orgId))
@@ -132,23 +145,48 @@ export default async function DashboardLayout(props: {
 
   return (
     <>
-      <div className="bg-background shadow-md">
+      <div
+        className={cn(
+          'bg-background shadow-md',
+          getRestaurantThemeClassName(organization?.restaurantThemeMode),
+        )}
+        style={getRestaurantBrandStyle(
+          organization?.restaurantPrimaryColor,
+          organization?.restaurantAccentColor,
+        )}
+      >
         <div className="mx-auto max-w-screen-xl px-3 py-4">
-          <div className="mb-4">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                {t('restaurant_area_label', {
-                  restaurantName: restaurantDisplayName,
-                })}
-              </p>
-              <h1 className="mt-1 text-2xl font-semibold">
-                {t('restaurant_dashboard_title', {
-                  restaurantName: restaurantDisplayName,
-                })}
-              </h1>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {t('restaurant_dashboard_helper')}
-              </p>
+          <div
+            className="mb-3 border-l-4 pl-3 sm:mb-4"
+            style={{ borderColor: 'var(--restaurant-accent)' }}
+          >
+            <div className="flex items-start gap-3">
+              {organization?.restaurantLogoUrl && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={organization.restaurantLogoUrl}
+                  alt=""
+                  className="size-10 rounded-md border bg-background object-cover sm:size-12"
+                />
+              )}
+              <div className="min-w-0">
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  {t('restaurant_area_label', {
+                    restaurantName: restaurantDisplayName,
+                  })}
+                </p>
+                <h1
+                  className="mt-1 truncate text-xl font-semibold sm:text-2xl"
+                  style={{ color: 'var(--restaurant-primary)' }}
+                >
+                  {t('restaurant_dashboard_title', {
+                    restaurantName: restaurantDisplayName,
+                  })}
+                </h1>
+                <p className="mt-1 hidden text-sm text-muted-foreground sm:block">
+                  {t('restaurant_dashboard_helper')}
+                </p>
+              </div>
             </div>
           </div>
 
@@ -172,36 +210,55 @@ export default async function DashboardLayout(props: {
                   href: '/dashboard/statistics',
                   label: t('statistics'),
                 },
-              ]}
-              secondaryMenu={[
                 {
                   href: '/dashboard/branding',
                   label: t('branding'),
                 },
                 {
+                  href: '/dashboard/support',
+                  label: t('support'),
+                },
+              ]}
+              secondaryMenu={[
+                {
+                  group: t('menu_group_menu'),
+                  href: '/dashboard/menu-items',
+                  label: t('menu_items'),
+                },
+                {
+                  group: t('menu_group_menu'),
                   href: '/dashboard/menu-categories',
                   label: t('menu_categories'),
                 },
                 {
-                  href: '/dashboard/pilot-checklist',
-                  label: t('pilot_checklist'),
+                  group: t('menu_group_settings'),
+                  href: '/dashboard/branding',
+                  label: t('branding'),
                 },
                 {
-                  href: '/dashboard/pilot-feedback',
-                  label: t('pilot_feedback'),
+                  group: t('menu_group_settings'),
+                  href: '/dashboard/organization-profile',
+                  label: t('organization_settings'),
                 },
                 {
-                  href: '/dashboard/support',
-                  label: t('support'),
-                },
-                // PRO: Link to the /dashboard/todos page
-                {
+                  group: t('menu_group_settings'),
                   href: '/dashboard/organization-profile/organization-members',
                   label: t('members'),
                 },
                 {
-                  href: '/dashboard/organization-profile',
-                  label: t('settings'),
+                  group: t('menu_group_help'),
+                  href: '/dashboard/support',
+                  label: t('support'),
+                },
+                {
+                  group: t('menu_group_help'),
+                  href: '/dashboard/pilot-checklist',
+                  label: t('pilot_checklist'),
+                },
+                {
+                  group: t('menu_group_help'),
+                  href: '/dashboard/pilot-feedback',
+                  label: t('pilot_feedback'),
                 },
                 // PRO: Link to the /dashboard/billing page
               ]}

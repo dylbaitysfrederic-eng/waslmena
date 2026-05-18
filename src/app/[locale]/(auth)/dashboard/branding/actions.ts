@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation';
 import { getActiveRestaurantOrganizationId } from '@/features/dashboard/RestaurantAccess';
 import { db } from '@/libs/DB';
 import { organizationSchema } from '@/models/Schema';
+import { RESTAURANT_THEME_MODES } from '@/utils/RestaurantTheme';
 
 const normalizeOptionalText = (value: FormDataEntryValue | null) => {
   const textValue = typeof value === 'string' ? value.trim() : '';
@@ -52,6 +53,16 @@ const isValidCurrencyLabel = (value: string | null) => {
   return value === null || value.length <= 12;
 };
 
+const normalizeThemeMode = (value: FormDataEntryValue | null) => {
+  const textValue = value?.toString() ?? 'day';
+
+  return RESTAURANT_THEME_MODES.includes(
+    textValue as (typeof RESTAURANT_THEME_MODES)[number],
+  )
+    ? textValue
+    : 'day';
+};
+
 const getReturnPath = (formData: FormData) => {
   const returnPath = normalizeOptionalText(formData.get('returnPath'));
 
@@ -79,10 +90,22 @@ export const updateRestaurantBrandingAction = async (formData: FormData) => {
   const restaurantPrimaryColor = normalizeOptionalText(
     formData.get('restaurantPrimaryColor'),
   );
+  const restaurantAccentColor = normalizeOptionalText(
+    formData.get('restaurantAccentColor'),
+  );
+  const restaurantThemeMode = normalizeThemeMode(
+    formData.get('restaurantThemeMode'),
+  );
   const restaurantWhatsappNumber = normalizeOptionalText(
     formData.get('restaurantWhatsappNumber'),
   );
   const enableWhatsappContact = formData.get('enableWhatsappContact') === 'on';
+  const orderVisualNotificationsEnabled = (
+    formData.get('orderVisualNotificationsEnabled') === 'on'
+  );
+  const orderSoundNotificationsEnabled = (
+    formData.get('orderSoundNotificationsEnabled') === 'on'
+  );
   const localCurrencyCode = normalizeCurrencyCode(
     formData.get('localCurrencyCode'),
   );
@@ -93,6 +116,7 @@ export const updateRestaurantBrandingAction = async (formData: FormData) => {
   if (
     !isValidUrl(restaurantLogoUrl)
     || !isValidHexColor(restaurantPrimaryColor)
+    || !isValidHexColor(restaurantAccentColor)
     || !isValidWhatsappNumber(restaurantWhatsappNumber)
     || !isValidCurrencyCode(localCurrencyCode)
     || !isValidCurrencyLabel(localCurrencyLabel)
@@ -107,8 +131,12 @@ export const updateRestaurantBrandingAction = async (formData: FormData) => {
       restaurantDisplayName,
       restaurantLogoUrl,
       restaurantPrimaryColor,
+      restaurantAccentColor,
+      restaurantThemeMode,
       restaurantWhatsappNumber,
       enableWhatsappContact,
+      orderVisualNotificationsEnabled,
+      orderSoundNotificationsEnabled,
       localCurrencyCode,
       localCurrencyLabel,
     })
@@ -118,8 +146,12 @@ export const updateRestaurantBrandingAction = async (formData: FormData) => {
         restaurantDisplayName,
         restaurantLogoUrl,
         restaurantPrimaryColor,
+        restaurantAccentColor,
+        restaurantThemeMode,
         restaurantWhatsappNumber,
         enableWhatsappContact,
+        orderVisualNotificationsEnabled,
+        orderSoundNotificationsEnabled,
         localCurrencyCode,
         localCurrencyLabel,
       },
