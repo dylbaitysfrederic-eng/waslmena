@@ -1,3 +1,10 @@
+## [1.4.1](https://github.com/dylbaitysfrederic-eng/waslmena/compare/v1.4.0...v1.4.1) (2026-05-18)
+
+
+### Bug Fixes
+
+* improve QR desktop layout ([6e5a145](https://github.com/dylbaitysfrederic-eng/waslmena/commit/6e5a14573cf8d0d0e63d7d8fc8bb9e3cf77974ea))
+
 # [1.4.0](https://github.com/dylbaitysfrederic-eng/waslmena/compare/v1.3.0...v1.4.0) (2026-05-18)
 
 
