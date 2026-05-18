@@ -169,6 +169,13 @@
       "when": 1779122000000,
       "tag": "0023_restaurant_brand_theme",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1779123000000,
+      "tag": "0024_restaurant_finance_snapshot",
+      "breakpoints": true
     }
   ]
 }

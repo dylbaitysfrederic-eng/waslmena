@@ -4,7 +4,10 @@ import { unstable_noStore as noStore } from 'next/cache';
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 
+import { FormSubmitButton } from '@/components/FormSubmitButton';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { DashboardSection } from '@/features/dashboard/DashboardSection';
 import { TitleBar } from '@/features/dashboard/TitleBar';
 import { db } from '@/libs/DB';
@@ -14,6 +17,8 @@ import {
   restaurantTableSchema,
 } from '@/models/Schema';
 import { cn, getI18nPath } from '@/utils/Helpers';
+
+import { updateFinanceSnapshotAction } from './actions';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -48,6 +53,16 @@ const TRACKED_STATUSES = [
   'served',
   'cancelled',
 ] as const;
+
+const FINANCE_COST_FIELDS = [
+  'goods',
+  'rent',
+  'staff',
+  'utilities',
+  'other',
+] as const;
+
+type FinanceCostKey = typeof FINANCE_COST_FIELDS[number];
 
 const getPeriodStart = (period: Period, now: Date) => {
   const start = new Date(now);
@@ -87,6 +102,14 @@ const formatLocalCurrency = (
   return `${new Intl.NumberFormat(locale).format(amount)} ${localCurrencyLabel}`;
 };
 
+const formatUsdInputValue = (amount: number | null) => {
+  return amount === null ? '' : (amount / 100).toFixed(2);
+};
+
+const getFinanceFieldSuffix = (key: FinanceCostKey) => {
+  return `${key.charAt(0).toUpperCase()}${key.slice(1)}`;
+};
+
 const normalizeStatusForStats = (status: string): TrackedStatus | null => {
   if (status === 'pending') {
     return 'pending';
@@ -109,7 +132,7 @@ const normalizeStatusForStats = (status: string): TrackedStatus | null => {
 
 const StatisticsPage = async (props: {
   params: { locale: string };
-  searchParams?: { period?: string };
+  searchParams?: { finance?: string; period?: string };
 }) => {
   noStore();
 
@@ -127,6 +150,18 @@ const StatisticsPage = async (props: {
   const [organization] = await db
     .select({
       localCurrencyLabel: organizationSchema.localCurrencyLabel,
+      financeGoodsCostUsdCents: organizationSchema.financeGoodsCostUsdCents,
+      financeGoodsCostLocal: organizationSchema.financeGoodsCostLocal,
+      financeRentCostUsdCents: organizationSchema.financeRentCostUsdCents,
+      financeRentCostLocal: organizationSchema.financeRentCostLocal,
+      financeStaffCostUsdCents: organizationSchema.financeStaffCostUsdCents,
+      financeStaffCostLocal: organizationSchema.financeStaffCostLocal,
+      financeUtilitiesCostUsdCents:
+        organizationSchema.financeUtilitiesCostUsdCents,
+      financeUtilitiesCostLocal:
+        organizationSchema.financeUtilitiesCostLocal,
+      financeOtherCostUsdCents: organizationSchema.financeOtherCostUsdCents,
+      financeOtherCostLocal: organizationSchema.financeOtherCostLocal,
     })
     .from(organizationSchema)
     .where(eq(organizationSchema.id, orgId))
@@ -202,6 +237,50 @@ const StatisticsPage = async (props: {
   };
 
   const summaries = PERIODS.map(getPeriodSummary);
+  const monthlySummary = summaries.find(summary => summary.period === '30d')
+    ?? getPeriodSummary('30d');
+  const financeCosts: Record<
+    FinanceCostKey,
+    { local: number | null; usdCents: number | null }
+  > = {
+    goods: {
+      usdCents: organization?.financeGoodsCostUsdCents ?? null,
+      local: organization?.financeGoodsCostLocal ?? null,
+    },
+    rent: {
+      usdCents: organization?.financeRentCostUsdCents ?? null,
+      local: organization?.financeRentCostLocal ?? null,
+    },
+    staff: {
+      usdCents: organization?.financeStaffCostUsdCents ?? null,
+      local: organization?.financeStaffCostLocal ?? null,
+    },
+    utilities: {
+      usdCents: organization?.financeUtilitiesCostUsdCents ?? null,
+      local: organization?.financeUtilitiesCostLocal ?? null,
+    },
+    other: {
+      usdCents: organization?.financeOtherCostUsdCents ?? null,
+      local: organization?.financeOtherCostLocal ?? null,
+    },
+  };
+  const totalFinanceUsdCents = FINANCE_COST_FIELDS.reduce(
+    (total, key) => total + (financeCosts[key].usdCents ?? 0),
+    0,
+  );
+  const totalFinanceLocal = FINANCE_COST_FIELDS.reduce(
+    (total, key) => total + (financeCosts[key].local ?? 0),
+    0,
+  );
+  const estimatedUsdMargin = monthlySummary.totalUsdCents === null
+    && totalFinanceUsdCents === 0
+    ? null
+    : (monthlySummary.totalUsdCents ?? 0) - totalFinanceUsdCents;
+  const estimatedLocalMargin = monthlySummary.totalLbp === null
+    && totalFinanceLocal === 0
+    ? null
+    : (monthlySummary.totalLbp ?? 0) - totalFinanceLocal;
+
   const historyOrders = orders.filter(
     order => order.createdAt >= selectedPeriodStart,
   );
@@ -279,6 +358,168 @@ const StatisticsPage = async (props: {
               </div>
             </div>
           ))}
+        </div>
+      </DashboardSection>
+
+      <DashboardSection
+        title={t('finance_section_title')}
+        description={t('finance_section_description')}
+      >
+        <div id="finance" className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px]">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="rounded-md border bg-background p-4">
+              <div className="text-sm font-medium text-muted-foreground">
+                {t('finance_revenue_title')}
+              </div>
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                {t('finance_revenue_help')}
+              </p>
+              <div className="mt-4 grid gap-3 text-sm">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-muted-foreground">{t('orders_label')}</span>
+                  <span className="font-semibold">{monthlySummary.orderCount}</span>
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-muted-foreground">{t('total_usd_label')}</span>
+                  <span className="font-semibold">
+                    {formatOptionalUsd(monthlySummary.totalUsdCents)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-muted-foreground">
+                    {t('total_local_label', { currency: localCurrencyLabel })}
+                  </span>
+                  <span className="font-semibold">
+                    {formatOptionalLbp(monthlySummary.totalLbp)}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-md border bg-background p-4">
+              <div className="text-sm font-medium text-muted-foreground">
+                {t('finance_margin_title')}
+              </div>
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                {t('finance_margin_help')}
+              </p>
+              <div className="mt-4 grid gap-3 text-sm">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-muted-foreground">{t('finance_total_costs_usd')}</span>
+                  <span className="font-semibold">
+                    {formatUsdCents(totalFinanceUsdCents, props.params.locale)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-muted-foreground">
+                    {t('finance_total_costs_local', {
+                      currency: localCurrencyLabel,
+                    })}
+                  </span>
+                  <span className="font-semibold">
+                    {formatLocalCurrency(
+                      totalFinanceLocal,
+                      props.params.locale,
+                      localCurrencyLabel,
+                    )}
+                  </span>
+                </div>
+                <div className="border-t pt-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-muted-foreground">
+                      {t('finance_estimated_margin_usd')}
+                    </span>
+                    <span className="font-semibold">
+                      {formatOptionalUsd(estimatedUsdMargin)}
+                    </span>
+                  </div>
+                  <div className="mt-2 flex items-center justify-between gap-3">
+                    <span className="text-muted-foreground">
+                      {t('finance_estimated_margin_local', {
+                        currency: localCurrencyLabel,
+                      })}
+                    </span>
+                    <span className="font-semibold">
+                      {formatOptionalLbp(estimatedLocalMargin)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <p className="rounded-md border border-dashed bg-background p-4 text-sm leading-6 text-muted-foreground sm:col-span-2">
+              {t('finance_disclaimer')}
+            </p>
+          </div>
+
+          <form
+            action={updateFinanceSnapshotAction}
+            className="rounded-md border bg-background p-4"
+          >
+            <input
+              type="hidden"
+              name="returnPath"
+              value={getI18nPath('/dashboard/statistics', props.params.locale)}
+            />
+            <div>
+              <h3 className="font-semibold">{t('finance_costs_form_title')}</h3>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {t('finance_costs_form_description')}
+              </p>
+            </div>
+            {props.searchParams?.finance === 'saved' && (
+              <div className="mt-4 rounded-md border border-green-200 bg-green-50 p-3 text-sm font-medium text-green-950">
+                {t('finance_saved_message')}
+              </div>
+            )}
+            <div className="mt-4 grid gap-4">
+              {FINANCE_COST_FIELDS.map(key => (
+                <div key={key} className="grid gap-2 rounded-md border p-3">
+                  <div className="text-sm font-medium">
+                    {t(`finance_cost_${key}`)}
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor={`finance-${key}-usd`}>
+                        {t('finance_usd_input_label')}
+                      </Label>
+                      <Input
+                        id={`finance-${key}-usd`}
+                        name={`finance${getFinanceFieldSuffix(key)}CostUsd`}
+                        type="number"
+                        min={0}
+                        step="0.01"
+                        defaultValue={formatUsdInputValue(
+                          financeCosts[key].usdCents,
+                        )}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor={`finance-${key}-local`}>
+                        {t('finance_local_input_label', {
+                          currency: localCurrencyLabel,
+                        })}
+                      </Label>
+                      <Input
+                        id={`finance-${key}-local`}
+                        name={`finance${getFinanceFieldSuffix(key)}CostLocal`}
+                        type="number"
+                        min={0}
+                        step={1}
+                        defaultValue={financeCosts[key].local ?? ''}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <FormSubmitButton
+              pendingLabel={t('finance_save_pending')}
+              className="mt-4 w-full"
+            >
+              {t('finance_save_button')}
+            </FormSubmitButton>
+          </form>
         </div>
       </DashboardSection>
 

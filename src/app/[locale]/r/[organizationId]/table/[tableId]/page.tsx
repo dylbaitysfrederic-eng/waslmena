@@ -336,9 +336,37 @@ const PublicTableMenuPage = async (props: PublicMenuPageProps) => {
         organization.restaurantAccentColor,
       )}
     >
+      <div className="sm:hidden">
+        <div className="sticky top-0 z-40 border-b border-zinc-900/10 bg-background/95 shadow-sm backdrop-blur-sm">
+          <div className="mx-auto flex min-h-14 max-w-2xl items-center justify-between gap-3 px-4 py-3">
+            <div className="flex min-w-0 items-center gap-3">
+              {organization?.restaurantLogoUrl && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={organization.restaurantLogoUrl}
+                  alt=""
+                  className="size-10 flex-none rounded-md border object-cover"
+                />
+              )}
+              <div className="min-w-0">
+                {organization?.restaurantDisplayName && (
+                  <p className="truncate text-sm font-semibold">
+                    {organization.restaurantDisplayName}
+                  </p>
+                )}
+                <p className="truncate text-xs text-muted-foreground">
+                  {t('table_label', { tableNumber: restaurantTable.tableNumber })}
+                </p>
+              </div>
+            </div>
+            <LocaleSwitcher />
+          </div>
+        </div>
+      </div>
+
       <div
         className={cn(
-          'mx-auto flex w-full flex-col gap-6 px-4 py-6',
+          'mx-auto flex w-full flex-col gap-6 px-4 pt-20 pb-6 sm:pt-6',
           templateClassNames.shell,
         )}
       >

@@ -125,42 +125,46 @@ const RestaurantTablesPage = async (props: { params: { locale: string } }) => {
         >
           <div className="grid gap-5">
             {showGeneralQr && (
-              <div className="grid gap-4 rounded-md border bg-background p-4 md:grid-cols-[auto_minmax(0,1fr)]">
-                <TableQrCode
-                  backgroundColor={organization?.qrBackgroundColor ?? '#ffffff'}
-                  foregroundColor={organization?.qrForegroundColor ?? '#111827'}
-                  frameColor={organization?.qrFrameColor ?? '#111827'}
-                  labelText={organization?.qrLabelText ?? 'Scan menu'}
-                  logoUrl={organization?.restaurantLogoUrl ?? null}
-                  publicMenuUrl={generalMenuUrl}
-                  restaurantName={
-                    organization?.restaurantDisplayName ?? 'Restaurant'
-                  }
-                  showRestaurantName={
-                    organization?.qrShowRestaurantName ?? true
-                  }
-                  showTableNumber={false}
-                  styleTemplate={organization?.qrStyleTemplate ?? 'classic'}
-                  tableNumber={null}
-                  downloadLabel={t('download_qr_code_button')}
-                  downloadFileName="general-menu-qr.png"
-                  qrCodeTitle={t('general_qr_code_title')}
-                />
-                <div className="grid content-center gap-2">
-                  <h3 className="font-semibold">
-                    {t('general_qr_section_title')}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    {t('general_qr_section_description')}
-                  </p>
-                  <div className="flex min-w-56 flex-col gap-2">
+              <div className="grid gap-6 rounded-md border bg-background p-4 sm:p-5 lg:grid-cols-[minmax(220px,280px)_minmax(0,1fr)] lg:items-center">
+                <div className="flex justify-center">
+                  <TableQrCode
+                    backgroundColor={organization?.qrBackgroundColor ?? '#ffffff'}
+                    foregroundColor={organization?.qrForegroundColor ?? '#111827'}
+                    frameColor={organization?.qrFrameColor ?? '#111827'}
+                    labelText={organization?.qrLabelText ?? 'Scan menu'}
+                    logoUrl={organization?.restaurantLogoUrl ?? null}
+                    publicMenuUrl={generalMenuUrl}
+                    restaurantName={
+                      organization?.restaurantDisplayName ?? 'Restaurant'
+                    }
+                    showRestaurantName={
+                      organization?.qrShowRestaurantName ?? true
+                    }
+                    showTableNumber={false}
+                    styleTemplate={organization?.qrStyleTemplate ?? 'classic'}
+                    tableNumber={null}
+                    downloadLabel={t('download_qr_code_button')}
+                    downloadFileName="general-menu-qr.png"
+                    qrCodeTitle={t('general_qr_code_title')}
+                  />
+                </div>
+                <div className="flex min-w-0 flex-col justify-center gap-4 lg:py-4">
+                  <div className="space-y-2">
+                    <h3 className="text-base font-semibold">
+                      {t('general_qr_section_title')}
+                    </h3>
+                    <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
+                      {t('general_qr_section_description')}
+                    </p>
+                  </div>
+                  <div className="grid min-w-0 gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
                     <Input
                       value={generalMenuUrl}
                       readOnly
                       aria-label={t('public_menu_url_label')}
-                      className="font-mono text-xs"
+                      className="min-w-0 truncate font-mono text-xs"
                     />
-                    <Button asChild variant="outline" size="sm">
+                    <Button asChild variant="outline" size="sm" className="shrink-0">
                       <Link href={generalMenuUrl}>
                         {t('open_public_menu_link')}
                       </Link>
@@ -232,12 +236,12 @@ const RestaurantTablesPage = async (props: { params: { locale: string } }) => {
                                 />
                               </TableCell>
                               <TableCell>
-                                <div className="flex min-w-56 flex-col gap-2">
+                                <div className="grid min-w-0 gap-2 sm:min-w-64">
                                   <Input
                                     value={publicMenuUrl}
                                     readOnly
                                     aria-label={t('public_menu_url_label')}
-                                    className="font-mono text-xs"
+                                    className="min-w-0 truncate font-mono text-xs"
                                   />
                                   <Button asChild variant="outline" size="sm">
                                     <Link href={publicMenuUrl}>

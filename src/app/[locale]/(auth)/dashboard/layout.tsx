@@ -147,7 +147,7 @@ export default async function DashboardLayout(props: {
     <>
       <div
         className={cn(
-          'bg-background shadow-md',
+          'sticky top-0 z-40 border-b border-zinc-900/10 bg-background/95 shadow-sm backdrop-blur-sm',
           getRestaurantThemeClassName(organization?.restaurantThemeMode),
         )}
         style={getRestaurantBrandStyle(

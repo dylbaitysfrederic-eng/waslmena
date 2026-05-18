@@ -469,7 +469,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
   );
 
   return (
-    <div className="space-y-6 pb-40 sm:pb-8">
+    <div className="space-y-6 pb-52 sm:pb-8">
       <div
         className="hidden flex-wrap gap-2 sm:flex"
         aria-label={t('category_nav_label')}
@@ -493,7 +493,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
       </div>
 
       {selectedCategory && (
-        <div className="max-h-[calc(100vh-220px)] overflow-y-auto pr-1 sm:max-h-none sm:overflow-visible sm:pr-0">
+        <div className="max-h-[calc(100vh-240px)] overflow-y-auto pr-1 sm:max-h-none sm:overflow-visible sm:pr-0">
           <section className="space-y-4">
             <h2
               className={templateClassNames.category}

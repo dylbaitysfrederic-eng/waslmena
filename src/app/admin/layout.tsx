@@ -27,7 +27,8 @@ const pageStyle: CSSProperties = {
 
 const headerStyle: CSSProperties = {
   borderBottom: '1px solid #e5e7eb',
-  background: '#ffffff',
+  background: 'rgba(255,255,255,0.95)',
+  backdropFilter: 'blur(10px)',
 };
 
 const containerStyle: CSSProperties = {
@@ -78,8 +79,8 @@ const AdminLayout = async (props: { children: React.ReactNode }) => {
     <html lang="en">
       <body className="bg-muted text-foreground antialiased">
         <div className="min-h-screen" style={pageStyle}>
-          <header className="border-b bg-background" style={headerStyle}>
-            <div className="mx-auto max-w-screen-2xl p-4" style={containerStyle}>
+          <header className="sticky top-0 z-40 border-b bg-background/95 shadow-sm backdrop-blur-sm" style={headerStyle}>
+            <div className="mx-auto max-w-screen-2xl p-3 sm:p-4" style={containerStyle}>
               <div
                 className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between"
                 style={titleRowStyle}

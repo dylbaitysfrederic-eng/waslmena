@@ -12,13 +12,18 @@ import {
 import Link from 'next/link';
 import { getTranslations, unstable_setRequestLocale } from 'next-intl/server';
 
+import { FormSubmitButton } from '@/components/FormSubmitButton';
 import { LocaleSwitcher } from '@/components/LocaleSwitcher';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { db } from '@/libs/DB';
 import { saasSettingsSchema } from '@/models/Schema';
 import { Logo } from '@/templates/Logo';
 import { AppConfig } from '@/utils/AppConfig';
 import { getI18nPath } from '@/utils/Helpers';
+
+import { sendLandingContactAction } from './actions';
 
 const FEATURE_KEYS = [
   'qr_menu',
@@ -49,27 +54,31 @@ const FAQ_KEYS = [
   'templates',
 ] as const;
 
+const WASL_HELLO_EMAIL = 'hello@waslmena.com';
+const WASL_SUPPORT_EMAIL = 'support@waslmena.com';
+const WASL_ADMIN_EMAIL = 'admin@waslmena.com';
+
 const OWNER_EXAMPLES = [
   {
     orderId: '#104',
+    guest: 'Ali',
     table: 'Table 7',
-    sizeKey: 'basket_small',
     itemKey: 'owner_example_lebanon',
     local: '1,080,000 LBP / LL',
     usd: '$12.00',
   },
   {
     orderId: '#105',
+    guest: 'Nour',
     table: 'Table 3',
-    sizeKey: 'basket_medium',
     itemKey: 'owner_example_dubai',
     local: '92 AED',
     usd: '$25.00',
   },
   {
     orderId: '#106',
+    guest: 'Karim',
     table: 'Table 1',
-    sizeKey: 'basket_large',
     itemKey: 'owner_example_doha',
     local: '218 QAR',
     usd: '$60.00',
@@ -111,11 +120,15 @@ export async function generateMetadata(props: { params: { locale: string } }) {
   };
 }
 
-const IndexPage = async (props: { params: { locale: string } }) => {
+const IndexPage = async (props: {
+  params: { locale: string };
+  searchParams?: { contact?: string };
+}) => {
   unstable_setRequestLocale(props.params.locale);
 
   const t = await getTranslations('Landing');
   const dashboardPath = getI18nPath('/dashboard', props.params.locale);
+  const landingPath = getI18nPath('/', props.params.locale);
   const [saasSettings] = await db
     .select({
       supportEmail: saasSettingsSchema.supportEmail,
@@ -164,7 +177,7 @@ const IndexPage = async (props: { params: { locale: string } }) => {
         facebookUrl: AppConfig.facebookUrl,
       };
 
-  const contactEmail = contactSettings.supportEmail;
+  const contactEmail = WASL_HELLO_EMAIL;
   const whatsappHref = getWhatsappLink(contactSettings.whatsappNumberOrUrl);
   const socialLinks = [
     {
@@ -190,12 +203,12 @@ const IndexPage = async (props: { params: { locale: string } }) => {
 
   return (
     <main className="min-h-screen bg-background text-foreground">
-      <header className="border-b bg-background/95">
-        <div className="mx-auto flex max-w-screen-xl flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between">
+      <header className="sticky top-0 z-40 border-b border-zinc-900/10 bg-background/95 shadow-sm backdrop-blur-sm">
+        <div className="mx-auto flex max-w-screen-xl flex-col gap-3 p-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:p-4">
           <Logo />
           <div className="flex flex-wrap items-center gap-3">
             <LocaleSwitcher />
-            <Button asChild size="sm">
+            <Button asChild size="sm" variant="outline">
               <Link href={dashboardPath}>{t('nav_dashboard')}</Link>
             </Button>
           </div>
@@ -216,10 +229,10 @@ const IndexPage = async (props: { params: { locale: string } }) => {
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Button asChild size="lg" className="bg-emerald-500 text-zinc-950 hover:bg-emerald-400">
-                <Link href={dashboardPath}>{t('hero_primary_cta')}</Link>
+                <a href="#contact">{t('hero_primary_cta')}</a>
               </Button>
               <Button asChild size="lg" variant="outline" className="border-zinc-500 bg-transparent text-white hover:bg-zinc-900">
-                <a href="#how-it-works">{t('hero_secondary_cta')}</a>
+                <a href="#contact">{t('hero_secondary_cta')}</a>
               </Button>
             </div>
             <div className="mt-8 grid gap-3 text-sm text-zinc-300 sm:grid-cols-3">
@@ -378,20 +391,17 @@ const IndexPage = async (props: { params: { locale: string } }) => {
                 </span>
               </div>
               <div className="space-y-3">
-                {OWNER_EXAMPLES.map(({ orderId, table, sizeKey, itemKey, local, usd }) => (
+                {OWNER_EXAMPLES.map(({ orderId, guest, table, itemKey, local, usd }) => (
                   <div key={orderId} className="rounded-md border border-zinc-700 bg-zinc-950 p-3">
                     <div className="flex items-center justify-between gap-3">
                       <div>
-                        <div className="font-semibold">
-                          {t(sizeKey)}
-                          {' '}
-                          {orderId}
-                        </div>
-                        <div className="text-sm text-zinc-400">
-                          {table}
+                        <div className="font-semibold">{orderId}</div>
+                        <div className="mt-1 text-sm text-zinc-400">
+                          {guest}
                           {' · '}
-                          {t(itemKey)}
+                          {table}
                         </div>
+                        <div className="text-sm text-zinc-400">{t(itemKey)}</div>
                       </div>
                       <div className="text-right text-sm font-semibold">
                         <div>{local}</div>
@@ -530,37 +540,131 @@ const IndexPage = async (props: { params: { locale: string } }) => {
         </div>
       </section>
 
-      <section className="border-b py-14">
+      <section id="contact" className="scroll-mt-6 border-b py-14">
         <div className="mx-auto max-w-screen-xl px-4">
-          <div className="grid gap-6 md:grid-cols-[1fr_320px] md:items-center">
+          <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(360px,520px)] lg:items-start">
             <div>
               <h2 className="text-3xl font-semibold tracking-normal">{t('contact_title')}</h2>
               <p className="mt-3 text-muted-foreground">{t('contact_description')}</p>
-            </div>
-            <div className="rounded-md border bg-background p-6">
-              <div>
-                <div className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">{t('contact_email_label')}</div>
-                <a
-                  href={`mailto:${contactEmail}`}
-                  className="mt-2 block text-lg font-semibold text-foreground"
-                >
-                  {contactEmail}
-                </a>
+              <div className="mt-6 grid gap-3 text-sm">
+                <div className="rounded-md border bg-card p-4">
+                  <div className="font-semibold">{t('contact_hello_label')}</div>
+                  <a
+                    href={`mailto:${contactEmail}`}
+                    className="mt-1 block font-semibold text-foreground"
+                  >
+                    {contactEmail}
+                  </a>
+                  <p className="mt-1 text-muted-foreground">{t('contact_hello_help')}</p>
+                </div>
+                <div className="rounded-md border bg-card p-4">
+                  <div className="font-semibold">{t('contact_support_label')}</div>
+                  <a
+                    href={`mailto:${WASL_SUPPORT_EMAIL}`}
+                    className="mt-1 block font-semibold text-foreground"
+                  >
+                    {WASL_SUPPORT_EMAIL}
+                  </a>
+                  <p className="mt-1 text-muted-foreground">{t('contact_support_help')}</p>
+                </div>
+                <div className="rounded-md border bg-card p-4">
+                  <div className="font-semibold">{t('contact_admin_label')}</div>
+                  <div className="mt-1 font-semibold text-foreground">
+                    {WASL_ADMIN_EMAIL}
+                  </div>
+                  <p className="mt-1 text-muted-foreground">{t('contact_admin_help')}</p>
+                </div>
               </div>
               {whatsappHref && (
-                <div className="mt-6">
-                  <div className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">{t('contact_whatsapp_label')}</div>
-                  <a
-                    href={whatsappHref}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="mt-2 block text-lg font-semibold text-foreground"
-                  >
+                <Button asChild variant="outline" className="mt-6">
+                  <a href={whatsappHref} target="_blank" rel="noreferrer">
                     {t('contact_whatsapp_button')}
                   </a>
-                </div>
+                </Button>
               )}
             </div>
+
+            <form action={sendLandingContactAction} className="rounded-md border bg-background p-5 shadow-sm">
+              <input type="hidden" name="returnPath" value={landingPath} />
+              <div className="mb-5">
+                <h3 className="text-xl font-semibold">{t('contact_form_title')}</h3>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  {t('contact_form_description')}
+                </p>
+              </div>
+
+              {props.searchParams?.contact === 'sent' && (
+                <div className="mb-4 rounded-md border border-emerald-200 bg-emerald-50 p-3 text-sm font-medium text-emerald-950">
+                  {t('contact_form_success')}
+                </div>
+              )}
+              {props.searchParams?.contact === 'invalid' && (
+                <div className="mb-4 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm font-medium text-destructive">
+                  {t('contact_form_invalid')}
+                </div>
+              )}
+
+              <div className="grid gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="restaurantName">{t('contact_restaurant_name_label')}</Label>
+                  <Input
+                    id="restaurantName"
+                    name="restaurantName"
+                    required
+                    maxLength={100}
+                    placeholder={t('contact_restaurant_name_placeholder')}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="contactName">{t('contact_name_label')}</Label>
+                  <Input
+                    id="contactName"
+                    name="contactName"
+                    required
+                    maxLength={100}
+                    placeholder={t('contact_name_placeholder')}
+                  />
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">{t('contact_form_email_label')}</Label>
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      required
+                      maxLength={120}
+                      placeholder={t('contact_form_email_placeholder')}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="whatsapp">{t('contact_form_whatsapp_label')}</Label>
+                    <Input
+                      id="whatsapp"
+                      name="whatsapp"
+                      maxLength={32}
+                      inputMode="tel"
+                      placeholder={t('contact_form_whatsapp_placeholder')}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="message">{t('contact_message_label')}</Label>
+                  <textarea
+                    id="message"
+                    name="message"
+                    required
+                    rows={5}
+                    maxLength={1200}
+                    placeholder={t('contact_message_placeholder')}
+                    className="flex min-h-28 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  />
+                </div>
+                <FormSubmitButton pendingLabel={t('contact_form_pending')}>
+                  {t('contact_form_button')}
+                </FormSubmitButton>
+              </div>
+            </form>
           </div>
         </div>
       </section>
@@ -588,7 +692,7 @@ const IndexPage = async (props: { params: { locale: string } }) => {
           <h2 className="text-3xl font-semibold tracking-normal">{t('cta_title')}</h2>
           <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">{t('cta_description')}</p>
           <Button asChild size="lg" className="mt-8">
-            <Link href={dashboardPath}>{t('cta_button')}</Link>
+            <a href="#contact">{t('cta_button')}</a>
           </Button>
         </div>
       </section>
