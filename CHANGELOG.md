@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/dylbaitysfrederic-eng/waslmena/compare/v1.2.0...v1.3.0) (2026-05-18)
+
+
+### Features
+
+* improve restaurant menu and dashboard experience ([94bb786](https://github.com/dylbaitysfrederic-eng/waslmena/commit/94bb786722838b5f86355606deeb2dfb67539ca6))
+
 # [1.2.0](https://github.com/dylbaitysfrederic-eng/waslmena/compare/v1.1.0...v1.2.0) (2026-05-17)
 
 
