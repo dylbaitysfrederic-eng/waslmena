@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/dylbaitysfrederic-eng/waslmena/compare/v1.4.1...v1.5.0) (2026-05-18)
+
+
+### Features
+
+* improve email delivery and restaurant experience ([7bd6bfb](https://github.com/dylbaitysfrederic-eng/waslmena/commit/7bd6bfb3da0c83e9f181fa096f58c9fc7f3066ce))
+
 ## [1.4.1](https://github.com/dylbaitysfrederic-eng/waslmena/compare/v1.4.0...v1.4.1) (2026-05-18)
 
 
