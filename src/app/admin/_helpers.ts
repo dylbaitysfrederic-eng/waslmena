@@ -87,13 +87,12 @@ export const getCurrentAdminEmail = async () => {
   const adminEmails = getAdminEmails();
 
   const email = primaryEmail?.emailAddress.toLowerCase();
-
   const verificationStatus = primaryEmail?.verification?.status;
-  let isEmailVerified = true;
-
-  if (verificationStatus !== undefined) {
-    isEmailVerified = verificationStatus === 'verified';
-  }
+  const hasAdminEmails = adminEmails.length > 0;
+  const isEmailAllowed = email ? adminEmails.includes(email) : false;
+  const isEmailVerified = verificationStatus === undefined
+    ? true
+    : verificationStatus === 'verified';
 
   // Deny access if:
   // - No authenticated user
@@ -101,14 +100,16 @@ export const getCurrentAdminEmail = async () => {
   // - ADMIN_EMAILS not configured (deny by default)
   // - Email not in allowed ADMIN_EMAILS list
   // - Email verification status is explicitly not verified
-  if (
-    !user
-    || !primaryEmail
-    || !email
-    || !adminEmails.length
-    || !adminEmails.includes(email)
-    || !isEmailVerified
-  ) {
+  const shouldDenyAdminAccess = [
+    !user,
+    !primaryEmail,
+    !email,
+    !hasAdminEmails,
+    !isEmailAllowed,
+    !isEmailVerified,
+  ].some(Boolean);
+
+  if (shouldDenyAdminAccess) {
     notFound();
   }
 
