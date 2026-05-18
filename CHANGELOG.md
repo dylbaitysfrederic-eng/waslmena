@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/dylbaitysfrederic-eng/waslmena/compare/v1.3.0...v1.4.0) (2026-05-18)
+
+
+### Features
+
+* improve admin setup pages ([be05d1c](https://github.com/dylbaitysfrederic-eng/waslmena/commit/be05d1c68b4eeb5b774ee7609f4b8e4409f337f9))
+
 # [1.3.0](https://github.com/dylbaitysfrederic-eng/waslmena/compare/v1.2.0...v1.3.0) (2026-05-18)
 
 
