@@ -15,6 +15,7 @@ import {
   saasSettingsSchema,
 } from '@/models/Schema';
 import { ORG_ROLE } from '@/types/Auth';
+import { getMenuItemImageUrl } from '@/utils/MenuItemImageUpload';
 import {
   getPrimaryMenuText,
   hasAnyMenuText,
@@ -1260,6 +1261,15 @@ export const createAdminMenuItemAction = async (formData: FormData) => {
   );
   const names = getMenuNamesFromForm(formData);
   const descriptions = getMenuDescriptionsFromForm(formData);
+  const imageUrlField = formData.get('imageUrl')?.toString().trim() || null;
+  let imageUrl: string | null = null;
+
+  try {
+    imageUrl = await getMenuItemImageUrl(imageUrlField, formData.get('imageFile'));
+  } catch (error) {
+    redirect(`/admin/menu/${organizationId}?status=${(error as Error)?.message || 'invalid_image_type'}`);
+  }
+
   const priceUsdCents = normalizeOptionalInteger(formData.get('priceUsdCents'));
   const priceLbp = normalizeOptionalInteger(formData.get('priceLbp'));
 
@@ -1298,6 +1308,7 @@ export const createAdminMenuItemAction = async (formData: FormData) => {
     descriptionEn: descriptions.en,
     descriptionAr: descriptions.ar,
     descriptionFr: descriptions.fr,
+    imageUrl,
     priceUsdCents,
     priceLbp,
     isAvailable: formData.get('isAvailable') === 'on',
@@ -1317,6 +1328,15 @@ export const updateAdminMenuItemAction = async (formData: FormData) => {
   );
   const names = getMenuNamesFromForm(formData);
   const descriptions = getMenuDescriptionsFromForm(formData);
+  const imageUrlField = formData.get('imageUrl')?.toString().trim() || null;
+  let imageUrl: string | null = null;
+
+  try {
+    imageUrl = await getMenuItemImageUrl(imageUrlField, formData.get('imageFile'));
+  } catch (error) {
+    redirect(`/admin/menu/${organizationId}?status=${(error as Error)?.message || 'invalid_image_type'}`);
+  }
+
   const priceUsdCents = normalizeOptionalInteger(formData.get('priceUsdCents'));
   const priceLbp = normalizeOptionalInteger(formData.get('priceLbp'));
 
@@ -1357,6 +1377,7 @@ export const updateAdminMenuItemAction = async (formData: FormData) => {
       descriptionEn: descriptions.en,
       descriptionAr: descriptions.ar,
       descriptionFr: descriptions.fr,
+      imageUrl,
       priceUsdCents,
       priceLbp,
       isAvailable: formData.get('isAvailable') === 'on',

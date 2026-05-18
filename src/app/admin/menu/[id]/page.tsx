@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { FormSubmitButton } from '@/components/FormSubmitButton';
+import { MenuItemImageUploadField } from '@/components/MenuItemImageUploadField';
 import { db } from '@/libs/DB';
 import { menuCategorySchema, menuItemSchema } from '@/models/Schema';
 import { getLocalizedMenuText } from '@/utils/MenuTranslations';
@@ -127,6 +128,7 @@ const AdminMenuDetailPage = async (props: {
   params: { id: string };
   searchParams?: {
     templateStatus?: string;
+    status?: string;
   };
 }) => {
   const { ids, organizationRecords } = await getAdminOrganizations();
@@ -161,6 +163,13 @@ const AdminMenuDetailPage = async (props: {
   const organizationItems = items;
   const localCurrencyLabel = organization?.localCurrencyLabel ?? 'LL';
   const templateStatus = props.searchParams?.templateStatus ?? null;
+  let statusMessage: string | null = null;
+
+  if (props.searchParams?.status === 'invalid_image_type') {
+    statusMessage = 'Uploaded image must be JPG, PNG, or WEBP.';
+  } else if (props.searchParams?.status === 'image_too_large') {
+    statusMessage = 'Uploaded image must be 300 KB or smaller.';
+  }
 
   return (
     <section className="grid gap-4">
@@ -180,6 +189,11 @@ const AdminMenuDetailPage = async (props: {
       </div>
 
       <div className="grid gap-4 rounded-md bg-background p-5">
+        {statusMessage && (
+          <div className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
+            {statusMessage}
+          </div>
+        )}
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div>
             <h3 className="font-semibold">Menu management</h3>
@@ -364,7 +378,11 @@ const AdminMenuDetailPage = async (props: {
         )}
 
         {organizationCategories.length > 0 && (
-          <form action={createAdminMenuItemAction} className="grid gap-3 rounded-md border p-4">
+          <form
+            action={createAdminMenuItemAction}
+            encType="multipart/form-data"
+            className="grid gap-3 rounded-md border p-4"
+          >
             <input type="hidden" name="organizationId" value={organizationId} />
             <div>
               <div className="font-medium">Add menu item</div>
@@ -392,18 +410,14 @@ const AdminMenuDetailPage = async (props: {
               </select>
             </label>
             <MultilingualItemFields idPrefix={`item-create-${organizationId}`} />
-            <label className="grid gap-1 text-xs font-medium text-muted-foreground">
-              Image URL (optional)
-              <p className="text-xs text-muted-foreground">
-                Use compressed images under 300 KB. Optional field.
-              </p>
-              <input
-                name="imageUrl"
-                type="url"
-                placeholder="https://example.com/image.jpg"
-                className={inputClassName}
-              />
-            </label>
+            <MenuItemImageUploadField
+              fieldId="new-item-image"
+              urlFieldName="imageUrl"
+              fileFieldName="imageFile"
+              label="Image URL (optional)"
+              helpText="Optional. Use a public image URL or upload a lightweight image file."
+              placeholder="https://example.com/image.jpg"
+            />
             <div className="grid gap-3 sm:grid-cols-3">
               <label className="grid gap-1 text-xs font-medium text-muted-foreground">
                 USD cents
@@ -431,6 +445,7 @@ const AdminMenuDetailPage = async (props: {
               <form
                 key={item.id}
                 action={updateAdminMenuItemAction}
+                encType="multipart/form-data"
                 className="grid gap-3 rounded-md border p-4"
               >
                 <input type="hidden" name="organizationId" value={organizationId} />
@@ -484,19 +499,15 @@ const AdminMenuDetailPage = async (props: {
                     legacyDescription: item.description,
                   }}
                 />
-                <label className="grid gap-1 text-xs font-medium text-muted-foreground">
-                  Image URL (optional)
-                  <p className="text-xs text-muted-foreground">
-                    Use compressed images under 300 KB. Optional field.
-                  </p>
-                  <input
-                    name="imageUrl"
-                    type="url"
-                    defaultValue={item.imageUrl ?? ''}
-                    placeholder="https://example.com/image.jpg"
-                    className={inputClassName}
-                  />
-                </label>
+                <MenuItemImageUploadField
+                  fieldId={`item-image-${item.id}`}
+                  urlFieldName="imageUrl"
+                  fileFieldName="imageFile"
+                  label="Image URL (optional)"
+                  helpText="Optional. Use a public image URL or upload a lightweight image file."
+                  placeholder="https://example.com/image.jpg"
+                  currentImageUrl={item.imageUrl}
+                />
                 <div className="grid gap-3 sm:grid-cols-3">
                   <label className="grid gap-1 text-xs font-medium text-muted-foreground">
                     USD cents

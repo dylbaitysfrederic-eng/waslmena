@@ -1,11 +1,16 @@
+/* eslint-disable simple-import-sort/imports */
+
 import { eq } from 'drizzle-orm';
 import { getTranslations } from 'next-intl/server';
+import { currentUser } from '@clerk/nextjs/server';
 
 import { DashboardSection } from '@/features/dashboard/DashboardSection';
 import { TitleBar } from '@/features/dashboard/TitleBar';
 import { db } from '@/libs/DB';
 import { saasSettingsSchema } from '@/models/Schema';
 import { AppConfig } from '@/utils/AppConfig';
+
+import { sendDashboardSupportAction } from './actions';
 
 const FAQ_ITEMS = [
   'pilot_setup',
@@ -55,8 +60,10 @@ const getWhatsappLink = (value: string | null | undefined) => {
   return null;
 };
 
-const SupportPage = async () => {
-  const t = await getTranslations('Support');
+const SupportPage = async ({ params }: { params: { locale: string } }) => {
+  const t = await getTranslations({ locale: params.locale, namespace: 'Support' });
+  const clerkUser = await currentUser();
+  const prefillEmail = clerkUser?.primaryEmailAddress?.emailAddress?.toLowerCase() ?? null;
   const [settings] = await db
     .select({
       supportEmail: saasSettingsSchema.supportEmail,
@@ -115,6 +122,34 @@ const SupportPage = async () => {
                 {supportEmail}
               </a>
             </div>
+
+            <form action={sendDashboardSupportAction} className="rounded-md border bg-background p-4" aria-labelledby="support-form">
+              <h3 id="support-form" className="text-sm font-semibold">{t('form_title')}</h3>
+              <p className="mt-2 text-sm text-muted-foreground">{t('form_description')}</p>
+
+              <input type="hidden" name="returnPath" value={`/${params.locale}/dashboard/support`} />
+
+              <div className="mt-3 space-y-3">
+                <div>
+                  <label className="block text-xs font-medium text-muted-foreground">{t('form_subject_label')}</label>
+                  <input name="subject" required className="mt-1 w-full rounded-md border px-3 py-2 text-sm" />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-muted-foreground">{t('form_message_label')}</label>
+                  <textarea name="message" required rows={4} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-muted-foreground">{t('form_email_label')}</label>
+                  <input name="email" type="email" defaultValue={prefillEmail ?? undefined} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" />
+                </div>
+
+                <div className="flex justify-end">
+                  <button type="submit" className="inline-flex items-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:opacity-95">{t('form_submit')}</button>
+                </div>
+              </div>
+            </form>
           </div>
         </DashboardSection>
 

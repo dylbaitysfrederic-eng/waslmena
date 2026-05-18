@@ -7,6 +7,7 @@ import { redirect } from 'next/navigation';
 import { getActiveRestaurantOrganizationId } from '@/features/dashboard/RestaurantAccess';
 import { db } from '@/libs/DB';
 import { menuCategorySchema, menuItemSchema } from '@/models/Schema';
+import { getMenuItemImageUrl } from '@/utils/MenuItemImageUpload';
 import {
   getPrimaryMenuText,
   hasAnyMenuText,
@@ -152,7 +153,15 @@ export const createMenuItemAction = async (formData: FormData) => {
     ar: normalizeMenuText(formData.get('descriptionAr')),
     fr: normalizeMenuText(formData.get('descriptionFr')),
   };
-  const imageUrl = formData.get('imageUrl')?.toString().trim();
+  const imageUrlField = formData.get('imageUrl')?.toString().trim() || null;
+  let imageUrl: string | null = null;
+
+  try {
+    imageUrl = await getMenuItemImageUrl(imageUrlField, formData.get('imageFile'));
+  } catch (error) {
+    redirectWithError(returnPath, (error as Error)?.message || 'invalid_image_type');
+  }
+
   const priceUsdCents = parseOptionalPrice(formData.get('priceUsdCents'));
   const priceLbp = parseOptionalPrice(formData.get('priceLbp'));
   const isAvailable = formData.get('isAvailable') === 'on';
@@ -252,7 +261,15 @@ export const updateMenuItemAction = async (formData: FormData) => {
     ar: normalizeMenuText(formData.get('descriptionAr')),
     fr: normalizeMenuText(formData.get('descriptionFr')),
   };
-  const imageUrl = formData.get('imageUrl')?.toString().trim();
+  const imageUrlField = formData.get('imageUrl')?.toString().trim() || null;
+  let imageUrl: string | null = null;
+
+  try {
+    imageUrl = await getMenuItemImageUrl(imageUrlField, formData.get('imageFile'));
+  } catch (error) {
+    redirectWithError(returnPath, (error as Error)?.message || 'invalid_image_type');
+  }
+
   const priceUsdCents = parseOptionalPrice(formData.get('priceUsdCents'));
   const priceLbp = parseOptionalPrice(formData.get('priceLbp'));
   const isAvailable = formData.get('isAvailable') === 'on';

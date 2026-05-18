@@ -56,7 +56,6 @@ const FAQ_KEYS = [
 
 const WASL_HELLO_EMAIL = 'hello@waslmena.com';
 const WASL_SUPPORT_EMAIL = 'support@waslmena.com';
-const WASL_ADMIN_EMAIL = 'admin@waslmena.com';
 
 const OWNER_EXAMPLES = [
   {
@@ -216,8 +215,8 @@ const IndexPage = async (props: {
       </header>
 
       <section className="border-b bg-[#111827] text-white">
-        <div className="mx-auto grid max-w-screen-xl gap-10 px-4 py-14 md:grid-cols-[minmax(0,1fr)_480px] md:items-center md:py-20">
-          <div className="max-w-3xl">
+        <div className="mx-auto grid max-w-screen-lg gap-8 px-4 py-14 md:grid-cols-[minmax(0,1.2fr)_minmax(320px,400px)] md:items-start md:py-20">
+          <div className="max-w-2xl">
             <p className="mb-4 text-sm font-semibold uppercase tracking-wide text-emerald-300">
               {t('hero_eyebrow')}
             </p>
@@ -248,57 +247,9 @@ const IndexPage = async (props: {
             </div>
           </div>
 
-          <div className="grid gap-4">
-            <div className="rounded-md border border-zinc-700 bg-zinc-900 p-4">
-              <div className="flex items-center gap-3">
-                <div className="grid size-16 place-items-center rounded-md border border-emerald-400/40 bg-zinc-950">
-                  <svg
-                    viewBox="0 0 64 64"
-                    className="size-12"
-                    fill="none"
-                    aria-hidden="true"
-                  >
-                    <rect x="10" y="12" width="44" height="40" rx="10" fill="#F8FAFC" />
-                    <path
-                      d="M20 24h24"
-                      stroke="#0F172A"
-                      strokeWidth="4"
-                      strokeLinecap="round"
-                    />
-                    <path
-                      d="M24 32h16"
-                      stroke="#10B981"
-                      strokeWidth="4"
-                      strokeLinecap="round"
-                    />
-                    <path
-                      d="M20 40h24"
-                      stroke="#F4D06F"
-                      strokeWidth="4"
-                      strokeLinecap="round"
-                    />
-                    <path
-                      d="M44 20l6 4-6 4"
-                      stroke="#0F172A"
-                      strokeWidth="4"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <div className="text-xs font-semibold uppercase text-emerald-300">
-                    {t('brand_mark_label')}
-                  </div>
-                  <div className="text-sm leading-6 text-zinc-300">
-                    {t('brand_mark_description')}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="overflow-hidden rounded-md border border-zinc-700 bg-zinc-900 shadow-2xl">
-              <div className="border-b border-zinc-700 bg-zinc-950/60 px-4 py-3">
+          <div className="grid gap-5">
+            <div className="overflow-hidden rounded-3xl border border-zinc-700 bg-zinc-900/95 shadow-2xl">
+              <div className="border-b border-zinc-700 bg-zinc-950/75 px-4 py-3">
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <div className="text-xs font-semibold uppercase text-emerald-300">
@@ -313,7 +264,7 @@ const IndexPage = async (props: {
                 </div>
               </div>
               <div className="grid gap-4 p-4 sm:grid-cols-[160px_1fr]">
-                <div className="rounded-md border border-zinc-700 bg-white p-3 text-zinc-950">
+                <div className="rounded-2xl border border-zinc-700 bg-white p-3 text-zinc-950">
                   <div className="flex items-center justify-between">
                     <Smartphone className="size-4 text-emerald-700" />
                     <span className="text-xs font-semibold">Table 7</span>
@@ -345,8 +296,8 @@ const IndexPage = async (props: {
                     {t('phone_add_button')}
                   </div>
                 </div>
-                <div className="grid content-between gap-3">
-                  <div className="rounded-md border border-zinc-700 bg-zinc-950 p-3">
+                <div className="grid gap-3">
+                  <div className="rounded-2xl border border-zinc-700 bg-zinc-950 p-3">
                     <div className="text-sm font-semibold">{t('customer_progress_title')}</div>
                     <div className="mt-3 grid gap-2">
                       <div className="flex items-center gap-2 rounded-md bg-zinc-900 px-3 py-2 text-sm text-zinc-200">
@@ -367,7 +318,7 @@ const IndexPage = async (props: {
                       </div>
                     </div>
                   </div>
-                  <div className="rounded-md border border-zinc-700 bg-zinc-950 p-3">
+                  <div className="rounded-2xl border border-zinc-700 bg-zinc-950 p-3">
                     <div className="text-xs font-semibold uppercase text-zinc-400">
                       {t('customer_total_label')}
                     </div>
@@ -380,7 +331,7 @@ const IndexPage = async (props: {
               </div>
             </div>
 
-            <div className="rounded-md border border-zinc-700 bg-zinc-900 p-4 shadow-2xl">
+            <div className="rounded-3xl border border-zinc-700 bg-zinc-900 p-4 shadow-2xl">
               <div className="mb-4 flex items-center justify-between border-b border-zinc-700 pb-3">
                 <div>
                   <div className="text-sm font-semibold">{t('preview_title')}</div>
@@ -567,13 +518,6 @@ const IndexPage = async (props: {
                   </a>
                   <p className="mt-1 text-muted-foreground">{t('contact_support_help')}</p>
                 </div>
-                <div className="rounded-md border bg-card p-4">
-                  <div className="font-semibold">{t('contact_admin_label')}</div>
-                  <div className="mt-1 font-semibold text-foreground">
-                    {WASL_ADMIN_EMAIL}
-                  </div>
-                  <p className="mt-1 text-muted-foreground">{t('contact_admin_help')}</p>
-                </div>
               </div>
               {whatsappHref && (
                 <Button asChild variant="outline" className="mt-6">
@@ -601,6 +545,11 @@ const IndexPage = async (props: {
               {props.searchParams?.contact === 'invalid' && (
                 <div className="mb-4 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm font-medium text-destructive">
                   {t('contact_form_invalid')}
+                </div>
+              )}
+              {props.searchParams?.contact === 'error' && (
+                <div className="mb-4 rounded-md border border-red-700 bg-red-900/10 p-3 text-sm font-medium text-red-200">
+                  {t('contact_form_error')}
                 </div>
               )}
 

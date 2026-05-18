@@ -10,28 +10,30 @@ import { AllLocales } from '@/utils/AppConfig';
 const RTL_LOCALES = ['ar'];
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://waslmena.com'),
   icons: [
     {
       rel: 'apple-touch-icon',
-      url: '/apple-touch-icon.png',
+      url: '/wasl-logo.svg',
     },
     {
       rel: 'icon',
-      type: 'image/png',
-      sizes: '32x32',
-      url: '/favicon-32x32.png',
+      type: 'image/svg+xml',
+      url: '/wasl-logo.svg',
     },
     {
-      rel: 'icon',
-      type: 'image/png',
-      sizes: '16x16',
-      url: '/favicon-16x16.png',
-    },
-    {
-      rel: 'icon',
-      url: '/favicon.ico',
+      rel: 'shortcut icon',
+      type: 'image/svg+xml',
+      url: '/wasl-logo.svg',
     },
   ],
+  openGraph: {
+    images: ['/wasl-logo.svg'],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    images: ['/wasl-logo.svg'],
+  },
 };
 
 export function generateStaticParams() {

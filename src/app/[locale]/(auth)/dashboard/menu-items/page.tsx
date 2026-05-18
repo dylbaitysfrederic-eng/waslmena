@@ -6,6 +6,7 @@ import { getTranslations } from 'next-intl/server';
 import { ConfirmSubmitButton } from '@/components/ConfirmSubmitButton';
 import { FormSubmitButton } from '@/components/FormSubmitButton';
 import { MenuItemImagePreview } from '@/components/MenuItemImagePreview';
+import { MenuItemImageUploadField } from '@/components/MenuItemImageUploadField';
 import { SwitchField } from '@/components/SwitchField';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -68,6 +69,8 @@ const VALID_FORM_ERRORS = [
   'negative_price',
   'missing_price',
   'currency_mismatch',
+  'invalid_image_type',
+  'image_too_large',
 ] as const;
 
 type MenuCategoryOption = {
@@ -275,7 +278,11 @@ const MenuItemsPage = async (props: {
         >
           {categories.length > 0
             ? (
-                <form action={createMenuItemAction} className="space-y-4">
+                <form
+                  action={createMenuItemAction}
+                  encType="multipart/form-data"
+                  className="space-y-4"
+                >
                   <input
                     type="hidden"
                     name="returnPath"
@@ -313,18 +320,14 @@ const MenuItemsPage = async (props: {
 
                   <MenuItemLanguageFields baseId="item-create" t={t} />
 
-                  <div className="space-y-2">
-                    <Label htmlFor="imageUrl">{t('image_url_label')}</Label>
-                    <p className="text-xs text-muted-foreground">
-                      {t('image_url_help')}
-                    </p>
-                    <Input
-                      id="imageUrl"
-                      name="imageUrl"
-                      type="url"
-                      placeholder={t('image_url_placeholder')}
-                    />
-                  </div>
+                  <MenuItemImageUploadField
+                    fieldId="imageUrl"
+                    urlFieldName="imageUrl"
+                    fileFieldName="imageFile"
+                    label={t('image_url_label')}
+                    helpText={t('image_url_help')}
+                    placeholder={t('image_url_placeholder')}
+                  />
 
                   <div className="space-y-2">
                     <Label htmlFor="priceUsdCents">
@@ -448,6 +451,7 @@ const MenuItemsPage = async (props: {
                                 </summary>
                                 <form
                                   action={updateMenuItemAction}
+                                  encType="multipart/form-data"
                                   className="mt-3 grid gap-3"
                                 >
                                   <input
@@ -495,42 +499,15 @@ const MenuItemsPage = async (props: {
                                       legacyDescription: item.description,
                                     }}
                                   />
-                                  <div className="space-y-2">
-                                    <Label htmlFor={`item-image-${item.id}`}>
-                                      {t('image_url_label')}
-                                    </Label>
-                                    <p className="text-xs text-muted-foreground">
-                                      {t('image_url_help')}
-                                    </p>
-                                    <Input
-                                      id={`item-image-${item.id}`}
-                                      name="imageUrl"
-                                      type="url"
-                                      defaultValue={item.imageUrl ?? ''}
-                                      placeholder={t('image_url_placeholder')}
-                                    />
-                                    {item.imageUrl && (
-                                      <div className="flex items-center gap-3 rounded-md border bg-muted/40 p-2">
-                                        <MenuItemImagePreview
-                                          src={item.imageUrl}
-                                          alt={getLocalizedMenuText(
-                                            props.params.locale,
-                                            {
-                                              en: item.nameEn,
-                                              ar: item.nameAr,
-                                              fr: item.nameFr,
-                                              legacy: item.name,
-                                            },
-                                            item.name,
-                                          )}
-                                          className="size-16"
-                                        />
-                                        <p className="min-w-0 truncate text-xs text-muted-foreground">
-                                          {item.imageUrl}
-                                        </p>
-                                      </div>
-                                    )}
-                                  </div>
+                                  <MenuItemImageUploadField
+                                    fieldId={`item-image-${item.id}`}
+                                    urlFieldName="imageUrl"
+                                    fileFieldName="imageFile"
+                                    label={t('image_url_label')}
+                                    helpText={t('image_url_help')}
+                                    placeholder={t('image_url_placeholder')}
+                                    currentImageUrl={item.imageUrl}
+                                  />
                                   <div className="space-y-2">
                                     <Label htmlFor={`item-usd-${item.id}`}>
                                       {t('price_usd_cents_label')}

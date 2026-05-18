@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 
 import { sendEmail } from '@/libs/Email';
 
-const WASL_HELLO_EMAIL = 'hello@waslmena.com';
+const WASL_SUPPORT_EMAIL = 'support@waslmena.com';
 
 const normalizeOptionalText = (value: FormDataEntryValue | null) => {
   const textValue = typeof value === 'string' ? value.trim() : '';
@@ -39,33 +39,28 @@ const isValidEmail = (value: string | null): value is string => {
   );
 };
 
-export const sendLandingContactAction = async (formData: FormData) => {
+export const sendDashboardSupportAction = async (formData: FormData) => {
   const returnPath = normalizeReturnPath(formData.get('returnPath'));
-  const restaurantName = normalizeOptionalText(formData.get('restaurantName'));
-  const contactName = normalizeOptionalText(formData.get('contactName'));
-  const email = normalizeOptionalText(formData.get('email'))?.toLowerCase()
-    ?? null;
-  const whatsapp = normalizeOptionalText(formData.get('whatsapp'));
+  const subject = normalizeOptionalText(formData.get('subject'));
+  const email = normalizeOptionalText(formData.get('email'))?.toLowerCase() ?? null;
   const message = normalizeOptionalText(formData.get('message'));
 
-  if (!restaurantName || !contactName || !isValidEmail(email) || !message) {
-    redirect(`${returnPath}?contact=invalid#contact`);
+  if (!subject || !message) {
+    redirect(`${returnPath}?support=invalid#support`);
   }
 
-  const replyTo = email;
+  const replyTo = isValidEmail(email) ? email : undefined;
 
   try {
     const result = await sendEmail({
-      to: WASL_HELLO_EMAIL,
+      to: WASL_SUPPORT_EMAIL,
+      from: WASL_SUPPORT_EMAIL,
       replyTo,
-      subject: `New Wasl onboarding request: ${restaurantName}`,
+      subject: `Dashboard support: ${subject}`,
       text: [
-        'New restaurant/cafe onboarding discussion request.',
+        'Support message from dashboard',
         '',
-        `Restaurant/cafe: ${restaurantName}`,
-        `Contact name: ${contactName}`,
-        `Email: ${email}`,
-        `WhatsApp: ${whatsapp ?? 'Not provided'}`,
+        `Reply-to: ${replyTo ?? 'Not provided'}`,
         '',
         'Message:',
         message,
@@ -73,11 +68,11 @@ export const sendLandingContactAction = async (formData: FormData) => {
     });
 
     if (!result.ok) {
-      redirect(`${returnPath}?contact=error#contact`);
+      redirect(`${returnPath}?support=error#support`);
     }
 
-    redirect(`${returnPath}?contact=sent#contact`);
+    redirect(`${returnPath}?support=sent#support`);
   } catch {
-    redirect(`${returnPath}?contact=error#contact`);
+    redirect(`${returnPath}?support=error#support`);
   }
 };
