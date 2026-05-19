@@ -2,6 +2,7 @@ import { asc, eq } from 'drizzle-orm';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+import { ConfirmSubmitButton } from '@/components/ConfirmSubmitButton';
 import { FormSubmitButton } from '@/components/FormSubmitButton';
 import { MenuItemImageUploadField } from '@/components/MenuItemImageUploadField';
 import { db } from '@/libs/DB';
@@ -17,6 +18,7 @@ import {
   applyAdminMenuTemplateAction,
   createAdminMenuCategoryAction,
   createAdminMenuItemAction,
+  deleteAdminMenuCategoryAction,
   updateAdminMenuCategoryAction,
   updateAdminMenuItemAction,
 } from '../../actions';
@@ -172,6 +174,10 @@ const AdminMenuDetailPage = async (props: {
     statusMessage = 'Uploaded image must be JPG, PNG, or WEBP.';
   } else if (props.searchParams?.status === 'image_too_large') {
     statusMessage = 'Uploaded image must be 300 KB or smaller.';
+  } else if (props.searchParams?.status === 'category_in_use') {
+    statusMessage = 'This category can’t be deleted while it has subcategories or items assigned.';
+  } else if (props.searchParams?.status === 'category_deleted') {
+    statusMessage = 'Category deleted.';
   }
 
   return (
@@ -351,89 +357,102 @@ const AdminMenuDetailPage = async (props: {
               );
 
               return (
-                <form
-                  key={category.id}
-                  action={updateAdminMenuCategoryAction}
-                  className="grid gap-3 rounded-md border p-4"
-                >
-                  <input type="hidden" name="organizationId" value={organizationId} />
-                  <input type="hidden" name="categoryId" value={category.id} />
-                  <div>
-                    <div className="font-medium">
-                      {getLocalizedMenuText(
-                        'en',
-                        {
-                          en: category.nameEn,
-                          ar: category.nameAr,
-                          fr: category.nameFr,
-                          legacy: category.name,
-                        },
-                        category.name,
-                      )}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {category.parentCategoryId === null
-                        ? 'Root category'
-                        : `Subcategory of ${getLocalizedMenuText(
+                <div key={category.id}>
+                  <form
+                    action={updateAdminMenuCategoryAction}
+                    className="grid gap-3 rounded-md border p-4"
+                  >
+                    <input type="hidden" name="organizationId" value={organizationId} />
+                    <input type="hidden" name="categoryId" value={category.id} />
+                    <div>
+                      <div className="font-medium">
+                        {getLocalizedMenuText(
                           'en',
                           {
-                            en: parentCategory?.nameEn,
-                            ar: parentCategory?.nameAr,
-                            fr: parentCategory?.nameFr,
-                            legacy: parentCategory?.name,
+                            en: category.nameEn,
+                            ar: category.nameAr,
+                            fr: category.nameFr,
+                            legacy: category.name,
                           },
-                          parentCategory?.name ?? '',
-                        )}`}
+                          category.name,
+                        )}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {category.parentCategoryId === null
+                          ? 'Root category'
+                          : `Subcategory of ${getLocalizedMenuText(
+                            'en',
+                            {
+                              en: parentCategory?.nameEn,
+                              ar: parentCategory?.nameAr,
+                              fr: parentCategory?.nameFr,
+                              legacy: parentCategory?.name,
+                            },
+                            parentCategory?.name ?? '',
+                          )}`}
+                      </div>
                     </div>
-                  </div>
-                  <MultilingualNameFields
-                    idPrefix={`category-${category.id}`}
-                    values={{
-                      nameEn: category.nameEn,
-                      nameAr: category.nameAr,
-                      nameFr: category.nameFr,
-                      legacyName: category.name,
-                    }}
-                  />
-                  <label className="grid gap-1 text-xs font-medium text-muted-foreground">
-                    Parent category
-                    <select
-                      name="parentCategoryId"
-                      defaultValue={category.parentCategoryId ?? ''}
-                      className={inputClassName}
-                    >
-                      <option value="">Root category</option>
-                      {rootCategories
-                        .filter(rootCategory => rootCategory.id !== category.id)
-                        .map(rootCategory => (
-                          <option key={rootCategory.id} value={rootCategory.id}>
-                            {getLocalizedMenuText(
-                              'en',
-                              {
-                                en: rootCategory.nameEn,
-                                ar: rootCategory.nameAr,
-                                fr: rootCategory.nameFr,
-                                legacy: rootCategory.name,
-                              },
-                              rootCategory.name,
-                            )}
-                          </option>
-                        ))}
-                    </select>
-                  </label>
-                  <label className="grid gap-1 text-xs font-medium text-muted-foreground sm:max-w-40">
-                    Display order
-                    <input
-                      name="displayOrder"
-                      type="number"
-                      defaultValue={category.displayOrder}
-                      className={inputClassName}
+                    <MultilingualNameFields
+                      idPrefix={`category-${category.id}`}
+                      values={{
+                        nameEn: category.nameEn,
+                        nameAr: category.nameAr,
+                        nameFr: category.nameFr,
+                        legacyName: category.name,
+                      }}
                     />
-                  </label>
-                  <FormSubmitButton pendingLabel="Saving..." size="sm">
-                    Save category
-                  </FormSubmitButton>
-                </form>
+                    <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                      Parent category
+                      <select
+                        name="parentCategoryId"
+                        defaultValue={category.parentCategoryId ?? ''}
+                        className={inputClassName}
+                      >
+                        <option value="">Root category</option>
+                        {rootCategories
+                          .filter(rootCategory => rootCategory.id !== category.id)
+                          .map(rootCategory => (
+                            <option key={rootCategory.id} value={rootCategory.id}>
+                              {getLocalizedMenuText(
+                                'en',
+                                {
+                                  en: rootCategory.nameEn,
+                                  ar: rootCategory.nameAr,
+                                  fr: rootCategory.nameFr,
+                                  legacy: rootCategory.name,
+                                },
+                                rootCategory.name,
+                              )}
+                            </option>
+                          ))}
+                      </select>
+                    </label>
+                    <label className="grid gap-1 text-xs font-medium text-muted-foreground sm:max-w-40">
+                      Display order
+                      <input
+                        name="displayOrder"
+                        type="number"
+                        defaultValue={category.displayOrder}
+                        className={inputClassName}
+                      />
+                    </label>
+                    <FormSubmitButton pendingLabel="Saving..." size="sm">
+                      Save category
+                    </FormSubmitButton>
+                  </form>
+                  <form action={deleteAdminMenuCategoryAction} className="mt-2">
+                    <input type="hidden" name="organizationId" value={organizationId} />
+                    <input type="hidden" name="categoryId" value={category.id} />
+                    <ConfirmSubmitButton
+                      confirmMessage="Are you sure you want to delete this category?"
+                      pendingLabel="Deleting..."
+                      variant="destructive"
+                      size="sm"
+                    >
+                      Delete category
+                    </ConfirmSubmitButton>
+                  </form>
+                </div>
               );
             })}
           </div>

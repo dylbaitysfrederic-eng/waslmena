@@ -1299,6 +1299,63 @@ export const updateAdminMenuCategoryAction = async (formData: FormData) => {
   revalidateAdminPaths('/admin/menu', '/dashboard/menu-categories');
 };
 
+export const deleteAdminMenuCategoryAction = async (formData: FormData) => {
+  await assertAdmin();
+
+  const organizationId = getOrganizationId(formData);
+  const categoryId = Number.parseInt(
+    formData.get('categoryId')?.toString() ?? '',
+    10,
+  );
+
+  if (!organizationId || Number.isNaN(categoryId)) {
+    return;
+  }
+
+  const [childCategory] = await db
+    .select({ id: menuCategorySchema.id })
+    .from(menuCategorySchema)
+    .where(
+      and(
+        eq(menuCategorySchema.parentCategoryId, categoryId),
+        eq(menuCategorySchema.organizationId, organizationId),
+      ),
+    )
+    .limit(1);
+
+  if (childCategory) {
+    redirect(`/admin/menu/${organizationId}?status=category_in_use`);
+  }
+
+  const [categoryItem] = await db
+    .select({ id: menuItemSchema.id })
+    .from(menuItemSchema)
+    .where(
+      and(
+        eq(menuItemSchema.categoryId, categoryId),
+        eq(menuItemSchema.organizationId, organizationId),
+      ),
+    )
+    .limit(1);
+
+  if (categoryItem) {
+    redirect(`/admin/menu/${organizationId}?status=category_in_use`);
+  }
+
+  await db
+    .delete(menuCategorySchema)
+    .where(
+      and(
+        eq(menuCategorySchema.id, categoryId),
+        eq(menuCategorySchema.organizationId, organizationId),
+      ),
+    );
+
+  revalidateAdminPaths('/admin/menu', '/dashboard/menu-categories', `/r/${organizationId}/menu`);
+
+  redirect(`/admin/menu/${organizationId}?status=category_deleted`);
+};
+
 export const createAdminMenuItemAction = async (formData: FormData) => {
   await assertAdmin();
 
