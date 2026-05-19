@@ -1,3 +1,10 @@
+## [1.5.4](https://github.com/dylbaitysfrederic-eng/waslmena/compare/v1.5.3...v1.5.4) (2026-05-19)
+
+
+### Bug Fixes
+
+* simplify QR card layout ([9d22e73](https://github.com/dylbaitysfrederic-eng/waslmena/commit/9d22e73112ba1edddd27ab5d84efb6350d4b6069))
+
 ## [1.5.3](https://github.com/dylbaitysfrederic-eng/waslmena/compare/v1.5.2...v1.5.3) (2026-05-19)
 
 
