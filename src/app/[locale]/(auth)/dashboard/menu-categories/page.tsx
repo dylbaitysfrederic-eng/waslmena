@@ -93,7 +93,7 @@ const MenuCategoryLanguageFields = (props: {
   </div>
 );
 
-const VALID_FORM_ERRORS = ['missing_name'] as const;
+const VALID_FORM_ERRORS = ['missing_name', 'category_in_use'] as const;
 
 type MenuCategoryRow = {
   id: number;

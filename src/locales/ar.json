@@ -418,6 +418,7 @@
     "name_ar_label": "الاسم بالعربية",
     "name_fr_label": "الاسم بالفرنسية",
     "error_missing_name": "أدخل اسم الفئة بلغة واحدة على الأقل.",
+    "error_category_in_use": "لا يمكن حذف هذه الفئة طالما تحتوي على فئات فرعية أو أصناف مرتبطة.",
     "parent_category_label": "الفئة الرئيسية",
     "parent_category_none": "فئة رئيسية",
     "subcategory_badge": "فئة فرعية",

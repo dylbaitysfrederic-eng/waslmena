@@ -157,6 +157,9 @@ const AdminMenuDetailPage = async (props: {
   ]);
 
   const organizationCategories = categories;
+  const rootCategories = organizationCategories.filter(
+    category => category.parentCategoryId === null,
+  );
   const mainCategories = organizationCategories.filter(
     category => category.parentCategoryId === null,
   );
@@ -314,32 +317,12 @@ const AdminMenuDetailPage = async (props: {
             </p>
           </div>
           <MultilingualNameFields idPrefix={`category-create-${organizationId}`} />
-          <label className="grid gap-1 text-xs font-medium text-muted-foreground sm:max-w-40">
-            Display order
-            <input
-              name="displayOrder"
-              type="number"
-              defaultValue={organizationCategories.length}
-              className={inputClassName}
-            />
-          </label>
-          <FormSubmitButton pendingLabel="Creating..." size="sm">
-            Create category
-          </FormSubmitButton>
-        </form>
-
-        {organizationCategories.length > 0 && (
-          <div className="grid gap-3">
-            <h4 className="font-medium">Categories</h4>
-            {organizationCategories.map(category => (
-              <form
-                key={category.id}
-                action={updateAdminMenuCategoryAction}
-                className="grid gap-3 rounded-md border p-4"
-              >
-                <input type="hidden" name="organizationId" value={organizationId} />
-                <input type="hidden" name="categoryId" value={category.id} />
-                <div className="font-medium">
+          <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+            Parent category
+            <select name="parentCategoryId" className={inputClassName} defaultValue="">
+              <option value="">Root category</option>
+              {rootCategories.map(category => (
+                <option key={category.id} value={category.id}>
                   {getLocalizedMenuText(
                     'en',
                     {
@@ -350,30 +333,109 @@ const AdminMenuDetailPage = async (props: {
                     },
                     category.name,
                   )}
-                </div>
-                <MultilingualNameFields
-                  idPrefix={`category-${category.id}`}
-                  values={{
-                    nameEn: category.nameEn,
-                    nameAr: category.nameAr,
-                    nameFr: category.nameFr,
-                    legacyName: category.name,
-                  }}
-                />
-                <label className="grid gap-1 text-xs font-medium text-muted-foreground sm:max-w-40">
-                  Display order
-                  <input
-                    name="displayOrder"
-                    type="number"
-                    defaultValue={category.displayOrder}
-                    className={inputClassName}
+                </option>
+              ))}
+            </select>
+          </label>
+          <FormSubmitButton pendingLabel="Creating..." size="sm">
+            Create category
+          </FormSubmitButton>
+        </form>
+
+        {organizationCategories.length > 0 && (
+          <div className="grid gap-3">
+            <h4 className="font-medium">Categories</h4>
+            {organizationCategories.map((category) => {
+              const parentCategory = organizationCategories.find(
+                parent => parent.id === category.parentCategoryId,
+              );
+
+              return (
+                <form
+                  key={category.id}
+                  action={updateAdminMenuCategoryAction}
+                  className="grid gap-3 rounded-md border p-4"
+                >
+                  <input type="hidden" name="organizationId" value={organizationId} />
+                  <input type="hidden" name="categoryId" value={category.id} />
+                  <div>
+                    <div className="font-medium">
+                      {getLocalizedMenuText(
+                        'en',
+                        {
+                          en: category.nameEn,
+                          ar: category.nameAr,
+                          fr: category.nameFr,
+                          legacy: category.name,
+                        },
+                        category.name,
+                      )}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {category.parentCategoryId === null
+                        ? 'Root category'
+                        : `Subcategory of ${getLocalizedMenuText(
+                          'en',
+                          {
+                            en: parentCategory?.nameEn,
+                            ar: parentCategory?.nameAr,
+                            fr: parentCategory?.nameFr,
+                            legacy: parentCategory?.name,
+                          },
+                          parentCategory?.name ?? '',
+                        )}`}
+                    </div>
+                  </div>
+                  <MultilingualNameFields
+                    idPrefix={`category-${category.id}`}
+                    values={{
+                      nameEn: category.nameEn,
+                      nameAr: category.nameAr,
+                      nameFr: category.nameFr,
+                      legacyName: category.name,
+                    }}
                   />
-                </label>
-                <FormSubmitButton pendingLabel="Saving..." size="sm">
-                  Save category
-                </FormSubmitButton>
-              </form>
-            ))}
+                  <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                    Parent category
+                    <select
+                      name="parentCategoryId"
+                      defaultValue={category.parentCategoryId ?? ''}
+                      className={inputClassName}
+                    >
+                      <option value="">Root category</option>
+                      {rootCategories
+                        .filter(rootCategory => rootCategory.id !== category.id)
+                        .map(rootCategory => (
+                          <option key={rootCategory.id} value={rootCategory.id}>
+                            {getLocalizedMenuText(
+                              'en',
+                              {
+                                en: rootCategory.nameEn,
+                                ar: rootCategory.nameAr,
+                                fr: rootCategory.nameFr,
+                                legacy: rootCategory.name,
+                              },
+                              rootCategory.name,
+                            )}
+                          </option>
+                        ))}
+                    </select>
+                  </label>
+                  <label className="grid gap-1 text-xs font-medium text-muted-foreground sm:max-w-40">
+                    Display order
+                    <input
+                      name="displayOrder"
+                      type="number"
+                      defaultValue={category.displayOrder}
+                      className={inputClassName}
+                    />
+                  </label>
+                  <FormSubmitButton pendingLabel="Saving..." size="sm">
+                    Save category
+                  </FormSubmitButton>
+                </form>
+              );
+            })}
           </div>
         )}
 
