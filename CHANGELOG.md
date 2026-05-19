@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/dylbaitysfrederic-eng/waslmena/compare/v1.5.6...v1.6.0) (2026-05-19)
+
+
+### Features
+
+* improve menu category handling ([0c33d76](https://github.com/dylbaitysfrederic-eng/waslmena/commit/0c33d76adb0d609750e2d4c5628dabcc45ec9e59))
+
 ## [1.5.6](https://github.com/dylbaitysfrederic-eng/waslmena/compare/v1.5.5...v1.5.6) (2026-05-19)
 
 
