@@ -418,6 +418,7 @@
     "name_ar_label": "Nom en arabe",
     "name_fr_label": "Nom en français",
     "error_missing_name": "Entrez un nom de catégorie dans au moins une langue.",
+    "error_category_in_use": "Cette catégorie ne peut pas être supprimée tant qu’elle contient des sous-catégories ou des articles.",
     "parent_category_label": "Catégorie parente",
     "parent_category_none": "Catégorie principale",
     "subcategory_badge": "Sous-catégorie",

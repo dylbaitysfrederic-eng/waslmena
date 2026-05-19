@@ -418,6 +418,7 @@
     "name_ar_label": "Arabic name",
     "name_fr_label": "French name",
     "error_missing_name": "Enter a category name in at least one language.",
+    "error_category_in_use": "This category can’t be deleted while it has subcategories or items assigned.",
     "parent_category_label": "Parent category",
     "parent_category_none": "Main category",
     "subcategory_badge": "Subcategory",

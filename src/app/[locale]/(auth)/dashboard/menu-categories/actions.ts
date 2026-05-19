@@ -6,7 +6,7 @@ import { redirect } from 'next/navigation';
 
 import { getActiveRestaurantOrganizationId } from '@/features/dashboard/RestaurantAccess';
 import { db } from '@/libs/DB';
-import { menuCategorySchema } from '@/models/Schema';
+import { menuCategorySchema, menuItemSchema } from '@/models/Schema';
 import {
   getPrimaryMenuText,
   hasAnyMenuText,
@@ -162,6 +162,36 @@ export const deleteMenuCategoryAction = async (formData: FormData) => {
 
   if (!organizationId || Number.isNaN(categoryId)) {
     return;
+  }
+
+  const [childCategory] = await db
+    .select({ id: menuCategorySchema.id })
+    .from(menuCategorySchema)
+    .where(
+      and(
+        eq(menuCategorySchema.parentCategoryId, categoryId),
+        eq(menuCategorySchema.organizationId, organizationId),
+      ),
+    )
+    .limit(1);
+
+  if (childCategory) {
+    redirectWithError(returnPath, 'category_in_use');
+  }
+
+  const [categoryItem] = await db
+    .select({ id: menuItemSchema.id })
+    .from(menuItemSchema)
+    .where(
+      and(
+        eq(menuItemSchema.categoryId, categoryId),
+        eq(menuItemSchema.organizationId, organizationId),
+      ),
+    )
+    .limit(1);
+
+  if (categoryItem) {
+    redirectWithError(returnPath, 'category_in_use');
   }
 
   await db
