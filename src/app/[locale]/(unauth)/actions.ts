@@ -54,15 +54,17 @@ export const sendLandingContactAction = async (formData: FormData) => {
 
   const replyTo = email;
 
+  let result;
+
   try {
-    const result = await sendEmail({
+    result = await sendEmail({
       to: WASL_HELLO_EMAIL,
       replyTo,
       subject: `New Wasl onboarding request: ${restaurantName}`,
       text: [
-        'New restaurant/cafe onboarding discussion request.',
+        'New hospitality venue onboarding discussion request.',
         '',
-        `Restaurant/cafe: ${restaurantName}`,
+        `Hospitality venue: ${restaurantName}`,
         `Contact name: ${contactName}`,
         `Email: ${email}`,
         `WhatsApp: ${whatsapp ?? 'Not provided'}`,
@@ -71,13 +73,13 @@ export const sendLandingContactAction = async (formData: FormData) => {
         message,
       ].join('\n'),
     });
-
-    if (!result.ok) {
-      redirect(`${returnPath}?contact=error#contact`);
-    }
-
-    redirect(`${returnPath}?contact=sent#contact`);
   } catch {
     redirect(`${returnPath}?contact=error#contact`);
   }
+
+  if (!result?.ok) {
+    redirect(`${returnPath}?contact=error#contact`);
+  }
+
+  redirect(`${returnPath}?contact=sent#contact`);
 };
