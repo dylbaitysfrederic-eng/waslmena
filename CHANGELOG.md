@@ -1,3 +1,10 @@
+## [1.5.5](https://github.com/dylbaitysfrederic-eng/waslmena/compare/v1.5.4...v1.5.5) (2026-05-19)
+
+
+### Bug Fixes
+
+* improve landing contact form handling ([37f0805](https://github.com/dylbaitysfrederic-eng/waslmena/commit/37f08058c74e95d08e46c249d6cb483fbfeb8cf8))
+
 ## [1.5.4](https://github.com/dylbaitysfrederic-eng/waslmena/compare/v1.5.3...v1.5.4) (2026-05-19)
 
 
