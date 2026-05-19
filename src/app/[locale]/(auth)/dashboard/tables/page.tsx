@@ -125,7 +125,7 @@ const RestaurantTablesPage = async (props: { params: { locale: string } }) => {
         >
           <div className="grid gap-5">
             {showGeneralQr && (
-              <div className="grid gap-6 rounded-md border bg-background p-4 sm:p-5 lg:grid-cols-[minmax(220px,280px)_minmax(0,1fr)] lg:items-center">
+              <div className="grid gap-6 rounded-md border bg-background p-4 sm:p-5 lg:grid-cols-[minmax(240px,320px)_minmax(260px,1fr)] lg:items-start">
                 <div className="flex justify-center">
                   <TableQrCode
                     backgroundColor={organization?.qrBackgroundColor ?? '#ffffff'}
@@ -148,7 +148,7 @@ const RestaurantTablesPage = async (props: { params: { locale: string } }) => {
                     qrCodeTitle={t('general_qr_code_title')}
                   />
                 </div>
-                <div className="flex min-w-0 flex-col justify-center gap-4 lg:py-4">
+                <div className="flex min-w-[260px] flex-col justify-center gap-4 lg:py-4">
                   <div className="space-y-2">
                     <h3 className="text-base font-semibold">
                       {t('general_qr_section_title')}
@@ -157,14 +157,14 @@ const RestaurantTablesPage = async (props: { params: { locale: string } }) => {
                       {t('general_qr_section_description')}
                     </p>
                   </div>
-                  <div className="grid min-w-0 gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+                  <div className="grid min-w-0 gap-2">
                     <Input
                       value={generalMenuUrl}
                       readOnly
                       aria-label={t('public_menu_url_label')}
-                      className="min-w-0 truncate font-mono text-xs"
+                      className="w-full truncate font-mono text-xs"
                     />
-                    <Button asChild variant="outline" size="sm" className="shrink-0">
+                    <Button asChild variant="outline" size="sm" className="w-full">
                       <Link href={generalMenuUrl}>
                         {t('open_public_menu_link')}
                       </Link>
