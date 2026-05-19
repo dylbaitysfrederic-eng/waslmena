@@ -1,3 +1,10 @@
+## [1.5.3](https://github.com/dylbaitysfrederic-eng/waslmena/compare/v1.5.2...v1.5.3) (2026-05-19)
+
+
+### Bug Fixes
+
+* stabilize QR desktop card width ([e28ed25](https://github.com/dylbaitysfrederic-eng/waslmena/commit/e28ed257de852858f6a1edd811e99350c44ef6d3))
+
 ## [1.5.2](https://github.com/dylbaitysfrederic-eng/waslmena/compare/v1.5.1...v1.5.2) (2026-05-19)
 
 
