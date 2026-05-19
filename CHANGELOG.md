@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/dylbaitysfrederic-eng/waslmena/compare/v1.5.0...v1.6.0) (2026-05-19)
+
+
+### Features
+
+* improve menu images and contact forms ([07572d1](https://github.com/dylbaitysfrederic-eng/waslmena/commit/07572d1a5e20f97ef37281a8af3598985f660e1b))
+
 # [1.5.0](https://github.com/dylbaitysfrederic-eng/waslmena/compare/v1.4.1...v1.5.0) (2026-05-18)
 
 
