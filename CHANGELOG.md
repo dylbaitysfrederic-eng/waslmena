@@ -1,3 +1,10 @@
+## [1.6.1](https://github.com/dylbaitysfrederic-eng/waslmena/compare/v1.6.0...v1.6.1) (2026-05-19)
+
+
+### Bug Fixes
+
+* stabilize admin menu recovery ([9068c7a](https://github.com/dylbaitysfrederic-eng/waslmena/commit/9068c7a4075d2e6b6ad7fbf1d31389ae5595a5dc))
+
 # [1.6.0](https://github.com/dylbaitysfrederic-eng/waslmena/compare/v1.5.0...v1.6.0) (2026-05-19)
 
 
