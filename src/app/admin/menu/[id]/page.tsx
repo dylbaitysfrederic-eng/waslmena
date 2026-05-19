@@ -179,6 +179,8 @@ const AdminMenuDetailPage = async (props: {
     statusMessage = 'This category can’t be deleted while it has subcategories or items assigned.';
   } else if (props.searchParams?.status === 'category_deleted') {
     statusMessage = 'Category deleted.';
+  } else if (props.searchParams?.status === 'item_deleted') {
+    statusMessage = 'Item deleted.';
   }
 
   return (
