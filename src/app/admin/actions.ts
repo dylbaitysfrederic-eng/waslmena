@@ -1497,6 +1497,33 @@ export const updateAdminMenuItemAction = async (formData: FormData) => {
   revalidateAdminPaths('/admin/menu', '/dashboard/menu-items');
 };
 
+export const deleteAdminMenuItemAction = async (formData: FormData) => {
+  await assertAdmin();
+
+  const organizationId = getOrganizationId(formData);
+  const itemId = Number.parseInt(
+    formData.get('itemId')?.toString() ?? '',
+    10,
+  );
+
+  if (!organizationId || Number.isNaN(itemId)) {
+    return;
+  }
+
+  await db
+    .delete(menuItemSchema)
+    .where(
+      and(
+        eq(menuItemSchema.id, itemId),
+        eq(menuItemSchema.organizationId, organizationId),
+      ),
+    );
+
+  revalidateAdminPaths('/admin/menu', '/dashboard/menu-items', `/r/${organizationId}/menu`);
+
+  redirect(`/admin/menu/${organizationId}?status=item_deleted`);
+};
+
 export const updateAdminSettingsAction = async (formData: FormData) => {
   await assertAdmin();
 

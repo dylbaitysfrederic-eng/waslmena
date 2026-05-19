@@ -19,6 +19,7 @@ import {
   createAdminMenuCategoryAction,
   createAdminMenuItemAction,
   deleteAdminMenuCategoryAction,
+  deleteAdminMenuItemAction,
   updateAdminMenuCategoryAction,
   updateAdminMenuItemAction,
 } from '../../actions';
@@ -523,107 +524,120 @@ const AdminMenuDetailPage = async (props: {
           <div className="grid gap-3">
             <h4 className="font-medium">Menu items</h4>
             {organizationItems.map(item => (
-              <form
-                key={item.id}
-                action={updateAdminMenuItemAction}
-                encType="multipart/form-data"
-                className="grid gap-3 rounded-md border p-4"
-              >
-                <input type="hidden" name="organizationId" value={organizationId} />
-                <input type="hidden" name="itemId" value={item.id} />
-                <div className="font-medium">
-                  {getLocalizedMenuText(
-                    'en',
-                    {
-                      en: item.nameEn,
-                      ar: item.nameAr,
-                      fr: item.nameFr,
-                      legacy: item.name,
-                    },
-                    item.name,
-                  )}
-                </div>
-                <label className="grid gap-1 text-xs font-medium text-muted-foreground">
-                  Category
-                  <select
-                    name="categoryId"
-                    defaultValue={item.categoryId}
-                    className={inputClassName}
-                    required
+              <div key={item.id}>
+                <form
+                  action={updateAdminMenuItemAction}
+                  encType="multipart/form-data"
+                  className="grid gap-3 rounded-md border p-4"
+                >
+                  <input type="hidden" name="organizationId" value={organizationId} />
+                  <input type="hidden" name="itemId" value={item.id} />
+                  <div className="font-medium">
+                    {getLocalizedMenuText(
+                      'en',
+                      {
+                        en: item.nameEn,
+                        ar: item.nameAr,
+                        fr: item.nameFr,
+                        legacy: item.name,
+                      },
+                      item.name,
+                    )}
+                  </div>
+                  <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                    Category
+                    <select
+                      name="categoryId"
+                      defaultValue={item.categoryId}
+                      className={inputClassName}
+                      required
+                    >
+                      {organizationCategories.map(category => (
+                        <option key={category.id} value={category.id}>
+                          {getLocalizedMenuText(
+                            'en',
+                            {
+                              en: category.nameEn,
+                              ar: category.nameAr,
+                              fr: category.nameFr,
+                              legacy: category.name,
+                            },
+                            category.name,
+                          )}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <MultilingualItemFields
+                    idPrefix={`item-${item.id}`}
+                    values={{
+                      nameEn: item.nameEn,
+                      nameAr: item.nameAr,
+                      nameFr: item.nameFr,
+                      descriptionEn: item.descriptionEn,
+                      descriptionAr: item.descriptionAr,
+                      descriptionFr: item.descriptionFr,
+                      legacyName: item.name,
+                      legacyDescription: item.description,
+                    }}
+                  />
+                  <MenuItemImageUploadField
+                    fieldId={`item-image-${item.id}`}
+                    urlFieldName="imageUrl"
+                    fileFieldName="imageFile"
+                    label="Image URL (optional)"
+                    helpText="Optional. Use a public image URL or upload a lightweight image file."
+                    placeholder="https://example.com/image.jpg"
+                    currentImageUrl={item.imageUrl}
+                  />
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                      USD cents
+                      <input
+                        name="priceUsdCents"
+                        type="number"
+                        min={0}
+                        defaultValue={formatUsdCents(item.priceUsdCents)}
+                        className={inputClassName}
+                      />
+                    </label>
+                    <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                      {localCurrencyLabel}
+                      <input
+                        name="priceLbp"
+                        type="number"
+                        min={0}
+                        defaultValue={item.priceLbp ?? ''}
+                        className={inputClassName}
+                      />
+                    </label>
+                    <label className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                      <input
+                        name="isAvailable"
+                        type="checkbox"
+                        defaultChecked={item.isAvailable}
+                        className="size-4"
+                      />
+                      Available
+                    </label>
+                  </div>
+                  <FormSubmitButton pendingLabel="Saving..." size="sm">
+                    Save item
+                  </FormSubmitButton>
+                </form>
+                <form action={deleteAdminMenuItemAction} className="mt-2">
+                  <input type="hidden" name="organizationId" value={organizationId} />
+                  <input type="hidden" name="itemId" value={item.id} />
+                  <ConfirmSubmitButton
+                    confirmMessage="Are you sure you want to delete this item?"
+                    pendingLabel="Deleting..."
+                    variant="destructive"
+                    size="sm"
                   >
-                    {organizationCategories.map(category => (
-                      <option key={category.id} value={category.id}>
-                        {getLocalizedMenuText(
-                          'en',
-                          {
-                            en: category.nameEn,
-                            ar: category.nameAr,
-                            fr: category.nameFr,
-                            legacy: category.name,
-                          },
-                          category.name,
-                        )}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <MultilingualItemFields
-                  idPrefix={`item-${item.id}`}
-                  values={{
-                    nameEn: item.nameEn,
-                    nameAr: item.nameAr,
-                    nameFr: item.nameFr,
-                    descriptionEn: item.descriptionEn,
-                    descriptionAr: item.descriptionAr,
-                    descriptionFr: item.descriptionFr,
-                    legacyName: item.name,
-                    legacyDescription: item.description,
-                  }}
-                />
-                <MenuItemImageUploadField
-                  fieldId={`item-image-${item.id}`}
-                  urlFieldName="imageUrl"
-                  fileFieldName="imageFile"
-                  label="Image URL (optional)"
-                  helpText="Optional. Use a public image URL or upload a lightweight image file."
-                  placeholder="https://example.com/image.jpg"
-                  currentImageUrl={item.imageUrl}
-                />
-                <div className="grid gap-3 sm:grid-cols-3">
-                  <label className="grid gap-1 text-xs font-medium text-muted-foreground">
-                    USD cents
-                    <input
-                      name="priceUsdCents"
-                      type="number"
-                      min={0}
-                      defaultValue={formatUsdCents(item.priceUsdCents)}
-                      className={inputClassName}
-                    />
-                  </label>
-                  <label className="grid gap-1 text-xs font-medium text-muted-foreground">
-                    {localCurrencyLabel}
-                    <input
-                      name="priceLbp"
-                      type="number"
-                      min={0}
-                      defaultValue={item.priceLbp ?? ''}
-                      className={inputClassName}
-                    />
-                  </label>
-                  <label className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-                    <input
-                      name="isAvailable"
-                      type="checkbox"
-                      defaultChecked={item.isAvailable}
-                      className="size-4"
-                    />
-                    Available
-                  </label>
-                </div>
-                <FormSubmitButton pendingLabel="Saving..." size="sm">
-                  Save item
-                </FormSubmitButton>
-              </form>
+                    Delete item
+                  </ConfirmSubmitButton>
+                </form>
+              </div>
             ))}
           </div>
         )}
