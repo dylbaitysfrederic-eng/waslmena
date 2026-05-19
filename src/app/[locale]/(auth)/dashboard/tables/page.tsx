@@ -125,8 +125,8 @@ const RestaurantTablesPage = async (props: { params: { locale: string } }) => {
         >
           <div className="grid gap-5">
             {showGeneralQr && (
-              <div className="box-border grid w-full max-w-full gap-6 overflow-hidden rounded-md border bg-background p-4 sm:p-5 lg:grid-cols-[minmax(240px,320px)_minmax(260px,1fr)] lg:items-start">
-                <div className="flex w-full max-w-[320px] justify-center">
+              <div className="box-border grid w-full gap-6 rounded-md border bg-background p-4 sm:p-5 lg:grid-cols-[minmax(260px,320px)_minmax(0,1fr)] lg:items-start">
+                <div className="flex w-full justify-center">
                   <TableQrCode
                     backgroundColor={organization?.qrBackgroundColor ?? '#ffffff'}
                     foregroundColor={organization?.qrForegroundColor ?? '#111827'}
@@ -148,7 +148,7 @@ const RestaurantTablesPage = async (props: { params: { locale: string } }) => {
                     qrCodeTitle={t('general_qr_code_title')}
                   />
                 </div>
-                <div className="flex w-full min-w-[260px] flex-col justify-center gap-4 lg:py-4">
+                <div className="flex w-full flex-col justify-center gap-4 lg:py-4">
                   <div className="space-y-2">
                     <h3 className="text-base font-semibold">
                       {t('general_qr_section_title')}
