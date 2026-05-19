@@ -96,6 +96,7 @@ export const organizationSchema = pgTable(
       'stripe_subscription_current_period_end',
       { mode: 'number' },
     ),
+    showMenuItemImages: boolean('show_menu_item_images').default(true).notNull(),
     updatedAt: timestamp('updated_at', { mode: 'date' })
       .defaultNow()
       .$onUpdate(() => new Date())
@@ -179,6 +180,7 @@ export const menuItemSchema = pgTable('menu_item', {
   imageUrl: text('image_url'),
   priceUsdCents: integer('price_usd_cents'),
   priceLbp: integer('price_lbp'),
+  displayOrder: integer('display_order').default(1).notNull(),
   isAvailable: boolean('is_available').default(true).notNull(),
   createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { mode: 'date' })

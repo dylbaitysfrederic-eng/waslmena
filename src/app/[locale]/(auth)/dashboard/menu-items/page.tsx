@@ -261,6 +261,7 @@ const MenuItemsPage = async (props: {
     .orderBy(
       asc(menuCategorySchema.displayOrder),
       asc(menuCategorySchema.name),
+      asc(menuItemSchema.displayOrder),
       asc(menuItemSchema.name),
     );
 

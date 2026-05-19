@@ -1,7 +1,7 @@
 'use server';
 
 import { clerkClient, currentUser } from '@clerk/nextjs/server';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
@@ -615,6 +615,7 @@ export const createAdminOnboardingAction = async (formData: FormData) => {
       nextPaymentDueDate: normalizeOptionalDate(
         formData.get('nextPaymentDueDate'),
       ),
+      showMenuItemImages: true,
       paymentMethodNote: normalizeOptionalText(formData.get('paymentMethodNote')),
       adminNotes: `Owner invite sent to ${ownerEmail}`,
       internalAdminNotes: `Owner invite sent to ${ownerEmail}`,
@@ -636,6 +637,7 @@ export const createAdminOnboardingAction = async (formData: FormData) => {
         subscriptionStatus,
         accessStatus: 'active',
         accessSuspended: false,
+        showMenuItemImages: true,
       },
     });
 
@@ -1123,6 +1125,7 @@ export const updateAdminTemplatesAction = async (formData: FormData) => {
       QR_STYLE_TEMPLATES,
       'classic',
     ),
+    showMenuItemImages: formData.get('showMenuItemImages') === 'on',
   };
 
   await db
@@ -1199,14 +1202,19 @@ export const createAdminMenuCategoryAction = async (formData: FormData) => {
 
   const organizationId = getOrganizationId(formData);
   const names = getMenuNamesFromForm(formData);
-  const displayOrder = normalizeOptionalInteger(formData.get('displayOrder')) ?? 0;
+  const displayOrder = Math.max((normalizeOptionalInteger(formData.get('displayOrder')) ?? 1), 1);
+  const parentCategoryIdValue = formData.get('parentCategoryId')?.toString();
+  const parentCategoryId = Number.parseInt(parentCategoryIdValue ?? '', 10);
 
   if (!organizationId || !hasAnyMenuText(names)) {
     return;
   }
 
+  const validParentCategoryId = Number.isNaN(parentCategoryId) ? null : parentCategoryId;
+
   await db.insert(menuCategorySchema).values({
     organizationId,
+    parentCategoryId: validParentCategoryId,
     name: getPrimaryMenuText(names, 'Untitled category'),
     nameEn: names.en,
     nameAr: names.ar,
@@ -1215,6 +1223,7 @@ export const createAdminMenuCategoryAction = async (formData: FormData) => {
   });
 
   revalidateAdminPaths('/admin/menu', '/dashboard/menu-categories');
+  redirect(`/admin/menu/${organizationId}`);
 };
 
 export const updateAdminMenuCategoryAction = async (formData: FormData) => {
@@ -1226,15 +1235,22 @@ export const updateAdminMenuCategoryAction = async (formData: FormData) => {
     10,
   );
   const names = getMenuNamesFromForm(formData);
-  const displayOrder = normalizeOptionalInteger(formData.get('displayOrder')) ?? 0;
+  const displayOrder = Math.max((normalizeOptionalInteger(formData.get('displayOrder')) ?? 1), 1);
+  const parentCategoryIdValue = formData.get('parentCategoryId')?.toString();
+  const parentCategoryId = Number.parseInt(parentCategoryIdValue ?? '', 10);
 
   if (!organizationId || Number.isNaN(categoryId) || !hasAnyMenuText(names)) {
     return;
   }
 
+  const validParentCategoryId = Number.isNaN(parentCategoryId)
+    ? null
+    : parentCategoryId;
+
   await db
     .update(menuCategorySchema)
     .set({
+      parentCategoryId: validParentCategoryId,
       name: getPrimaryMenuText(names, 'Untitled category'),
       nameEn: names.en,
       nameAr: names.ar,
@@ -1249,6 +1265,7 @@ export const updateAdminMenuCategoryAction = async (formData: FormData) => {
     );
 
   revalidateAdminPaths('/admin/menu', '/dashboard/menu-categories');
+  redirect(`/admin/menu/${organizationId}`);
 };
 
 export const createAdminMenuItemAction = async (formData: FormData) => {
@@ -1270,6 +1287,7 @@ export const createAdminMenuItemAction = async (formData: FormData) => {
     redirect(`/admin/menu/${organizationId}?status=${(error as Error)?.message || 'invalid_image_type'}`);
   }
 
+  const displayOrder = Math.max((normalizeOptionalInteger(formData.get('displayOrder')) ?? 1), 1);
   const priceUsdCents = normalizeOptionalInteger(formData.get('priceUsdCents'));
   const priceLbp = normalizeOptionalInteger(formData.get('priceLbp'));
 
@@ -1309,12 +1327,14 @@ export const createAdminMenuItemAction = async (formData: FormData) => {
     descriptionAr: descriptions.ar,
     descriptionFr: descriptions.fr,
     imageUrl,
+    displayOrder,
     priceUsdCents,
     priceLbp,
     isAvailable: formData.get('isAvailable') === 'on',
   });
 
   revalidateAdminPaths('/admin/menu', '/dashboard/menu-items');
+  redirect(`/admin/menu/${organizationId}`);
 };
 
 export const updateAdminMenuItemAction = async (formData: FormData) => {
@@ -1337,6 +1357,7 @@ export const updateAdminMenuItemAction = async (formData: FormData) => {
     redirect(`/admin/menu/${organizationId}?status=${(error as Error)?.message || 'invalid_image_type'}`);
   }
 
+  const displayOrder = Math.max((normalizeOptionalInteger(formData.get('displayOrder')) ?? 1), 1);
   const priceUsdCents = normalizeOptionalInteger(formData.get('priceUsdCents'));
   const priceLbp = normalizeOptionalInteger(formData.get('priceLbp'));
 
@@ -1378,6 +1399,7 @@ export const updateAdminMenuItemAction = async (formData: FormData) => {
       descriptionAr: descriptions.ar,
       descriptionFr: descriptions.fr,
       imageUrl,
+      displayOrder,
       priceUsdCents,
       priceLbp,
       isAvailable: formData.get('isAvailable') === 'on',
@@ -1390,6 +1412,89 @@ export const updateAdminMenuItemAction = async (formData: FormData) => {
     );
 
   revalidateAdminPaths('/admin/menu', '/dashboard/menu-items');
+  redirect(`/admin/menu/${organizationId}`);
+};
+
+export const deleteAdminMenuCategoryAction = async (formData: FormData) => {
+  await assertAdmin();
+
+  const organizationId = getOrganizationId(formData);
+  const categoryId = Number.parseInt(
+    formData.get('categoryId')?.toString() ?? '',
+    10,
+  );
+
+  if (!organizationId || Number.isNaN(categoryId)) {
+    return;
+  }
+
+  await db
+    .delete(menuItemSchema)
+    .where(eq(menuItemSchema.categoryId, categoryId));
+
+  const subcategoryIds = (await db
+    .select({ id: menuCategorySchema.id })
+    .from(menuCategorySchema)
+    .where(
+      and(
+        eq(menuCategorySchema.parentCategoryId, categoryId),
+        eq(menuCategorySchema.organizationId, organizationId),
+      ),
+    ))
+    .map(subcategory => subcategory.id);
+
+  if (subcategoryIds.length > 0) {
+    await db
+      .delete(menuItemSchema)
+      .where(inArray(menuItemSchema.categoryId, subcategoryIds));
+  }
+
+  await db
+    .delete(menuCategorySchema)
+    .where(
+      and(
+        eq(menuCategorySchema.parentCategoryId, categoryId),
+        eq(menuCategorySchema.organizationId, organizationId),
+      ),
+    );
+
+  await db
+    .delete(menuCategorySchema)
+    .where(
+      and(
+        eq(menuCategorySchema.id, categoryId),
+        eq(menuCategorySchema.organizationId, organizationId),
+      ),
+    );
+
+  revalidateAdminPaths('/admin/menu', '/dashboard/menu-categories');
+  redirect(`/admin/menu/${organizationId}`);
+};
+
+export const deleteAdminMenuItemAction = async (formData: FormData) => {
+  await assertAdmin();
+
+  const organizationId = getOrganizationId(formData);
+  const itemId = Number.parseInt(
+    formData.get('itemId')?.toString() ?? '',
+    10,
+  );
+
+  if (!organizationId || Number.isNaN(itemId)) {
+    return;
+  }
+
+  await db
+    .delete(menuItemSchema)
+    .where(
+      and(
+        eq(menuItemSchema.id, itemId),
+        eq(menuItemSchema.organizationId, organizationId),
+      ),
+    );
+
+  revalidateAdminPaths('/admin/menu', '/dashboard/menu-items');
+  redirect(`/admin/menu/${organizationId}`);
 };
 
 export const updateAdminSettingsAction = async (formData: FormData) => {

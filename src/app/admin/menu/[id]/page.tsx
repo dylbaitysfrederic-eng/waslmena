@@ -2,6 +2,7 @@ import { asc, eq } from 'drizzle-orm';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+import { ConfirmSubmitButton } from '@/components/ConfirmSubmitButton';
 import { FormSubmitButton } from '@/components/FormSubmitButton';
 import { MenuItemImageUploadField } from '@/components/MenuItemImageUploadField';
 import { db } from '@/libs/DB';
@@ -17,6 +18,8 @@ import {
   applyAdminMenuTemplateAction,
   createAdminMenuCategoryAction,
   createAdminMenuItemAction,
+  deleteAdminMenuCategoryAction,
+  deleteAdminMenuItemAction,
   updateAdminMenuCategoryAction,
   updateAdminMenuItemAction,
 } from '../../actions';
@@ -65,6 +68,28 @@ const MultilingualNameFields = (props: {
     <span className="sr-only">{props.idPrefix}</span>
   </div>
 );
+
+const getCategoryLabel = (category: {
+  id: number;
+  name: string;
+  nameEn: string | null;
+  nameAr: string | null;
+  nameFr: string | null;
+  parentCategoryId: number | null;
+}) => {
+  const label = getLocalizedMenuText(
+    'en',
+    {
+      en: category.nameEn,
+      ar: category.nameAr,
+      fr: category.nameFr,
+      legacy: category.name,
+    },
+    category.name,
+  );
+
+  return category.parentCategoryId === null ? label : `- ${label}`;
+};
 
 const MultilingualItemFields = (props: {
   idPrefix: string;
@@ -153,7 +178,7 @@ const AdminMenuDetailPage = async (props: {
       .select()
       .from(menuItemSchema)
       .where(eq(menuItemSchema.organizationId, organizationId))
-      .orderBy(asc(menuItemSchema.name)),
+      .orderBy(asc(menuItemSchema.displayOrder), asc(menuItemSchema.name)),
   ]);
 
   const organizationCategories = categories;
@@ -315,11 +340,25 @@ const AdminMenuDetailPage = async (props: {
           </div>
           <MultilingualNameFields idPrefix={`category-create-${organizationId}`} />
           <label className="grid gap-1 text-xs font-medium text-muted-foreground sm:max-w-40">
+            Parent category
+            <select name="parentCategoryId" className={inputClassName}>
+              <option value="">Root category</option>
+              {organizationCategories
+                .filter(category => category.parentCategoryId === null)
+                .map(category => (
+                  <option key={category.id} value={category.id}>
+                    {getCategoryLabel(category)}
+                  </option>
+                ))}
+            </select>
+          </label>
+          <label className="grid gap-1 text-xs font-medium text-muted-foreground sm:max-w-40">
             Display order
             <input
               name="displayOrder"
               type="number"
-              defaultValue={organizationCategories.length}
+              min={1}
+              defaultValue={organizationCategories.length + 1}
               className={inputClassName}
             />
           </label>
@@ -361,17 +400,50 @@ const AdminMenuDetailPage = async (props: {
                   }}
                 />
                 <label className="grid gap-1 text-xs font-medium text-muted-foreground sm:max-w-40">
+                  Parent category
+                  <select
+                    name="parentCategoryId"
+                    defaultValue={category.parentCategoryId ?? ''}
+                    className={inputClassName}
+                  >
+                    <option value="">Root category</option>
+                    {organizationCategories
+                      .filter(option => option.parentCategoryId === null && option.id !== category.id)
+                      .map(option => (
+                        <option key={option.id} value={option.id}>
+                          {getCategoryLabel(option)}
+                        </option>
+                      ))}
+                  </select>
+                </label>
+                <label className="grid gap-1 text-xs font-medium text-muted-foreground sm:max-w-40">
                   Display order
                   <input
                     name="displayOrder"
                     type="number"
+                    min={1}
                     defaultValue={category.displayOrder}
                     className={inputClassName}
                   />
                 </label>
-                <FormSubmitButton pendingLabel="Saving..." size="sm">
-                  Save category
-                </FormSubmitButton>
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <FormSubmitButton pendingLabel="Saving..." size="sm">
+                    Save category
+                  </FormSubmitButton>
+                  <form action={deleteAdminMenuCategoryAction} className="w-full sm:w-auto">
+                    <input type="hidden" name="organizationId" value={organizationId} />
+                    <input type="hidden" name="categoryId" value={category.id} />
+                    <ConfirmSubmitButton
+                      confirmMessage="Delete category and its subcategories"
+                      pendingLabel="Deleting..."
+                      variant="destructive"
+                      size="sm"
+                      className="w-full"
+                    >
+                      Delete category
+                    </ConfirmSubmitButton>
+                  </form>
+                </div>
               </form>
             ))}
           </div>
@@ -410,6 +482,16 @@ const AdminMenuDetailPage = async (props: {
               </select>
             </label>
             <MultilingualItemFields idPrefix={`item-create-${organizationId}`} />
+            <label className="grid gap-1 text-xs font-medium text-muted-foreground sm:max-w-40">
+              Display order
+              <input
+                name="displayOrder"
+                type="number"
+                min={1}
+                defaultValue={organizationItems.length + 1}
+                className={inputClassName}
+              />
+            </label>
             <MenuItemImageUploadField
               fieldId="new-item-image"
               urlFieldName="imageUrl"
@@ -486,6 +568,16 @@ const AdminMenuDetailPage = async (props: {
                     ))}
                   </select>
                 </label>
+                <label className="grid gap-1 text-xs font-medium text-muted-foreground sm:max-w-40">
+                  Display order
+                  <input
+                    name="displayOrder"
+                    type="number"
+                    min={1}
+                    defaultValue={item.displayOrder}
+                    className={inputClassName}
+                  />
+                </label>
                 <MultilingualItemFields
                   idPrefix={`item-${item.id}`}
                   values={{
@@ -539,9 +631,24 @@ const AdminMenuDetailPage = async (props: {
                     Available
                   </label>
                 </div>
-                <FormSubmitButton pendingLabel="Saving..." size="sm">
-                  Save item
-                </FormSubmitButton>
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <FormSubmitButton pendingLabel="Saving..." size="sm">
+                    Save item
+                  </FormSubmitButton>
+                  <form action={deleteAdminMenuItemAction} className="w-full sm:w-auto">
+                    <input type="hidden" name="organizationId" value={organizationId} />
+                    <input type="hidden" name="itemId" value={item.id} />
+                    <ConfirmSubmitButton
+                      confirmMessage="Delete this menu item"
+                      pendingLabel="Deleting..."
+                      variant="destructive"
+                      size="sm"
+                      className="w-full"
+                    >
+                      Delete item
+                    </ConfirmSubmitButton>
+                  </form>
+                </div>
               </form>
             ))}
           </div>

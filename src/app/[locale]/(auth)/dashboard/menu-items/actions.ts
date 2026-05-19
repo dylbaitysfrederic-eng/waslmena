@@ -230,6 +230,7 @@ export const createMenuItemAction = async (formData: FormData) => {
     descriptionAr: descriptions.ar,
     descriptionFr: descriptions.fr,
     imageUrl: imageUrl || null,
+    displayOrder: 0,
     priceUsdCents: priceUsdCents.value,
     priceLbp: priceLbp.value,
     isAvailable,
