@@ -1174,7 +1174,7 @@ export const applyAdminMenuTemplateAction = async (formData: FormData) => {
   const hasExistingMenu = existingCategories.length > 0 || existingItems.length > 0;
 
   if (hasExistingMenu && !replaceExistingMenu) {
-    redirect(`/admin/menu?templateStatus=confirm&organizationId=${organizationId}`);
+    redirect(`/admin/menu/${organizationId}?templateStatus=confirm`);
   }
 
   if (replaceExistingMenu) {
@@ -1194,7 +1194,7 @@ export const applyAdminMenuTemplateAction = async (formData: FormData) => {
     `/r/${organizationId}/menu`,
   );
 
-  redirect(`/admin/menu?templateStatus=applied&organizationId=${organizationId}`);
+  redirect(`/admin/menu/${organizationId}?templateStatus=applied`);
 };
 
 export const createAdminMenuCategoryAction = async (formData: FormData) => {

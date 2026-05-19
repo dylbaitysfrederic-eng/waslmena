@@ -1,35 +1,63 @@
-const DEFAULT_RESTAURANT_DATA = {};
-const DEFAULT_MENU_ITEMS: any[] = [];
+import { desc } from 'drizzle-orm';
+import Link from 'next/link';
 
-// Hypothetical implementation for the Public Menu
-export default function PublicMenu({ restaurantData = DEFAULT_RESTAURANT_DATA, menuItems = DEFAULT_MENU_ITEMS }: any) {
-  const { showMenuItemImages = true } = restaurantData || {};
+import { db } from '@/libs/DB';
+import { organizationSchema } from '@/models/Schema';
+
+export const dynamic = 'force-dynamic';
+
+export default async function AdminMenuListPage() {
+  const organizations = await db
+    .select({
+      id: organizationSchema.id,
+      restaurantDisplayName: organizationSchema.restaurantDisplayName,
+    })
+    .from(organizationSchema)
+    .orderBy(desc(organizationSchema.createdAt));
 
   return (
-    <main className="p-4">
-      <h1 className="mb-6 text-xl font-bold">{restaurantData?.name}</h1>
+    <div className="space-y-6">
+      <div className="rounded-md border bg-background p-6 shadow-sm">
+        <h1 className="text-xl font-semibold text-foreground">
+          Menu setup previews
+        </h1>
 
-      <div className="space-y-4">
-        {menuItems.map((item: any) => (
-          <div key={item.id} className="flex gap-4 border-b pb-4">
-            {/* Conditionally hide images based on organization preference */}
-            {showMenuItemImages && item.imageUrl && (
-              <div className="size-24 shrink-0">
-                <img
-                  src={item.imageUrl}
-                  alt={item.name}
-                  className="size-full rounded-md object-cover"
-                />
-              </div>
-            )}
-            <div className="flex flex-col justify-center">
-              <h3 className="font-semibold">{item.name}</h3>
-              <p className="line-clamp-2 text-sm text-gray-600">{item.description}</p>
-              <p className="mt-1 font-bold">{item.price}</p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Select a hospitality client to manage categories and starter menu items during onboarding.
+        </p>
+      </div>
+
+      <div className="grid gap-3">
+        {organizations.map(org => (
+          <div
+            key={org.id}
+            className="flex items-center justify-between rounded-lg border bg-card p-4 transition-colors hover:bg-accent/5"
+          >
+            <div className="flex flex-col gap-1">
+              <span className="font-medium text-foreground">
+                {org.restaurantDisplayName || 'Unnamed venue'}
+              </span>
+
+              <code className="text-[10px] text-muted-foreground">
+                {org.id}
+              </code>
             </div>
+
+            <Link
+              href={`/admin/menu/${org.id}`}
+              className="inline-flex h-9 items-center justify-center rounded-md border bg-background px-4 py-2 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+            >
+              Setup menu
+            </Link>
           </div>
         ))}
+
+        {organizations.length === 0 && (
+          <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-12 text-center text-sm text-muted-foreground">
+            No hospitality clients found.
+          </div>
+        )}
       </div>
-    </main>
+    </div>
   );
 }
