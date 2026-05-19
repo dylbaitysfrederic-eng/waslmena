@@ -5,6 +5,20 @@
 
 * add admin menu item deletion ([6cd4882](https://github.com/dylbaitysfrederic-eng/waslmena/commit/6cd4882aaabac40a220d59c5a9539e24f98fb03c))
 * guard admin menu category deletion ([6b44620](https://github.com/dylbaitysfrederic-eng/waslmena/commit/6b44620c0215c78d79ba1147ddc409e9f99d7966))
+* show admin item deletion status ([3434741](https://github.com/dylbaitysfrederic-eng/waslmena/commit/34347413c1e40e6c3ef7b1752e7f4559035d5c52))
+
+
+### Features
+
+* improve menu category handling ([0c33d76](https://github.com/dylbaitysfrederic-eng/waslmena/commit/0c33d76adb0d609750e2d4c5628dabcc45ec9e59))
+
+# [1.6.0](https://github.com/dylbaitysfrederic-eng/waslmena/compare/v1.5.6...v1.6.0) (2026-05-19)
+
+
+### Bug Fixes
+
+* add admin menu item deletion ([6cd4882](https://github.com/dylbaitysfrederic-eng/waslmena/commit/6cd4882aaabac40a220d59c5a9539e24f98fb03c))
+* guard admin menu category deletion ([6b44620](https://github.com/dylbaitysfrederic-eng/waslmena/commit/6b44620c0215c78d79ba1147ddc409e9f99d7966))
 
 
 ### Features
