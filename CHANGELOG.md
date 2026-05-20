@@ -22,6 +22,36 @@
 * add order lifecycle management ([11e2326](https://github.com/dylbaitysfrederic-eng/waslmena/commit/11e2326223fd0617cac549ff5f8aaccca407e788))
 * add public menu appearance settings ([34ddf33](https://github.com/dylbaitysfrederic-eng/waslmena/commit/34ddf33aeb7aa5028ca26185300d4403cd3c35b0))
 * improve menu category handling ([0c33d76](https://github.com/dylbaitysfrederic-eng/waslmena/commit/0c33d76adb0d609750e2d4c5628dabcc45ec9e59))
+* improve order tickets and status groups ([2fcb03e](https://github.com/dylbaitysfrederic-eng/waslmena/commit/2fcb03eeec307108b5fbd05fc4c4e297550c6115))
+* reorganize menu setup and QR settings ([16659fc](https://github.com/dylbaitysfrederic-eng/waslmena/commit/16659fc313c4d917eb1bf57424946afd9d2e8182))
+* support general QR ordering ([4ee196f](https://github.com/dylbaitysfrederic-eng/waslmena/commit/4ee196f12e0b10c16ff9fff6286f06f7d32970ea))
+* unify QR tables and ordering settings ([5fda91b](https://github.com/dylbaitysfrederic-eng/waslmena/commit/5fda91be5257192bc9bd8bce9a4ddfebece275a2))
+* unify QR tables and ordering settings ([ad85c4f](https://github.com/dylbaitysfrederic-eng/waslmena/commit/ad85c4f8bf99180dfb9b03303fbe239c1399466f))
+
+# [1.6.0](https://github.com/dylbaitysfrederic-eng/waslmena/compare/v1.5.6...v1.6.0) (2026-05-20)
+
+
+### Bug Fixes
+
+* add admin menu item deletion ([6cd4882](https://github.com/dylbaitysfrederic-eng/waslmena/commit/6cd4882aaabac40a220d59c5a9539e24f98fb03c))
+* align admin menu items layout ([3b72a67](https://github.com/dylbaitysfrederic-eng/waslmena/commit/3b72a678fca632457984caebccc96f5d35a79c6b))
+* allow available items in cart ([cf76555](https://github.com/dylbaitysfrederic-eng/waslmena/commit/cf765550036b47c8b8ee0e631287e67d4f13a186))
+* guard admin menu category deletion ([6b44620](https://github.com/dylbaitysfrederic-eng/waslmena/commit/6b44620c0215c78d79ba1147ddc409e9f99d7966))
+* preserve uploaded menu images ([a42746f](https://github.com/dylbaitysfrederic-eng/waslmena/commit/a42746fddc7b0325e5df00006e1031248c63fb9d))
+* respect ordering mode for table QR ([7b6dbc0](https://github.com/dylbaitysfrederic-eng/waslmena/commit/7b6dbc03d299859aed095e7a9ac8af7788c4ec18))
+* restore add-to-cart for available items ([84e6032](https://github.com/dylbaitysfrederic-eng/waslmena/commit/84e60322ed9014fbabbbadcc1ae114509fa59b6c))
+* show admin item deletion status ([3434741](https://github.com/dylbaitysfrederic-eng/waslmena/commit/34347413c1e40e6c3ef7b1752e7f4559035d5c52))
+* show unavailable menu items ([30a2ad0](https://github.com/dylbaitysfrederic-eng/waslmena/commit/30a2ad0b9d067db4e85dd01322e86561200d684a))
+* store menu item images in Vercel Blob ([0866bfd](https://github.com/dylbaitysfrederic-eng/waslmena/commit/0866bfdb12d34ae7bea642ec2d49c5e3c7e1c2d0))
+* use upload-only menu item images ([c84d084](https://github.com/dylbaitysfrederic-eng/waslmena/commit/c84d084ecf9ae803b64ae6039cbe0f84485d335c))
+
+
+### Features
+
+* add collapsible menu creation blocks ([57b37d7](https://github.com/dylbaitysfrederic-eng/waslmena/commit/57b37d779a9f98de6efa71ec540d4da9fd1d12cd))
+* add order lifecycle management ([11e2326](https://github.com/dylbaitysfrederic-eng/waslmena/commit/11e2326223fd0617cac549ff5f8aaccca407e788))
+* add public menu appearance settings ([34ddf33](https://github.com/dylbaitysfrederic-eng/waslmena/commit/34ddf33aeb7aa5028ca26185300d4403cd3c35b0))
+* improve menu category handling ([0c33d76](https://github.com/dylbaitysfrederic-eng/waslmena/commit/0c33d76adb0d609750e2d4c5628dabcc45ec9e59))
 * reorganize menu setup and QR settings ([16659fc](https://github.com/dylbaitysfrederic-eng/waslmena/commit/16659fc313c4d917eb1bf57424946afd9d2e8182))
 * support general QR ordering ([4ee196f](https://github.com/dylbaitysfrederic-eng/waslmena/commit/4ee196f12e0b10c16ff9fff6286f06f7d32970ea))
 * unify QR tables and ordering settings ([5fda91b](https://github.com/dylbaitysfrederic-eng/waslmena/commit/5fda91be5257192bc9bd8bce9a4ddfebece275a2))
