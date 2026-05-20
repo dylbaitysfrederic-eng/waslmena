@@ -1,6 +1,4 @@
-import { Buffer } from 'node:buffer';
-import fs from 'node:fs';
-import path from 'node:path';
+import { put } from '@vercel/blob';
 
 const MAX_UPLOAD_BYTES = 300_000;
 const ALLOWED_IMAGE_MIME_TYPES = new Set([
@@ -13,7 +11,6 @@ const EXTENSION_BY_MIME_TYPE: Record<string, string> = {
   'image/png': '.png',
   'image/webp': '.webp',
 };
-const UPLOAD_DIRECTORY = path.join(process.cwd(), 'public', 'uploads', 'menu-items');
 
 export type MenuItemImageUploadError = 'invalid_image_type' | 'image_too_large';
 
@@ -28,16 +25,15 @@ export const saveMenuItemImageFile = async (
     throw new Error('image_too_large');
   }
 
-  await fs.promises.mkdir(UPLOAD_DIRECTORY, { recursive: true });
-
   const extension = EXTENSION_BY_MIME_TYPE[file.type] ?? '.jpg';
-  const fileName = `${crypto.randomUUID()}${extension}`;
-  const filePath = path.join(UPLOAD_DIRECTORY, fileName);
-  const buffer = Buffer.from(await file.arrayBuffer());
+  const fileName = `menu-items/${crypto.randomUUID()}${extension}`;
 
-  await fs.promises.writeFile(filePath, buffer);
+  const blob = await put(fileName, file, {
+    access: 'public',
+    contentType: file.type,
+  });
 
-  return `/uploads/menu-items/${fileName}`;
+  return blob.url;
 };
 
 export const getMenuItemImageUrl = async (
