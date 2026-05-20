@@ -4,7 +4,18 @@ import { notFound } from 'next/navigation';
 
 import { ConfirmSubmitButton } from '@/components/ConfirmSubmitButton';
 import { FormSubmitButton } from '@/components/FormSubmitButton';
+import { MenuItemImagePreview } from '@/components/MenuItemImagePreview';
 import { MenuItemImageUploadField } from '@/components/MenuItemImageUploadField';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { db } from '@/libs/DB';
 import { menuCategorySchema, menuItemSchema } from '@/models/Schema';
 import { getLocalizedMenuText } from '@/utils/MenuTranslations';
@@ -27,8 +38,79 @@ import {
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-const inputClassName = 'h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground';
-const textareaClassName = 'min-h-20 rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground';
+const selectClassName = 'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring';
+const textareaClassName = 'min-h-20 rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring';
+
+type MenuCategoryRow = typeof menuCategorySchema.$inferSelect;
+
+const getCategoryName = (
+  category: Pick<MenuCategoryRow, 'name' | 'nameEn' | 'nameAr' | 'nameFr'>,
+) => getLocalizedMenuText(
+  'en',
+  {
+    en: category.nameEn,
+    ar: category.nameAr,
+    fr: category.nameFr,
+    legacy: category.name,
+  },
+  category.name,
+);
+
+const getCategoryOptionLabel = (
+  category: Pick<MenuCategoryRow, 'name' | 'nameEn' | 'nameAr' | 'nameFr' | 'parentCategoryId'>,
+) => {
+  const label = getCategoryName(category);
+
+  return category.parentCategoryId === null ? label : `- ${label}`;
+};
+
+const formatUsdCents = (amount: number | null) => {
+  if (amount === null) {
+    return '';
+  }
+
+  return String(amount);
+};
+
+const formatUsdDisplay = (amount: number | null) => {
+  if (amount === null) {
+    return null;
+  }
+
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+  }).format(amount / 100);
+};
+
+const formatLocalCurrency = (
+  amount: number | null,
+  localCurrencyLabel: string,
+) => {
+  if (amount === null) {
+    return null;
+  }
+
+  return `${new Intl.NumberFormat('en-US').format(amount)} ${localCurrencyLabel}`;
+};
+
+const AdminSection = (props: {
+  children: React.ReactNode;
+  description?: string;
+  title: string;
+}) => (
+  <section className="rounded-md bg-background p-5">
+    <div className="mb-4">
+      <h3 className="font-semibold">{props.title}</h3>
+      {props.description && (
+        <p className="mt-1 text-sm text-muted-foreground">
+          {props.description}
+        </p>
+      )}
+    </div>
+    {props.children}
+  </section>
+);
 
 const MultilingualNameFields = (props: {
   idPrefix: string;
@@ -40,32 +122,31 @@ const MultilingualNameFields = (props: {
   };
 }) => (
   <div className="grid gap-3 sm:grid-cols-3">
-    <label className="grid gap-1 text-xs font-medium text-muted-foreground">
-      English name
-      <input
+    <div className="space-y-2">
+      <Label htmlFor={`${props.idPrefix}-name-en`}>English name</Label>
+      <Input
+        id={`${props.idPrefix}-name-en`}
         name="nameEn"
         defaultValue={props.values?.nameEn ?? props.values?.legacyName ?? ''}
-        className={inputClassName}
       />
-    </label>
-    <label className="grid gap-1 text-xs font-medium text-muted-foreground">
-      Arabic name
-      <input
+    </div>
+    <div className="space-y-2">
+      <Label htmlFor={`${props.idPrefix}-name-ar`}>Arabic name</Label>
+      <Input
+        id={`${props.idPrefix}-name-ar`}
         name="nameAr"
         dir="rtl"
         defaultValue={props.values?.nameAr ?? ''}
-        className={inputClassName}
       />
-    </label>
-    <label className="grid gap-1 text-xs font-medium text-muted-foreground">
-      French name
-      <input
+    </div>
+    <div className="space-y-2">
+      <Label htmlFor={`${props.idPrefix}-name-fr`}>French name</Label>
+      <Input
+        id={`${props.idPrefix}-name-fr`}
         name="nameFr"
         defaultValue={props.values?.nameFr ?? ''}
-        className={inputClassName}
       />
-    </label>
-    <span className="sr-only">{props.idPrefix}</span>
+    </div>
   </div>
 );
 
@@ -88,43 +169,75 @@ const MultilingualItemFields = (props: {
       values={props.values}
     />
     <div className="grid gap-3 sm:grid-cols-3">
-      <label className="grid gap-1 text-xs font-medium text-muted-foreground">
-        English description
+      <div className="space-y-2">
+        <Label htmlFor={`${props.idPrefix}-description-en`}>
+          English description
+        </Label>
         <textarea
+          id={`${props.idPrefix}-description-en`}
           name="descriptionEn"
           defaultValue={
             props.values?.descriptionEn ?? props.values?.legacyDescription ?? ''
           }
           className={textareaClassName}
         />
-      </label>
-      <label className="grid gap-1 text-xs font-medium text-muted-foreground">
-        Arabic description
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor={`${props.idPrefix}-description-ar`}>
+          Arabic description
+        </Label>
         <textarea
+          id={`${props.idPrefix}-description-ar`}
           name="descriptionAr"
           dir="rtl"
           defaultValue={props.values?.descriptionAr ?? ''}
           className={textareaClassName}
         />
-      </label>
-      <label className="grid gap-1 text-xs font-medium text-muted-foreground">
-        French description
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor={`${props.idPrefix}-description-fr`}>
+          French description
+        </Label>
         <textarea
+          id={`${props.idPrefix}-description-fr`}
           name="descriptionFr"
           defaultValue={props.values?.descriptionFr ?? ''}
           className={textareaClassName}
         />
-      </label>
+      </div>
     </div>
   </div>
 );
 
-const formatUsdCents = (amount: number | null) => {
-  if (amount === null) {
-    return '';
-  }
+const CategoryParentSelect = (props: {
+  categories: MenuCategoryRow[];
+  currentCategoryId?: number;
+  defaultValue?: number | null;
+  id: string;
+}) => {
+  const availableParents = props.categories.filter(category =>
+    category.id !== props.currentCategoryId
+    && category.parentCategoryId === null,
+  );
 
-  return String(amount);
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={props.id}>Parent category</Label>
+      <select
+        id={props.id}
+        name="parentCategoryId"
+        className={selectClassName}
+        defaultValue={props.defaultValue ?? ''}
+      >
+        <option value="">Root category</option>
+        {availableParents.map(category => (
+          <option key={category.id} value={category.id}>
+            {getCategoryName(category)}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
 };
 
 const AdminMenuDetailPage = async (props: {
@@ -160,9 +273,6 @@ const AdminMenuDetailPage = async (props: {
   ]);
 
   const organizationCategories = categories;
-  const rootCategories = organizationCategories.filter(
-    category => category.parentCategoryId === null,
-  );
   const mainCategories = organizationCategories.filter(
     category => category.parentCategoryId === null,
   );
@@ -184,7 +294,7 @@ const AdminMenuDetailPage = async (props: {
   }
 
   return (
-    <section className="grid gap-4">
+    <section className="grid gap-6">
       <div className="rounded-md bg-background p-5">
         <Link
           href="/admin/menu"
@@ -192,26 +302,14 @@ const AdminMenuDetailPage = async (props: {
         >
           Back to menu setup
         </Link>
-        <h2 className="mt-4 text-xl font-semibold">
-          {organization?.restaurantDisplayName || 'Unnamed restaurant'}
-        </h2>
-        <code className="mt-1 block text-xs text-muted-foreground">
-          {organizationId}
-        </code>
-      </div>
-
-      <div className="grid gap-4 rounded-md bg-background p-5">
-        {statusMessage && (
-          <div className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
-            {statusMessage}
-          </div>
-        )}
-        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+        <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div>
-            <h3 className="font-semibold">Menu management</h3>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Configure categories and menu items for this restaurant.
-            </p>
+            <h2 className="text-xl font-semibold">
+              {organization?.restaurantDisplayName || 'Unnamed restaurant'}
+            </h2>
+            <code className="mt-1 block text-xs text-muted-foreground">
+              {organizationId}
+            </code>
           </div>
           <Link
             href={`/en/r/${organizationId}/menu`}
@@ -220,430 +318,516 @@ const AdminMenuDetailPage = async (props: {
             Preview customer menu
           </Link>
         </div>
+      </div>
 
-        {templateStatus === 'confirm' && (
-          <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm font-medium text-amber-950">
-            This restaurant already has menu data. Tick the replacement
-            checkbox before applying a starter template.
-          </div>
-        )}
+      {statusMessage && (
+        <div className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
+          {statusMessage}
+        </div>
+      )}
 
-        {templateStatus === 'applied' && (
-          <div className="rounded-md border border-green-300 bg-green-50 p-3 text-sm font-medium text-green-950">
-            Starter menu template applied.
-          </div>
-        )}
-
-        <form action={applyAdminMenuTemplateAction} className="grid gap-3 rounded-md border p-4">
-          <input type="hidden" name="organizationId" value={organizationId} />
-          <div>
-            <div className="font-medium">Apply starter menu template</div>
-            <p className="text-xs text-muted-foreground">
-              Creates category and subcategory structure only. Restaurant
-              users can add items and prices later from their dashboard.
-            </p>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
-            <label className="grid gap-1 text-xs font-medium text-muted-foreground">
-              Template
-              <select name="menuTemplate" defaultValue="restaurant" className={inputClassName}>
+      <AdminSection
+        title="Starter template"
+        description="Apply a starter menu structure for this restaurant."
+      >
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,380px)_1fr]">
+          <form
+            action={applyAdminMenuTemplateAction}
+            className="space-y-4"
+          >
+            <input type="hidden" name="organizationId" value={organizationId} />
+            {templateStatus === 'confirm' && (
+              <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm font-medium text-amber-950">
+                This restaurant already has menu data. Tick the replacement
+                checkbox before applying a starter template.
+              </div>
+            )}
+            {templateStatus === 'applied' && (
+              <div className="rounded-md border border-green-300 bg-green-50 p-3 text-sm font-medium text-green-950">
+                Starter menu template applied.
+              </div>
+            )}
+            <div>
+              <div className="font-medium">Apply starter menu template</div>
+              <p className="text-xs text-muted-foreground">
+                Creates category and subcategory structure only. Restaurant
+                users can add items and prices later from their dashboard.
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="menuTemplate">Template</Label>
+              <select
+                id="menuTemplate"
+                name="menuTemplate"
+                defaultValue="restaurant"
+                className={selectClassName}
+              >
                 {MENU_TEMPLATE_TYPES.map(template => (
                   <option key={template} value={template}>
                     {formatAdminLabel(template)}
                   </option>
                 ))}
               </select>
-            </label>
-            <FormSubmitButton pendingLabel="Applying..." size="sm">
+            </div>
+            {organizationCategories.length > 0 || organizationItems.length > 0
+              ? (
+                  <label className="flex items-start gap-2 text-xs font-medium text-muted-foreground">
+                    <input
+                      name="replaceExistingMenu"
+                      type="checkbox"
+                      className="mt-0.5 size-4"
+                    />
+                    Replace existing categories and items with this starter
+                    structure.
+                  </label>
+                )
+              : null}
+            <FormSubmitButton pendingLabel="Applying...">
               Apply template
             </FormSubmitButton>
-          </div>
-          {organizationCategories.length > 0 || organizationItems.length > 0
+          </form>
+
+          {organizationCategories.length > 0
             ? (
-                <label className="flex items-start gap-2 text-xs font-medium text-muted-foreground">
-                  <input
-                    name="replaceExistingMenu"
-                    type="checkbox"
-                    className="mt-0.5 size-4"
-                  />
-                  Replace existing categories and items with this starter
-                  structure.
-                </label>
-              )
-            : null}
-        </form>
-
-        {organizationCategories.length > 0 && (
-          <div className="rounded-md border bg-muted/30 p-4">
-            <div className="font-medium">Customer menu structure preview</div>
-            <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {mainCategories.map(category => (
-                <div key={category.id} className="rounded-md border bg-background p-3">
-                  <div className="font-semibold">
-                    {getLocalizedMenuText(
-                      'en',
-                      {
-                        en: category.nameEn,
-                        ar: category.nameAr,
-                        fr: category.nameFr,
-                        legacy: category.name,
-                      },
-                      category.name,
-                    )}
-                  </div>
-                  <div className="mt-2 grid gap-1 text-xs text-muted-foreground">
-                    {organizationCategories
-                      .filter(subcategory =>
-                        subcategory.parentCategoryId === category.id,
-                      )
-                      .map(subcategory => (
-                        <div key={subcategory.id}>
-                          {getLocalizedMenuText(
-                            'en',
-                            {
-                              en: subcategory.nameEn,
-                              ar: subcategory.nameAr,
-                              fr: subcategory.nameFr,
-                              legacy: subcategory.name,
-                            },
-                            subcategory.name,
-                          )}
+                <div className="rounded-md border bg-muted/30 p-4">
+                  <div className="font-medium">Customer menu structure preview</div>
+                  <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                    {mainCategories.map(category => (
+                      <div key={category.id} className="rounded-md border bg-background p-3">
+                        <div className="font-semibold">
+                          {getCategoryName(category)}
                         </div>
-                      ))}
+                        <div className="mt-2 grid gap-1 text-xs text-muted-foreground">
+                          {organizationCategories
+                            .filter(subcategory =>
+                              subcategory.parentCategoryId === category.id,
+                            )
+                            .map(subcategory => (
+                              <div key={subcategory.id}>
+                                {getCategoryName(subcategory)}
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        <form action={createAdminMenuCategoryAction} className="grid gap-3 rounded-md border p-4">
-          <input type="hidden" name="organizationId" value={organizationId} />
-          <div>
-            <div className="font-medium">Add category</div>
-            <p className="text-xs text-muted-foreground">
-              At least one translated name is required.
-            </p>
-          </div>
-          <MultilingualNameFields idPrefix={`category-create-${organizationId}`} />
-          <label className="grid gap-1 text-xs font-medium text-muted-foreground">
-            Parent category
-            <select name="parentCategoryId" className={inputClassName} defaultValue="">
-              <option value="">Root category</option>
-              {rootCategories.map(category => (
-                <option key={category.id} value={category.id}>
-                  {getLocalizedMenuText(
-                    'en',
-                    {
-                      en: category.nameEn,
-                      ar: category.nameAr,
-                      fr: category.nameFr,
-                      legacy: category.name,
-                    },
-                    category.name,
-                  )}
-                </option>
-              ))}
-            </select>
-          </label>
-          <FormSubmitButton pendingLabel="Creating..." size="sm">
-            Create category
-          </FormSubmitButton>
-        </form>
-
-        {organizationCategories.length > 0 && (
-          <div className="grid gap-3">
-            <h4 className="font-medium">Categories</h4>
-            {organizationCategories.map((category) => {
-              const parentCategory = organizationCategories.find(
-                parent => parent.id === category.parentCategoryId,
-              );
-
-              return (
-                <div key={category.id}>
-                  <form
-                    action={updateAdminMenuCategoryAction}
-                    className="grid gap-3 rounded-md border p-4"
-                  >
-                    <input type="hidden" name="organizationId" value={organizationId} />
-                    <input type="hidden" name="categoryId" value={category.id} />
-                    <div>
-                      <div className="font-medium">
-                        {getLocalizedMenuText(
-                          'en',
-                          {
-                            en: category.nameEn,
-                            ar: category.nameAr,
-                            fr: category.nameFr,
-                            legacy: category.name,
-                          },
-                          category.name,
-                        )}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {category.parentCategoryId === null
-                          ? 'Root category'
-                          : `Subcategory of ${getLocalizedMenuText(
-                            'en',
-                            {
-                              en: parentCategory?.nameEn,
-                              ar: parentCategory?.nameAr,
-                              fr: parentCategory?.nameFr,
-                              legacy: parentCategory?.name,
-                            },
-                            parentCategory?.name ?? '',
-                          )}`}
-                      </div>
-                    </div>
-                    <MultilingualNameFields
-                      idPrefix={`category-${category.id}`}
-                      values={{
-                        nameEn: category.nameEn,
-                        nameAr: category.nameAr,
-                        nameFr: category.nameFr,
-                        legacyName: category.name,
-                      }}
-                    />
-                    <label className="grid gap-1 text-xs font-medium text-muted-foreground">
-                      Parent category
-                      <select
-                        name="parentCategoryId"
-                        defaultValue={category.parentCategoryId ?? ''}
-                        className={inputClassName}
-                      >
-                        <option value="">Root category</option>
-                        {rootCategories
-                          .filter(rootCategory => rootCategory.id !== category.id)
-                          .map(rootCategory => (
-                            <option key={rootCategory.id} value={rootCategory.id}>
-                              {getLocalizedMenuText(
-                                'en',
-                                {
-                                  en: rootCategory.nameEn,
-                                  ar: rootCategory.nameAr,
-                                  fr: rootCategory.nameFr,
-                                  legacy: rootCategory.name,
-                                },
-                                rootCategory.name,
-                              )}
-                            </option>
-                          ))}
-                      </select>
-                    </label>
-                    <label className="grid gap-1 text-xs font-medium text-muted-foreground sm:max-w-40">
-                      Display order
-                      <input
-                        name="displayOrder"
-                        type="number"
-                        defaultValue={category.displayOrder}
-                        className={inputClassName}
-                      />
-                    </label>
-                    <FormSubmitButton pendingLabel="Saving..." size="sm">
-                      Save category
-                    </FormSubmitButton>
-                  </form>
-                  <form action={deleteAdminMenuCategoryAction} className="mt-2">
-                    <input type="hidden" name="organizationId" value={organizationId} />
-                    <input type="hidden" name="categoryId" value={category.id} />
-                    <ConfirmSubmitButton
-                      confirmMessage="Are you sure you want to delete this category?"
-                      pendingLabel="Deleting..."
-                      variant="destructive"
-                      size="sm"
-                    >
-                      Delete category
-                    </ConfirmSubmitButton>
-                  </form>
+              )
+            : (
+                <div className="rounded-md border border-dashed p-6 text-sm text-muted-foreground">
+                  Apply a starter template or create categories to preview the
+                  customer menu structure.
                 </div>
-              );
-            })}
-          </div>
-        )}
+              )}
+        </div>
+      </AdminSection>
 
-        {organizationCategories.length > 0 && (
-          <form
-            action={createAdminMenuItemAction}
-            encType="multipart/form-data"
-            className="grid gap-3 rounded-md border p-4"
-          >
+      <AdminSection
+        title="Categories"
+        description="Create and update the category structure for this restaurant."
+      >
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,360px)_1fr]">
+          <form action={createAdminMenuCategoryAction} className="space-y-4">
             <input type="hidden" name="organizationId" value={organizationId} />
             <div>
-              <div className="font-medium">Add menu item</div>
+              <div className="font-medium">Add category</div>
               <p className="text-xs text-muted-foreground">
-                At least one translated item name and one price are required.
+                At least one translated name is required.
               </p>
             </div>
-            <label className="grid gap-1 text-xs font-medium text-muted-foreground">
-              Category
-              <select name="categoryId" className={inputClassName} required>
-                {organizationCategories.map(category => (
-                  <option key={category.id} value={category.id}>
-                    {getLocalizedMenuText(
-                      'en',
-                      {
-                        en: category.nameEn,
-                        ar: category.nameAr,
-                        fr: category.nameFr,
-                        legacy: category.name,
-                      },
-                      category.name,
-                    )}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <MultilingualItemFields idPrefix={`item-create-${organizationId}`} />
-            <MenuItemImageUploadField
-              fieldId="new-item-image"
-              urlFieldName="imageUrl"
-              fileFieldName="imageFile"
-              label="Image URL (optional)"
-              helpText="Optional. Use a public image URL or upload a lightweight image file."
-              placeholder="https://example.com/image.jpg"
+            <MultilingualNameFields idPrefix={`category-create-${organizationId}`} />
+            <CategoryParentSelect
+              id="category-parent-create"
+              categories={organizationCategories}
             />
-            <div className="grid gap-3 sm:grid-cols-3">
-              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
-                USD cents
-                <input name="priceUsdCents" type="number" min={0} className={inputClassName} />
-              </label>
-              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
-                {localCurrencyLabel}
-                <input name="priceLbp" type="number" min={0} className={inputClassName} />
-              </label>
-              <label className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-                <input name="isAvailable" type="checkbox" defaultChecked className="size-4" />
-                Available
-              </label>
-            </div>
-            <FormSubmitButton pendingLabel="Creating..." size="sm">
-              Create item
+            <FormSubmitButton pendingLabel="Creating...">
+              Create category
             </FormSubmitButton>
           </form>
-        )}
 
-        {organizationItems.length > 0 && (
-          <div className="grid gap-3">
-            <h4 className="font-medium">Menu items</h4>
-            {organizationItems.map(item => (
-              <div key={item.id}>
+          {organizationCategories.length > 0
+            ? (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Display order</TableHead>
+                        <TableHead>Parent</TableHead>
+                        <TableHead className="w-24 text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {organizationCategories.map((category) => {
+                        const parentCategory = organizationCategories.find(
+                          parent => parent.id === category.parentCategoryId,
+                        );
+
+                        return (
+                          <TableRow key={category.id}>
+                            <TableCell className="min-w-64 font-medium">
+                              <div className="space-y-3">
+                                <div>
+                                  {getCategoryName(category)}
+                                  <div className="mt-1 text-xs font-normal text-muted-foreground">
+                                    {category.parentCategoryId === null
+                                      ? 'Root category'
+                                      : `Subcategory of ${parentCategory ? getCategoryName(parentCategory) : ''}`}
+                                  </div>
+                                </div>
+                                <details className="rounded-md border p-3">
+                                  <summary className="cursor-pointer text-sm font-medium">
+                                    Edit
+                                  </summary>
+                                  <form
+                                    action={updateAdminMenuCategoryAction}
+                                    className="mt-3 grid gap-3"
+                                  >
+                                    <input type="hidden" name="organizationId" value={organizationId} />
+                                    <input type="hidden" name="categoryId" value={category.id} />
+                                    <MultilingualNameFields
+                                      idPrefix={`category-${category.id}`}
+                                      values={{
+                                        nameEn: category.nameEn,
+                                        nameAr: category.nameAr,
+                                        nameFr: category.nameFr,
+                                        legacyName: category.name,
+                                      }}
+                                    />
+                                    <CategoryParentSelect
+                                      id={`category-parent-${category.id}`}
+                                      categories={organizationCategories}
+                                      currentCategoryId={category.id}
+                                      defaultValue={category.parentCategoryId}
+                                    />
+                                    <div className="space-y-2 sm:max-w-40">
+                                      <Label htmlFor={`category-order-${category.id}`}>
+                                        Display order
+                                      </Label>
+                                      <Input
+                                        id={`category-order-${category.id}`}
+                                        name="displayOrder"
+                                        type="number"
+                                        defaultValue={category.displayOrder}
+                                      />
+                                    </div>
+                                    <FormSubmitButton pendingLabel="Saving..." size="sm">
+                                      Save category
+                                    </FormSubmitButton>
+                                  </form>
+                                </details>
+                              </div>
+                            </TableCell>
+                            <TableCell>{category.displayOrder}</TableCell>
+                            <TableCell>
+                              {parentCategory ? getCategoryName(parentCategory) : 'Root category'}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <form action={deleteAdminMenuCategoryAction}>
+                                <input type="hidden" name="organizationId" value={organizationId} />
+                                <input type="hidden" name="categoryId" value={category.id} />
+                                <ConfirmSubmitButton
+                                  confirmMessage="Are you sure you want to delete this category?"
+                                  pendingLabel="Deleting..."
+                                  variant="destructive"
+                                  size="sm"
+                                >
+                                  Delete
+                                </ConfirmSubmitButton>
+                              </form>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+              )
+            : (
+                <div className="rounded-md border border-dashed p-6 text-sm text-muted-foreground">
+                  No categories yet.
+                </div>
+              )}
+        </div>
+      </AdminSection>
+
+      <AdminSection
+        title="Menu items"
+        description="Create and update menu items, availability, prices, and images."
+      >
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,380px)_1fr]">
+          {organizationCategories.length > 0
+            ? (
                 <form
-                  action={updateAdminMenuItemAction}
+                  action={createAdminMenuItemAction}
                   encType="multipart/form-data"
-                  className="grid gap-3 rounded-md border p-4"
+                  className="space-y-4"
                 >
                   <input type="hidden" name="organizationId" value={organizationId} />
-                  <input type="hidden" name="itemId" value={item.id} />
-                  <div className="font-medium">
-                    {getLocalizedMenuText(
-                      'en',
-                      {
-                        en: item.nameEn,
-                        ar: item.nameAr,
-                        fr: item.nameFr,
-                        legacy: item.name,
-                      },
-                      item.name,
-                    )}
+                  <div>
+                    <div className="font-medium">Add menu item</div>
+                    <p className="text-xs text-muted-foreground">
+                      At least one translated item name and one price are required.
+                    </p>
                   </div>
-                  <label className="grid gap-1 text-xs font-medium text-muted-foreground">
-                    Category
+                  <div className="space-y-2">
+                    <Label htmlFor="item-category-create">Category</Label>
                     <select
+                      id="item-category-create"
                       name="categoryId"
-                      defaultValue={item.categoryId}
-                      className={inputClassName}
+                      className={selectClassName}
                       required
                     >
                       {organizationCategories.map(category => (
                         <option key={category.id} value={category.id}>
-                          {getLocalizedMenuText(
-                            'en',
-                            {
-                              en: category.nameEn,
-                              ar: category.nameAr,
-                              fr: category.nameFr,
-                              legacy: category.name,
-                            },
-                            category.name,
-                          )}
+                          {getCategoryOptionLabel(category)}
                         </option>
                       ))}
                     </select>
-                  </label>
-                  <MultilingualItemFields
-                    idPrefix={`item-${item.id}`}
-                    values={{
-                      nameEn: item.nameEn,
-                      nameAr: item.nameAr,
-                      nameFr: item.nameFr,
-                      descriptionEn: item.descriptionEn,
-                      descriptionAr: item.descriptionAr,
-                      descriptionFr: item.descriptionFr,
-                      legacyName: item.name,
-                      legacyDescription: item.description,
-                    }}
-                  />
+                  </div>
+                  <MultilingualItemFields idPrefix={`item-create-${organizationId}`} />
                   <MenuItemImageUploadField
-                    fieldId={`item-image-${item.id}`}
+                    fieldId="new-item-image"
                     urlFieldName="imageUrl"
                     fileFieldName="imageFile"
                     label="Image URL (optional)"
                     helpText="Optional. Use a public image URL or upload a lightweight image file."
                     placeholder="https://example.com/image.jpg"
-                    currentImageUrl={item.imageUrl}
                   />
-                  <div className="grid gap-3 sm:grid-cols-3">
-                    <label className="grid gap-1 text-xs font-medium text-muted-foreground">
-                      USD cents
-                      <input
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="item-usd-create">USD cents</Label>
+                      <Input
+                        id="item-usd-create"
                         name="priceUsdCents"
                         type="number"
                         min={0}
-                        defaultValue={formatUsdCents(item.priceUsdCents)}
-                        className={inputClassName}
                       />
-                    </label>
-                    <label className="grid gap-1 text-xs font-medium text-muted-foreground">
-                      {localCurrencyLabel}
-                      <input
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="item-local-create">{localCurrencyLabel}</Label>
+                      <Input
+                        id="item-local-create"
                         name="priceLbp"
                         type="number"
                         min={0}
-                        defaultValue={item.priceLbp ?? ''}
-                        className={inputClassName}
                       />
-                    </label>
-                    <label className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-                      <input
-                        name="isAvailable"
-                        type="checkbox"
-                        defaultChecked={item.isAvailable}
-                        className="size-4"
-                      />
-                      Available
-                    </label>
+                    </div>
                   </div>
-                  <FormSubmitButton pendingLabel="Saving..." size="sm">
-                    Save item
+                  <label className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                    <input name="isAvailable" type="checkbox" defaultChecked className="size-4" />
+                    Available
+                  </label>
+                  <FormSubmitButton pendingLabel="Creating...">
+                    Create item
                   </FormSubmitButton>
                 </form>
-                <form action={deleteAdminMenuItemAction} className="mt-2">
-                  <input type="hidden" name="organizationId" value={organizationId} />
-                  <input type="hidden" name="itemId" value={item.id} />
-                  <ConfirmSubmitButton
-                    confirmMessage="Are you sure you want to delete this item?"
-                    pendingLabel="Deleting..."
-                    variant="destructive"
-                    size="sm"
-                  >
-                    Delete item
-                  </ConfirmSubmitButton>
-                </form>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+              )
+            : (
+                <div className="rounded-md border border-dashed p-6 text-sm text-muted-foreground">
+                  Create at least one category before adding menu items.
+                </div>
+              )}
+
+          {organizationItems.length > 0
+            ? (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Category</TableHead>
+                        <TableHead>Price</TableHead>
+                        <TableHead>Availability</TableHead>
+                        <TableHead className="w-24 text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {organizationItems.map((item) => {
+                        const itemCategory = organizationCategories.find(
+                          category => category.id === item.categoryId,
+                        );
+
+                        return (
+                          <TableRow key={item.id}>
+                            <TableCell className="min-w-72 font-medium">
+                              <div className="space-y-3">
+                                <div className="flex items-start gap-3">
+                                  {item.imageUrl && (
+                                    <MenuItemImagePreview
+                                      src={item.imageUrl}
+                                      alt={getLocalizedMenuText(
+                                        'en',
+                                        {
+                                          en: item.nameEn,
+                                          ar: item.nameAr,
+                                          fr: item.nameFr,
+                                          legacy: item.name,
+                                        },
+                                        item.name,
+                                      )}
+                                      className="size-14"
+                                    />
+                                  )}
+                                  <div>
+                                    <div>
+                                      {getLocalizedMenuText(
+                                        'en',
+                                        {
+                                          en: item.nameEn,
+                                          ar: item.nameAr,
+                                          fr: item.nameFr,
+                                          legacy: item.name,
+                                        },
+                                        item.name,
+                                      )}
+                                    </div>
+                                    {item.imageUrl && (
+                                      <div className="mt-1 max-w-72 truncate text-xs text-muted-foreground">
+                                        {item.imageUrl}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                                <details className="rounded-md border p-3">
+                                  <summary className="cursor-pointer text-sm font-medium">
+                                    Edit
+                                  </summary>
+                                  <form
+                                    action={updateAdminMenuItemAction}
+                                    encType="multipart/form-data"
+                                    className="mt-3 grid gap-3"
+                                  >
+                                    <input type="hidden" name="organizationId" value={organizationId} />
+                                    <input type="hidden" name="itemId" value={item.id} />
+                                    <div className="space-y-2">
+                                      <Label htmlFor={`item-category-${item.id}`}>
+                                        Category
+                                      </Label>
+                                      <select
+                                        id={`item-category-${item.id}`}
+                                        name="categoryId"
+                                        defaultValue={item.categoryId}
+                                        className={selectClassName}
+                                        required
+                                      >
+                                        {organizationCategories.map(category => (
+                                          <option key={category.id} value={category.id}>
+                                            {getCategoryOptionLabel(category)}
+                                          </option>
+                                        ))}
+                                      </select>
+                                    </div>
+                                    <MultilingualItemFields
+                                      idPrefix={`item-${item.id}`}
+                                      values={{
+                                        nameEn: item.nameEn,
+                                        nameAr: item.nameAr,
+                                        nameFr: item.nameFr,
+                                        descriptionEn: item.descriptionEn,
+                                        descriptionAr: item.descriptionAr,
+                                        descriptionFr: item.descriptionFr,
+                                        legacyName: item.name,
+                                        legacyDescription: item.description,
+                                      }}
+                                    />
+                                    <MenuItemImageUploadField
+                                      fieldId={`item-image-${item.id}`}
+                                      urlFieldName="imageUrl"
+                                      fileFieldName="imageFile"
+                                      label="Image URL (optional)"
+                                      helpText="Optional. Use a public image URL or upload a lightweight image file."
+                                      placeholder="https://example.com/image.jpg"
+                                      currentImageUrl={item.imageUrl}
+                                    />
+                                    <div className="grid gap-3 sm:grid-cols-2">
+                                      <div className="space-y-2">
+                                        <Label htmlFor={`item-usd-${item.id}`}>
+                                          USD cents
+                                        </Label>
+                                        <Input
+                                          id={`item-usd-${item.id}`}
+                                          name="priceUsdCents"
+                                          type="number"
+                                          min={0}
+                                          defaultValue={formatUsdCents(item.priceUsdCents)}
+                                        />
+                                      </div>
+                                      <div className="space-y-2">
+                                        <Label htmlFor={`item-local-${item.id}`}>
+                                          {localCurrencyLabel}
+                                        </Label>
+                                        <Input
+                                          id={`item-local-${item.id}`}
+                                          name="priceLbp"
+                                          type="number"
+                                          min={0}
+                                          defaultValue={item.priceLbp ?? ''}
+                                        />
+                                      </div>
+                                    </div>
+                                    <label className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                                      <input
+                                        name="isAvailable"
+                                        type="checkbox"
+                                        defaultChecked={item.isAvailable}
+                                        className="size-4"
+                                      />
+                                      Available
+                                    </label>
+                                    <FormSubmitButton pendingLabel="Saving..." size="sm">
+                                      Save item
+                                    </FormSubmitButton>
+                                  </form>
+                                </details>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              {itemCategory ? getCategoryName(itemCategory) : 'Unknown category'}
+                            </TableCell>
+                            <TableCell>
+                              <div className="grid gap-1 text-sm">
+                                {formatUsdDisplay(item.priceUsdCents) && (
+                                  <div>{formatUsdDisplay(item.priceUsdCents)}</div>
+                                )}
+                                {formatLocalCurrency(item.priceLbp, localCurrencyLabel) && (
+                                  <div>
+                                    {formatLocalCurrency(item.priceLbp, localCurrencyLabel)}
+                                  </div>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              {item.isAvailable ? 'Available' : 'Unavailable'}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <form action={deleteAdminMenuItemAction}>
+                                <input type="hidden" name="organizationId" value={organizationId} />
+                                <input type="hidden" name="itemId" value={item.id} />
+                                <ConfirmSubmitButton
+                                  confirmMessage="Are you sure you want to delete this item?"
+                                  pendingLabel="Deleting..."
+                                  variant="destructive"
+                                  size="sm"
+                                >
+                                  Delete
+                                </ConfirmSubmitButton>
+                              </form>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+              )
+            : (
+                <div className="rounded-md border border-dashed p-6 text-sm text-muted-foreground">
+                  No menu items yet.
+                </div>
+              )}
+        </div>
+      </AdminSection>
     </section>
   );
 };
