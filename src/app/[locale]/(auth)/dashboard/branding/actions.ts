@@ -106,7 +106,6 @@ export const updateRestaurantBrandingAction = async (formData: FormData) => {
   const orderSoundNotificationsEnabled = (
     formData.get('orderSoundNotificationsEnabled') === 'on'
   );
-  const showMenuItemImages = formData.get('showMenuItemImages') === 'on';
   const localCurrencyCode = normalizeCurrencyCode(
     formData.get('localCurrencyCode'),
   );
@@ -138,7 +137,6 @@ export const updateRestaurantBrandingAction = async (formData: FormData) => {
       enableWhatsappContact,
       orderVisualNotificationsEnabled,
       orderSoundNotificationsEnabled,
-      showMenuItemImages,
       localCurrencyCode,
       localCurrencyLabel,
     })
@@ -154,7 +152,6 @@ export const updateRestaurantBrandingAction = async (formData: FormData) => {
         enableWhatsappContact,
         orderVisualNotificationsEnabled,
         orderSoundNotificationsEnabled,
-        showMenuItemImages,
         localCurrencyCode,
         localCurrencyLabel,
       },

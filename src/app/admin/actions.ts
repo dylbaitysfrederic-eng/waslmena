@@ -1524,38 +1524,6 @@ export const deleteAdminMenuItemAction = async (formData: FormData) => {
   redirect(`/admin/menu/${organizationId}?status=item_deleted`);
 };
 
-export const updateAdminMenuVisibilityAction = async (formData: FormData) => {
-  await assertAdmin();
-
-  const organizationId = getOrganizationId(formData);
-  const showMenuItemImages = formData.get('showMenuItemImages') === 'on';
-
-  if (!organizationId) {
-    return;
-  }
-
-  await db
-    .insert(organizationSchema)
-    .values({
-      id: organizationId,
-      showMenuItemImages,
-    })
-    .onConflictDoUpdate({
-      target: organizationSchema.id,
-      set: {
-        showMenuItemImages,
-      },
-    });
-
-  revalidateAdminPaths(
-    `/admin/menu/${organizationId}`,
-    `/r/${organizationId}/menu`,
-    `/en/r/${organizationId}/menu`,
-    `/ar/r/${organizationId}/menu`,
-    `/fr/r/${organizationId}/menu`,
-  );
-};
-
 export const updateAdminSettingsAction = async (formData: FormData) => {
   await assertAdmin();
 

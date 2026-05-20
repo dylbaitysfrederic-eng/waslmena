@@ -36,7 +36,6 @@ export const organizationSchema = pgTable(
     restaurantThemeMode: text('restaurant_theme_mode').default('day').notNull(),
     restaurantTemplateStyle: text('restaurant_template_style'),
     restaurantWhatsappNumber: text('restaurant_whatsapp_number'),
-    showMenuItemImages: boolean('show_menu_item_images').default(true).notNull(),
     localCurrencyCode: text('local_currency_code'),
     localCurrencyLabel: text('local_currency_label'),
     restaurantProfile: text('restaurant_profile').default('table_service').notNull(),

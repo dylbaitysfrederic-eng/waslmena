@@ -57,7 +57,6 @@ const RestaurantBrandingPage = async (props: {
         organizationSchema.orderVisualNotificationsEnabled,
       orderSoundNotificationsEnabled:
         organizationSchema.orderSoundNotificationsEnabled,
-      showMenuItemImages: organizationSchema.showMenuItemImages,
       localCurrencyCode: organizationSchema.localCurrencyCode,
       localCurrencyLabel: organizationSchema.localCurrencyLabel,
     })
@@ -205,14 +204,6 @@ const RestaurantBrandingPage = async (props: {
             label={t('whatsapp_enabled_label')}
             description={t('whatsapp_enabled_help')}
             defaultChecked={organization?.enableWhatsappContact ?? true}
-          />
-
-          <SwitchField
-            id="showMenuItemImages"
-            name="showMenuItemImages"
-            label={t('show_menu_images_label')}
-            description={t('show_menu_images_help')}
-            defaultChecked={organization?.showMenuItemImages ?? true}
           />
 
           <div className="rounded-md border bg-muted/30 p-4">
