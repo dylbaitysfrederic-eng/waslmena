@@ -1,5 +1,5 @@
 import { auth } from '@clerk/nextjs/server';
-import { asc, desc, eq } from 'drizzle-orm';
+import { and, asc, desc, eq, gte } from 'drizzle-orm';
 import { unstable_noStore as noStore } from 'next/cache';
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
@@ -22,6 +22,11 @@ import { updateOrderAction, updateOrderStatusAction } from './actions';
 import { CopyTicketButton } from './CopyTicketButton';
 import { OrderStatusGroups } from './OrderStatusGroups';
 import { PendingOrderNotifier } from './PendingOrderNotifier';
+import {
+  getOrderPeriodStartDate,
+  normalizeOrderPeriod,
+  ORDER_PERIODS,
+} from './periods';
 import { PrintTicketButton } from './PrintTicketButton';
 
 export const dynamic = 'force-dynamic';
@@ -164,16 +169,33 @@ const getFinalStatusCompletedAt = (status: string, updatedAt: Date) => {
   return status === 'completed' || status === 'cancelled' ? updatedAt : null;
 };
 
-const OrdersPage = async (props: { params: { locale: string } }) => {
+const OrdersPage = async (props: {
+  params: { locale: string };
+  searchParams?: { period?: string };
+}) => {
   noStore();
 
   const { orgId } = await auth();
   const t = await getTranslations('Orders');
   const now = new Date();
+  const selectedPeriod = normalizeOrderPeriod(props.searchParams?.period);
+  const periodStartDate = getOrderPeriodStartDate(selectedPeriod, now);
+  const ordersPath = getI18nPath('/dashboard/orders', props.params.locale);
+  const exportPath = getI18nPath(
+    '/dashboard/orders/export',
+    props.params.locale,
+  );
 
   if (!orgId) {
     return null;
   }
+
+  const orderPeriodWhere = periodStartDate
+    ? and(
+      eq(orderSchema.organizationId, orgId),
+      gte(orderSchema.createdAt, periodStartDate),
+    )
+    : eq(orderSchema.organizationId, orgId);
 
   const [organization] = await db
     .select({
@@ -226,7 +248,7 @@ const OrdersPage = async (props: { params: { locale: string } }) => {
       restaurantTableSchema,
       eq(orderSchema.tableId, restaurantTableSchema.id),
     )
-    .where(eq(orderSchema.organizationId, orgId))
+    .where(orderPeriodWhere)
     .orderBy(desc(orderSchema.createdAt));
 
   const orderItems = await db
@@ -243,7 +265,7 @@ const OrdersPage = async (props: { params: { locale: string } }) => {
     .from(orderItemSchema)
     .leftJoin(menuItemSchema, eq(orderItemSchema.menuItemId, menuItemSchema.id))
     .innerJoin(orderSchema, eq(orderItemSchema.orderId, orderSchema.id))
-    .where(eq(orderSchema.organizationId, orgId))
+    .where(orderPeriodWhere)
     .orderBy(orderItemSchema.id);
 
   const menuItems = await db
@@ -297,13 +319,47 @@ const OrdersPage = async (props: { params: { locale: string } }) => {
         title={t('list_section_title')}
         description={t('list_section_description')}
       >
+        <div className="mb-5 flex flex-wrap items-center gap-2">
+          {ORDER_PERIODS.map(period => (
+            <Button
+              key={period}
+              asChild
+              variant={selectedPeriod === period ? 'default' : 'outline'}
+              size="sm"
+            >
+              <Link href={`${ordersPath}?period=${period}`}>
+                {t(`period_${period}`)}
+              </Link>
+            </Button>
+          ))}
+        </div>
+
+        <div className="mb-5 flex flex-wrap items-center gap-2">
+          <span className="text-sm font-medium text-muted-foreground">
+            {t('export_tools_label')}
+          </span>
+          {ORDER_PERIODS.map(period => (
+            <Button
+              key={period}
+              asChild
+              variant="ghost"
+              size="sm"
+              className="h-8 px-2 text-xs"
+            >
+              <Link href={`${exportPath}?period=${period}`}>
+                {t(`export_${period}`)}
+              </Link>
+            </Button>
+          ))}
+        </div>
+
         <div className="mb-5 flex flex-col gap-3 rounded-md border bg-background p-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-muted-foreground">
             {t('refresh_helper')}
           </p>
           <div className="flex flex-wrap items-center gap-2">
             <Button asChild>
-              <Link href={getI18nPath('/dashboard/orders', props.params.locale)}>
+              <Link href={`${ordersPath}?period=${selectedPeriod}`}>
                 {t('refresh_button')}
               </Link>
             </Button>
