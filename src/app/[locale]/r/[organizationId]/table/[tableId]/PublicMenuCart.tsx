@@ -58,43 +58,43 @@ type PublicMenuCartProps = {
 const TEMPLATE_CLASS_NAMES = {
   fast_food: {
     category: 'text-2xl font-black uppercase',
-    list: 'divide-y-2 rounded-md border-2 bg-card',
-    item: 'bg-white',
+    list: 'grid gap-3',
+    item: 'rounded-xl border-2 bg-white shadow-sm',
     itemName: 'text-lg font-black uppercase',
     price: 'text-base font-black',
-    button: '',
+    button: 'rounded-full px-4',
   },
   cafe: {
     category: 'font-serif text-2xl font-semibold',
-    list: 'divide-y rounded-lg border bg-card',
-    item: 'bg-white/80',
+    list: 'grid gap-3',
+    item: 'rounded-xl border bg-white/90 shadow-sm',
     itemName: 'font-serif text-lg font-semibold',
     price: 'font-semibold text-stone-800',
-    button: 'rounded-full',
+    button: 'rounded-full px-4',
   },
   casual_restaurant: {
     category: 'text-xl font-semibold',
-    list: 'divide-y rounded-md border bg-card',
-    item: '',
-    itemName: 'font-medium leading-6',
-    price: 'text-sm font-semibold',
-    button: '',
+    list: 'grid gap-3',
+    item: 'rounded-xl border bg-card shadow-sm',
+    itemName: 'text-base font-semibold leading-6',
+    price: 'text-sm font-bold',
+    button: 'rounded-full px-4',
   },
   table_service: {
     category: 'text-xl font-semibold',
-    list: 'divide-y rounded-md border bg-white shadow-sm',
-    item: 'bg-white',
+    list: 'grid gap-3',
+    item: 'rounded-xl border bg-white shadow-sm',
     itemName: 'font-semibold leading-6',
     price: 'text-sm font-semibold text-slate-800',
-    button: 'rounded-md',
+    button: 'rounded-full px-4',
   },
   shisha_lounge: {
     category: 'text-xl font-semibold text-amber-200',
-    list: 'divide-y divide-zinc-700 rounded-md border border-zinc-700 bg-zinc-900',
-    item: 'bg-zinc-900 text-zinc-50',
+    list: 'grid gap-3',
+    item: 'rounded-xl border border-zinc-700 bg-zinc-900 text-zinc-50 shadow-sm shadow-black/20',
     itemName: 'font-semibold leading-6 text-zinc-50',
     price: 'text-sm font-semibold text-amber-100',
-    button: 'rounded-md',
+    button: 'rounded-full px-4',
   },
 } as const;
 
@@ -311,7 +311,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
       <article
         key={item.id}
         className={cn(
-          'flex flex-col gap-4 p-4 sm:flex-row sm:items-start',
+          'flex flex-col gap-3 overflow-hidden p-3.5 transition-colors sm:flex-row sm:items-start sm:gap-4 sm:p-4',
           templateClassNames.item,
           !isItemAvailable && 'opacity-55',
         )}
@@ -321,37 +321,41 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
             <MenuItemImagePreview
               src={item.imageUrl}
               alt={item.name}
-              className="w-28 sm:size-24 sm:w-24"
+              className="h-36 w-full rounded-lg sm:size-24 sm:w-24"
             />
           </div>
         )}
 
-        <div className="min-w-0 flex-1">
-          <h3 className={templateClassNames.itemName}>
-            {item.name}
-          </h3>
-          {!isItemAvailable && (
-            <div className="mt-1 inline-flex rounded-md border bg-muted px-2 py-1 text-xs font-semibold text-muted-foreground">
-              {t('not_available_label')}
+        <div className="min-w-0 flex-1 space-y-2">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <h3 className={templateClassNames.itemName}>
+                {item.name}
+              </h3>
+              {!isItemAvailable && (
+                <div className="mt-1 inline-flex rounded-full border bg-muted px-2.5 py-1 text-xs font-semibold text-muted-foreground">
+                  {t('not_available_label')}
+                </div>
+              )}
             </div>
-          )}
+            <div className={cn('shrink-0 text-right', templateClassNames.price)}>
+              <PriceLines
+                priceUsdCents={item.priceUsdCents}
+                priceLbp={item.priceLbp}
+                locale={props.locale}
+                localCurrencyLabel={props.localCurrencyLabel}
+              />
+            </div>
+          </div>
           {item.description && (
-            <p className="mt-1 text-sm leading-6 text-muted-foreground">
+            <p className="text-sm leading-6 text-muted-foreground">
               {item.description}
             </p>
           )}
-          <div className={cn('mt-2', templateClassNames.price)}>
-            <PriceLines
-              priceUsdCents={item.priceUsdCents}
-              priceLbp={item.priceLbp}
-              locale={props.locale}
-              localCurrencyLabel={props.localCurrencyLabel}
-            />
-          </div>
         </div>
 
         {canOrderItem && (
-          <div className="flex shrink-0 items-center justify-between gap-2 sm:justify-end">
+          <div className="flex shrink-0 items-center justify-between gap-2 border-t pt-3 sm:border-t-0 sm:pt-0">
             {quantity > 0 && (
               <div className="flex items-center gap-2">
                 <Button
@@ -374,7 +378,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
             <Button
               type="button"
               size="sm"
-              className={templateClassNames.button}
+              className={cn('min-h-10 flex-1 font-semibold sm:flex-none', templateClassNames.button)}
               style={primaryButtonStyle}
               onClick={() => addItem(item)}
             >
@@ -501,7 +505,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
   );
 
   return (
-    <div className="space-y-6 pb-52 sm:pb-8">
+    <div className="space-y-6 pb-56 sm:pb-8">
       <div
         className="hidden flex-wrap gap-2 sm:flex"
         aria-label={t('category_nav_label')}
@@ -512,6 +516,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
             type="button"
             size="sm"
             variant={category.id === selectedCategory?.id ? 'default' : 'outline'}
+            className="rounded-full px-4"
             style={
               category.id === selectedCategory?.id
                 ? primaryButtonStyle
@@ -525,10 +530,10 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
       </div>
 
       {selectedCategory && (
-        <div className="max-h-[calc(100vh-240px)] overflow-y-auto pr-1 sm:max-h-none sm:overflow-visible sm:pr-0">
-          <section className="space-y-4">
+        <div className="max-h-[calc(100vh-250px)] overflow-y-auto pr-1 sm:max-h-none sm:overflow-visible sm:pr-0">
+          <section className="space-y-5">
             <h2
-              className={templateClassNames.category}
+              className={cn('px-1', templateClassNames.category)}
               style={props.primaryColor ? { color: props.primaryColor } : undefined}
             >
               {selectedCategory.name}
@@ -541,8 +546,8 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
             )}
 
             {selectedCategory.subcategories.map(subcategory => (
-              <section key={subcategory.id} className="space-y-2">
-                <h3 className="px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <section key={subcategory.id} className="space-y-3">
+                <h3 className="px-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">
                   {subcategory.name}
                 </h3>
                 <div className={templateClassNames.list}>
@@ -596,7 +601,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
       )}
 
       <nav
-        className="fixed inset-x-0 bottom-0 z-30 border-t bg-background/95 px-3 py-2 shadow-lg backdrop-blur sm:hidden"
+        className="fixed inset-x-0 bottom-0 z-30 border-t bg-background/95 px-3 pb-[calc(0.5rem+env(safe-area-inset-bottom))] pt-2 shadow-lg backdrop-blur sm:hidden"
         aria-label={t('category_nav_label')}
       >
         <div className="mx-auto flex max-w-2xl gap-2 overflow-x-auto pb-1">
@@ -606,7 +611,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
               type="button"
               size="sm"
               variant={category.id === selectedCategory?.id ? 'default' : 'outline'}
-              className="shrink-0"
+              className="min-h-10 shrink-0 rounded-full px-4 text-xs font-semibold"
               style={
                 category.id === selectedCategory?.id
                   ? primaryButtonStyle
@@ -623,13 +628,14 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
       {cart.length > 0 && (
         <button
           type="button"
-          className="fixed inset-x-3 bottom-16 z-40 rounded-md border bg-background px-4 py-3 text-left shadow-lg sm:hidden"
+          className="fixed inset-x-3 bottom-[4.75rem] z-40 rounded-2xl border bg-background px-4 py-3 text-left shadow-xl sm:hidden"
+          style={primaryButtonStyle}
           onClick={() => setIsCartOpen(true)}
         >
           <div className="mx-auto flex max-w-2xl items-center justify-between gap-3">
             <div>
               <div className="text-sm font-semibold">{t('cart_title')}</div>
-              <div className="text-xs text-muted-foreground">
+              <div className="text-xs opacity-85">
                 {t('cart_items_count', { count: cartQuantity })}
               </div>
             </div>
@@ -647,7 +653,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
                 </div>
               )}
             </div>
-            <div className="text-sm font-semibold">
+            <div className="rounded-full bg-white/15 px-3 py-1 text-sm font-semibold">
               {t('cart_bar_button')}
             </div>
           </div>
@@ -656,7 +662,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
 
       {isCartOpen && cart.length > 0 && (
         <div
-          className="fixed inset-0 z-50 bg-black/40 px-3 py-6 sm:hidden"
+          className="fixed inset-0 z-50 bg-black/45 px-3 pb-3 pt-10 sm:hidden"
           role="dialog"
           aria-modal="true"
           aria-label={t('cart_title')}
@@ -668,7 +674,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
             onClick={() => setIsCartOpen(false)}
           />
           <section
-            className="relative mx-auto max-h-[90vh] max-w-2xl overflow-y-auto rounded-md border bg-background p-4 shadow-xl"
+            className="relative mx-auto max-h-[88vh] max-w-2xl overflow-y-auto rounded-2xl border bg-background p-4 shadow-2xl"
           >
             <div className="mb-3 flex items-center justify-between gap-3">
               <div>
