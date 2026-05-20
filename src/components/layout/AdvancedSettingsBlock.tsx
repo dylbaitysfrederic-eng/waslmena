@@ -7,20 +7,22 @@ type AdvancedSettingsBlockProps = {
 };
 
 export const AdvancedSettingsBlock = (props: AdvancedSettingsBlockProps) => (
-  <details className="group border-t pt-5">
-    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold">
-      <span>{props.title}</span>
+  <details className="group rounded-md border bg-background p-5 shadow-sm">
+    <summary className="flex cursor-pointer list-none items-start justify-between gap-4">
+      <span className="grid gap-1">
+        <span className="text-sm font-semibold">{props.title}</span>
+        <span className="text-xs leading-5 text-muted-foreground">
+          {props.description}
+        </span>
+      </span>
       <span
         aria-hidden="true"
-        className="text-xs text-muted-foreground transition-transform group-open:rotate-180"
+        className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full border bg-muted text-xs font-semibold text-muted-foreground transition-transform group-open:rotate-180"
       >
         v
       </span>
     </summary>
-    <p className="mt-2 text-xs leading-5 text-muted-foreground">
-      {props.description}
-    </p>
-    <div className="mt-4">
+    <div className="mt-5 border-t pt-5">
       {props.children}
     </div>
   </details>
