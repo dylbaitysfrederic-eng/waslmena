@@ -590,8 +590,8 @@ const AdminMenuDetailPage = async (props: {
                     fieldId="new-item-image"
                     urlFieldName="imageUrl"
                     fileFieldName="imageFile"
-                    label="Image URL (optional)"
-                    helpText="Optional. Use a public image URL or upload a lightweight image file."
+                    label="Image (optional)"
+                    helpText="Optional. Upload a lightweight image file."
                     placeholder="https://example.com/image.jpg"
                   />
                   <div className="grid gap-3 sm:grid-cols-2">
@@ -735,8 +735,8 @@ const AdminMenuDetailPage = async (props: {
                                       fieldId={`item-image-${item.id}`}
                                       urlFieldName="imageUrl"
                                       fileFieldName="imageFile"
-                                      label="Image URL (optional)"
-                                      helpText="Optional. Use a public image URL or upload a lightweight image file."
+                                      label="Image (optional)"
+                                      helpText="Optional. Upload a lightweight image file."
                                       placeholder="https://example.com/image.jpg"
                                       currentImageUrl={item.imageUrl}
                                     />

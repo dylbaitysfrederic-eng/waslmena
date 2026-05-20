@@ -43,7 +43,7 @@ const SettingsSection = (props: {
   description: string;
   title: string;
 }) => (
-  <section className="rounded-md border bg-background p-4">
+  <section className="rounded-md border bg-background p-5">
     <div className="mb-4">
       <h4 className="font-semibold">{props.title}</h4>
       <p className="mt-1 text-sm text-muted-foreground">
@@ -67,13 +67,13 @@ const AdminTemplatesDetailPage = async (props: {
   const organization = organizationRecords.get(organizationId);
 
   return (
-    <section className="grid gap-4">
+    <section className="grid gap-6">
       <div className="rounded-md bg-background p-5">
         <Link
           href="/admin/templates"
           className="text-sm font-semibold text-muted-foreground hover:text-foreground"
         >
-          Back to templates
+          Back to QR & templates
         </Link>
         <h2 className="mt-4 text-xl font-semibold">
           {organization?.restaurantDisplayName || 'Unnamed restaurant'}
@@ -96,7 +96,7 @@ const AdminTemplatesDetailPage = async (props: {
           </p>
         </div>
 
-        <div className="grid gap-4">
+        <div className="grid gap-5">
           <SettingsSection
             title="Restaurant setup"
             description="Choose the restaurant profile and order flow defaults."
@@ -285,7 +285,7 @@ const AdminTemplatesDetailPage = async (props: {
           size="sm"
           className="mt-4 justify-self-end"
         >
-          Save template
+          Save settings
         </FormSubmitButton>
       </form>
     </section>

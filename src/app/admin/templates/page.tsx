@@ -36,7 +36,7 @@ const AdminTemplatesPage = async () => {
 
       {ids.length === 0
         ? (
-            <div className="rounded-md border p-8 text-center text-muted-foreground">
+            <div className="rounded-md border border-dashed p-6 text-center text-sm text-muted-foreground">
               No restaurant clients found yet.
             </div>
           )
