@@ -270,6 +270,19 @@ const AdminTemplatesDetailPage = async (props: {
               title="Menu appearance"
               description="Choose the visual setup defaults for the customer menu."
             >
+              <label
+                htmlFor={`public-menu-accent-color-${organizationId}`}
+                className="mb-4 grid gap-1 text-xs font-medium text-muted-foreground md:max-w-sm"
+              >
+                Public menu accent color
+                <input
+                  id={`public-menu-accent-color-${organizationId}`}
+                  name="restaurantAccentColor"
+                  type="color"
+                  defaultValue={organization?.restaurantAccentColor ?? '#111827'}
+                  className="h-9 w-full rounded-md border border-input bg-background p-1"
+                />
+              </label>
               <TemplateStylePicker
                 defaultValue={organization?.restaurantTemplateStyle}
                 localCurrencyLabel={organization?.localCurrencyLabel ?? 'LL'}
@@ -312,6 +325,13 @@ const AdminTemplatesDetailPage = async (props: {
                   label="WhatsApp contact"
                   description="Show the contact action on public menus."
                   defaultChecked={organization?.enableWhatsappContact ?? true}
+                />
+                <SwitchField
+                  id={`show-menu-item-images-${organizationId}`}
+                  name="showMenuItemImages"
+                  label="Show item photos on public menu"
+                  description="Photos remain stored and can be shown again later."
+                  defaultChecked={organization?.showMenuItemImages ?? true}
                 />
               </div>
             </SettingsSection>

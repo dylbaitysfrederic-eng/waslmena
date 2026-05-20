@@ -43,6 +43,7 @@ type PublicMenuCartProps = {
   organizationId: string;
   accentColor: string | null;
   primaryColor: string | null;
+  showMenuItemImages: boolean;
   tableId: number | null;
   orderingEnabled: boolean;
   templateStyle:
@@ -112,6 +113,25 @@ const formatLocalCurrency = (
   return `${new Intl.NumberFormat(locale).format(amount)} ${localCurrencyLabel}`;
 };
 
+const getReadableTextColor = (hexColor: string) => {
+  const normalizedColor = /^#[0-9a-f]{6}$/i.test(hexColor)
+    ? hexColor.slice(1)
+    : '111827';
+  const [red, green, blue] = [0, 2, 4].map((startIndex) => {
+    const channel = Number.parseInt(
+      normalizedColor.slice(startIndex, startIndex + 2),
+      16,
+    ) / 255;
+
+    return channel <= 0.03928
+      ? channel / 12.92
+      : ((channel + 0.055) / 1.055) ** 2.4;
+  });
+  const luminance = 0.2126 * red! + 0.7152 * green! + 0.0722 * blue!;
+
+  return luminance > 0.55 ? '#111827' : '#ffffff';
+};
+
 const PriceLines = (props: {
   priceUsdCents: number | null;
   priceLbp: number | null;
@@ -163,11 +183,12 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
     (total, item) => total + (item.priceLbp ?? 0) * item.quantity,
     0,
   );
-  const primaryButtonStyle = props.primaryColor
+  const publicMenuAccentColor = props.accentColor ?? props.primaryColor;
+  const primaryButtonStyle = publicMenuAccentColor
     ? {
-        backgroundColor: props.primaryColor,
-        borderColor: props.accentColor ?? props.primaryColor,
-        color: '#ffffff',
+        backgroundColor: publicMenuAccentColor,
+        borderColor: publicMenuAccentColor,
+        color: getReadableTextColor(publicMenuAccentColor),
       }
     : undefined;
   const templateClassNames = TEMPLATE_CLASS_NAMES[props.templateStyle];
@@ -295,7 +316,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
           !isItemAvailable && 'opacity-55',
         )}
       >
-        {item.imageUrl && (
+        {props.showMenuItemImages && item.imageUrl && (
           <div className="shrink-0 sm:order-last">
             <MenuItemImagePreview
               src={item.imageUrl}

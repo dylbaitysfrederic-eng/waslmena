@@ -33,6 +33,7 @@ export const organizationSchema = pgTable(
     restaurantLogoUrl: text('restaurant_logo_url'),
     restaurantPrimaryColor: text('restaurant_primary_color'),
     restaurantAccentColor: text('restaurant_accent_color'),
+    showMenuItemImages: boolean('show_menu_item_images').default(true).notNull(),
     restaurantThemeMode: text('restaurant_theme_mode').default('day').notNull(),
     restaurantTemplateStyle: text('restaurant_template_style'),
     restaurantWhatsappNumber: text('restaurant_whatsapp_number'),

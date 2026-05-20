@@ -541,6 +541,7 @@
     "restaurant_profile_label": "Restaurant profile",
     "ordering_mode_label": "Ordering mode",
     "qr_mode_label": "QR mode",
+    "public_menu_accent_color_label": "Public menu accent color",
     "enable_table_numbers_label": "Table numbers",
     "enable_table_numbers_help": "Use numeric labels for tables.",
     "enable_named_tables_label": "Named tables",
@@ -549,6 +550,8 @@
     "enable_customer_name_help": "Ask guests for a name on orders.",
     "enable_whatsapp_contact_label": "WhatsApp contact",
     "enable_whatsapp_contact_help": "Show the contact action on public menus.",
+    "show_menu_item_images_label": "Show item photos on public menu",
+    "show_menu_item_images_help": "Photos remain stored and can be shown again later.",
     "advanced_save_button": "Save settings",
     "advanced_save_pending": "Saving..."
   },

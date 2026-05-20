@@ -186,6 +186,11 @@ export const updateRestaurantQrSettingsAction = async (formData: FormData) => {
         RESTAURANT_TEMPLATE_STYLES,
         'casual_restaurant',
       ),
+      restaurantAccentColor: normalizeHexColor(
+        formData.get('restaurantAccentColor'),
+        QR_COLOR_DEFAULTS.frame,
+      ),
+      showMenuItemImages: formData.get('showMenuItemImages') === 'on',
       orderingMode: normalizeEnumValue(
         formData.get('orderingMode'),
         ORDERING_MODES,

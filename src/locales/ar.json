@@ -541,6 +541,7 @@
     "restaurant_profile_label": "ملف المطعم",
     "ordering_mode_label": "وضع الطلب",
     "qr_mode_label": "وضع QR",
+    "public_menu_accent_color_label": "لون إبراز القائمة العامة",
     "enable_table_numbers_label": "أرقام الطاولات",
     "enable_table_numbers_help": "استخدم أرقاماً للطاولات.",
     "enable_named_tables_label": "طاولات مسماة",
@@ -549,6 +550,8 @@
     "enable_customer_name_help": "اطلب اسماً من الضيوف عند الطلب.",
     "enable_whatsapp_contact_label": "تواصل واتساب",
     "enable_whatsapp_contact_help": "إظهار إجراء التواصل في القوائم العامة.",
+    "show_menu_item_images_label": "إظهار صور الأصناف في القائمة العامة",
+    "show_menu_item_images_help": "تبقى الصور محفوظة ويمكن إظهارها لاحقاً.",
     "advanced_save_button": "حفظ الإعدادات",
     "advanced_save_pending": "جارٍ الحفظ..."
   },

@@ -183,6 +183,13 @@
       "when": 1779261473090,
       "tag": "0025_legal_lord_tyger",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1779265851708,
+      "tag": "0026_faulty_havok",
+      "breakpoints": true
     }
   ]
 }

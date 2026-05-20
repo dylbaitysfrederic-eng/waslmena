@@ -101,6 +101,7 @@ const PublicGeneralMenuPage = async (props: PublicGeneralMenuPageProps) => {
       restaurantLogoUrl: organizationSchema.restaurantLogoUrl,
       restaurantPrimaryColor: organizationSchema.restaurantPrimaryColor,
       restaurantAccentColor: organizationSchema.restaurantAccentColor,
+      showMenuItemImages: organizationSchema.showMenuItemImages,
       restaurantThemeMode: organizationSchema.restaurantThemeMode,
       restaurantTemplateStyle: organizationSchema.restaurantTemplateStyle,
       restaurantWhatsappNumber: organizationSchema.restaurantWhatsappNumber,
@@ -355,6 +356,7 @@ const PublicGeneralMenuPage = async (props: PublicGeneralMenuPageProps) => {
                 organizationId={props.params.organizationId}
                 accentColor={organization.restaurantAccentColor ?? null}
                 primaryColor={organization.restaurantPrimaryColor ?? null}
+                showMenuItemImages={organization.showMenuItemImages}
                 tableId={null}
                 orderingEnabled={orderingEnabled}
                 templateStyle={templateStyle}

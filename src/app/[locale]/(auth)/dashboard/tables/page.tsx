@@ -92,6 +92,8 @@ const RestaurantTablesPage = async (props: {
       .select({
         restaurantDisplayName: organizationSchema.restaurantDisplayName,
         restaurantLogoUrl: organizationSchema.restaurantLogoUrl,
+        restaurantAccentColor: organizationSchema.restaurantAccentColor,
+        showMenuItemImages: organizationSchema.showMenuItemImages,
         localCurrencyLabel: organizationSchema.localCurrencyLabel,
         restaurantProfile: organizationSchema.restaurantProfile,
         restaurantTemplateStyle: organizationSchema.restaurantTemplateStyle,
@@ -402,6 +404,15 @@ const RestaurantTablesPage = async (props: {
                 ))}
               </select>
             </label>
+            <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+              {t('public_menu_accent_color_label')}
+              <input
+                name="restaurantAccentColor"
+                type="color"
+                defaultValue={organization?.restaurantAccentColor ?? '#111827'}
+                className="h-9 w-full rounded-md border border-input bg-background p-1"
+              />
+            </label>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -432,6 +443,13 @@ const RestaurantTablesPage = async (props: {
               label={t('enable_whatsapp_contact_label')}
               description={t('enable_whatsapp_contact_help')}
               defaultChecked={organization?.enableWhatsappContact ?? true}
+            />
+            <SwitchField
+              id="show-menu-item-images"
+              name="showMenuItemImages"
+              label={t('show_menu_item_images_label')}
+              description={t('show_menu_item_images_help')}
+              defaultChecked={organization?.showMenuItemImages ?? true}
             />
           </div>
 
