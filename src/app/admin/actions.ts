@@ -1122,16 +1122,6 @@ export const updateAdminTemplatesAction = async (formData: FormData) => {
       RESTAURANT_PROFILES,
       'table_service',
     ),
-    restaurantTemplateStyle: normalizeEnumValue(
-      formData.get('restaurantTemplateStyle'),
-      RESTAURANT_TEMPLATE_STYLES,
-      'casual_restaurant',
-    ),
-    restaurantAccentColor: normalizeHexColor(
-      formData.get('restaurantAccentColor'),
-      QR_COLOR_DEFAULTS.frame,
-    ),
-    showMenuItemImages: formData.get('showMenuItemImages') === 'on',
     orderingMode: normalizeEnumValue(
       formData.get('orderingMode'),
       ORDERING_MODES,
@@ -1173,6 +1163,38 @@ export const updateAdminTemplatesAction = async (formData: FormData) => {
   revalidateAdminPaths(
     '/admin/templates',
     '/dashboard/tables',
+    `/r/${organizationId}/menu`,
+  );
+};
+
+export const updateAdminMenuAppearanceAction = async (formData: FormData) => {
+  await assertAdmin();
+
+  const organizationId = getOrganizationId(formData);
+
+  if (!organizationId) {
+    return;
+  }
+
+  await db
+    .update(organizationSchema)
+    .set({
+      restaurantTemplateStyle: normalizeEnumValue(
+        formData.get('restaurantTemplateStyle'),
+        RESTAURANT_TEMPLATE_STYLES,
+        'casual_restaurant',
+      ),
+      restaurantAccentColor: normalizeHexColor(
+        formData.get('restaurantAccentColor'),
+        QR_COLOR_DEFAULTS.frame,
+      ),
+      showMenuItemImages: formData.get('showMenuItemImages') === 'on',
+    })
+    .where(eq(organizationSchema.id, organizationId));
+
+  revalidateAdminPaths(
+    `/admin/menu/${organizationId}`,
+    '/dashboard/menu-items',
     `/r/${organizationId}/menu`,
   );
 };

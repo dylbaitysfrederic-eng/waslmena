@@ -3,6 +3,7 @@ import { asc, eq } from 'drizzle-orm';
 import { unstable_noStore as noStore } from 'next/cache';
 import { getTranslations } from 'next-intl/server';
 
+import { TemplateStylePicker } from '@/app/admin/templates/TemplateStylePicker';
 import { ConfirmSubmitButton } from '@/components/ConfirmSubmitButton';
 import { FormSubmitButton } from '@/components/FormSubmitButton';
 import { MenuItemImagePreview } from '@/components/MenuItemImagePreview';
@@ -32,6 +33,7 @@ import { getLocalizedMenuText } from '@/utils/MenuTranslations';
 import {
   createMenuItemAction,
   deleteMenuItemAction,
+  updateMenuAppearanceAction,
   updateMenuItemAction,
 } from './actions';
 
@@ -209,6 +211,10 @@ const MenuItemsPage = async (props: {
   const [organization] = await db
     .select({
       localCurrencyLabel: organizationSchema.localCurrencyLabel,
+      restaurantAccentColor: organizationSchema.restaurantAccentColor,
+      restaurantDisplayName: organizationSchema.restaurantDisplayName,
+      restaurantTemplateStyle: organizationSchema.restaurantTemplateStyle,
+      showMenuItemImages: organizationSchema.showMenuItemImages,
     })
     .from(organizationSchema)
     .where(eq(organizationSchema.id, orgId))
@@ -270,6 +276,42 @@ const MenuItemsPage = async (props: {
         title={t('title_bar')}
         description={t('title_bar_description')}
       />
+
+      <details className="rounded-md border bg-background p-5">
+        <summary className="cursor-pointer font-semibold">
+          {t('advanced_appearance_title')}
+        </summary>
+        <p className="mt-2 text-sm text-muted-foreground">
+          {t('advanced_appearance_description')}
+        </p>
+        <form action={updateMenuAppearanceAction} className="mt-5 grid gap-5">
+          <label className="grid gap-1 text-xs font-medium text-muted-foreground md:max-w-sm">
+            {t('public_menu_accent_color_label')}
+            <input
+              name="restaurantAccentColor"
+              type="color"
+              defaultValue={organization?.restaurantAccentColor ?? '#111827'}
+              className="h-9 w-full rounded-md border border-input bg-background p-1"
+            />
+          </label>
+          <SwitchField
+            id="show-menu-item-images"
+            name="showMenuItemImages"
+            label={t('show_menu_item_images_label')}
+            description={t('show_menu_item_images_help')}
+            defaultChecked={organization?.showMenuItemImages ?? true}
+          />
+          <TemplateStylePicker
+            defaultValue={organization?.restaurantTemplateStyle}
+            localCurrencyLabel={localCurrencyLabel}
+            organizationId={orgId}
+            restaurantName={organization?.restaurantDisplayName ?? 'Restaurant'}
+          />
+          <FormSubmitButton pendingLabel={t('appearance_save_pending')} size="sm">
+            {t('appearance_save_button')}
+          </FormSubmitButton>
+        </form>
+      </details>
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,380px)_1fr]">
         <DashboardSection

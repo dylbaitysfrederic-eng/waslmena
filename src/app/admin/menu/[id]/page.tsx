@@ -2,6 +2,7 @@ import { asc, eq } from 'drizzle-orm';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+import { TemplateStylePicker } from '@/app/admin/templates/TemplateStylePicker';
 import { ConfirmSubmitButton } from '@/components/ConfirmSubmitButton';
 import { FormSubmitButton } from '@/components/FormSubmitButton';
 import { MenuItemImagePreview } from '@/components/MenuItemImagePreview';
@@ -18,7 +19,10 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { db } from '@/libs/DB';
-import { menuCategorySchema, menuItemSchema } from '@/models/Schema';
+import {
+  menuCategorySchema,
+  menuItemSchema,
+} from '@/models/Schema';
 import { getLocalizedMenuText } from '@/utils/MenuTranslations';
 
 import {
@@ -32,6 +36,7 @@ import {
   createAdminMenuItemAction,
   deleteAdminMenuCategoryAction,
   deleteAdminMenuItemAction,
+  updateAdminMenuAppearanceAction,
   updateAdminMenuCategoryAction,
   updateAdminMenuItemAction,
 } from '../../actions';
@@ -326,6 +331,49 @@ const AdminMenuDetailPage = async (props: {
           {statusMessage}
         </div>
       )}
+
+      <details className="rounded-md border bg-background p-5">
+        <summary className="cursor-pointer font-semibold">
+          Menu appearance settings
+        </summary>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Control public menu style and item photo visibility for this restaurant.
+        </p>
+        <form action={updateAdminMenuAppearanceAction} className="mt-5 grid gap-5">
+          <input type="hidden" name="organizationId" value={organizationId} />
+          <label
+            htmlFor={`public-menu-accent-color-${organizationId}`}
+            className="grid gap-1 text-xs font-medium text-muted-foreground md:max-w-sm"
+          >
+            Public menu accent color
+            <input
+              id={`public-menu-accent-color-${organizationId}`}
+              name="restaurantAccentColor"
+              type="color"
+              defaultValue={organization?.restaurantAccentColor ?? '#111827'}
+              className="h-9 w-full rounded-md border border-input bg-background p-1"
+            />
+          </label>
+          <SwitchField
+            id={`show-menu-item-images-${organizationId}`}
+            name="showMenuItemImages"
+            label="Show item photos on public menu"
+            description="Photos remain stored and can be shown again later."
+            defaultChecked={organization?.showMenuItemImages ?? true}
+          />
+          <TemplateStylePicker
+            defaultValue={organization?.restaurantTemplateStyle}
+            localCurrencyLabel={localCurrencyLabel}
+            organizationId={organizationId}
+            restaurantName={
+              organization?.restaurantDisplayName || 'Unnamed restaurant'
+            }
+          />
+          <FormSubmitButton pendingLabel="Saving..." size="sm">
+            Save menu appearance
+          </FormSubmitButton>
+        </form>
+      </details>
 
       <AdminSection
         title="Starter template"

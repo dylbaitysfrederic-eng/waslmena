@@ -27,9 +27,9 @@ const AdminTemplatesPage = async () => {
     <section className="rounded-md bg-background p-5">
       <div className="mb-5 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div>
-          <h2 className="text-xl font-semibold">QR & setup templates</h2>
+          <h2 className="text-xl font-semibold">QR & Tables</h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            Configure each restaurant’s menu profile, QR behavior, table flow, and visual setup defaults.
+            Configure each restaurant’s QR behavior, ordering flow, and table setup.
           </p>
         </div>
       </div>
@@ -48,7 +48,6 @@ const AdminTemplatesPage = async () => {
                     <TableHead className="w-24">Client #</TableHead>
                     <TableHead>Restaurant</TableHead>
                     <TableHead>Type</TableHead>
-                    <TableHead>Template style</TableHead>
                     <TableHead>QR mode</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
@@ -79,11 +78,6 @@ const AdminTemplatesPage = async () => {
                         </TableCell>
                         <TableCell>
                           {formatAdminLabel(
-                            organization?.restaurantTemplateStyle ?? 'table_service',
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {formatAdminLabel(
                             organization?.qrMode ?? 'per_table',
                           )}
                         </TableCell>
@@ -92,7 +86,7 @@ const AdminTemplatesPage = async () => {
                             href={`/admin/templates/${organizationId}`}
                             className="inline-flex rounded-md border border-input bg-background px-3 py-2 text-xs font-semibold hover:bg-muted"
                           >
-                            Manage QR & templates
+                            Manage QR & Tables
                           </Link>
                         </TableCell>
                       </TableRow>

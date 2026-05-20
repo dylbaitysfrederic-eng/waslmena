@@ -33,7 +33,6 @@ import {
   updateAdminTemplatesAction,
 } from '../../actions';
 import { QrCustomizationFields } from '../QrCustomizationFields';
-import { TemplateStylePicker } from '../TemplateStylePicker';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -103,7 +102,7 @@ const AdminTemplatesDetailPage = async (props: {
           href="/admin/templates"
           className="text-sm font-semibold text-muted-foreground hover:text-foreground"
         >
-          Back to QR & templates
+          Back to QR & Tables
         </Link>
         <h2 className="mt-4 text-xl font-semibold">
           {organization?.restaurantDisplayName || 'Unnamed restaurant'}
@@ -119,9 +118,9 @@ const AdminTemplatesDetailPage = async (props: {
       >
         <input type="hidden" name="organizationId" value={organizationId} />
         <div className="mb-4">
-          <h3 className="font-semibold">QR & table settings</h3>
+          <h3 className="font-semibold">QR & Tables</h3>
           <p className="mt-1 text-sm text-muted-foreground">
-            Configure each restaurant’s menu profile, QR behavior, table flow, and visual setup defaults.
+            Configure this restaurant’s QR behavior, ordering flow, and table setup.
             These settings can be changed later and do not affect existing configurations.
           </p>
         </div>
@@ -131,7 +130,7 @@ const AdminTemplatesDetailPage = async (props: {
             Advanced QR & ordering settings
           </summary>
           <p className="mt-2 text-sm text-muted-foreground">
-            Adjust QR flows, ordering mode, table options, and visual defaults.
+            Adjust QR flows, ordering mode, and table options.
           </p>
           <div className="mt-5 grid gap-5">
             <SettingsSection
@@ -267,33 +266,6 @@ const AdminTemplatesDetailPage = async (props: {
             </SettingsSection>
 
             <SettingsSection
-              title="Menu appearance"
-              description="Choose the visual setup defaults for the customer menu."
-            >
-              <label
-                htmlFor={`public-menu-accent-color-${organizationId}`}
-                className="mb-4 grid gap-1 text-xs font-medium text-muted-foreground md:max-w-sm"
-              >
-                Public menu accent color
-                <input
-                  id={`public-menu-accent-color-${organizationId}`}
-                  name="restaurantAccentColor"
-                  type="color"
-                  defaultValue={organization?.restaurantAccentColor ?? '#111827'}
-                  className="h-9 w-full rounded-md border border-input bg-background p-1"
-                />
-              </label>
-              <TemplateStylePicker
-                defaultValue={organization?.restaurantTemplateStyle}
-                localCurrencyLabel={organization?.localCurrencyLabel ?? 'LL'}
-                organizationId={organizationId}
-                restaurantName={
-                  organization?.restaurantDisplayName || 'Unnamed restaurant'
-                }
-              />
-            </SettingsSection>
-
-            <SettingsSection
               title="Table options"
               description="Configure table labels and customer contact options."
             >
@@ -325,13 +297,6 @@ const AdminTemplatesDetailPage = async (props: {
                   label="WhatsApp contact"
                   description="Show the contact action on public menus."
                   defaultChecked={organization?.enableWhatsappContact ?? true}
-                />
-                <SwitchField
-                  id={`show-menu-item-images-${organizationId}`}
-                  name="showMenuItemImages"
-                  label="Show item photos on public menu"
-                  description="Photos remain stored and can be shown again later."
-                  defaultChecked={organization?.showMenuItemImages ?? true}
                 />
               </div>
             </SettingsSection>

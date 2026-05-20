@@ -26,13 +26,6 @@ const RESTAURANT_PROFILES = [
   'table_service',
   'shisha_lounge',
 ] as const;
-const RESTAURANT_TEMPLATE_STYLES = [
-  'fast_food',
-  'cafe',
-  'casual_restaurant',
-  'table_service',
-  'shisha_lounge',
-] as const;
 const ORDERING_MODES = ['table_ordering', 'counter_pickup', 'both'] as const;
 const QR_MODES = ['per_table', 'general_menu', 'both'] as const;
 const QR_STYLE_TEMPLATES = ['classic', 'modern', 'minimal'] as const;
@@ -181,16 +174,6 @@ export const updateRestaurantQrSettingsAction = async (formData: FormData) => {
         RESTAURANT_PROFILES,
         'table_service',
       ),
-      restaurantTemplateStyle: normalizeEnumValue(
-        formData.get('restaurantTemplateStyle'),
-        RESTAURANT_TEMPLATE_STYLES,
-        'casual_restaurant',
-      ),
-      restaurantAccentColor: normalizeHexColor(
-        formData.get('restaurantAccentColor'),
-        QR_COLOR_DEFAULTS.frame,
-      ),
-      showMenuItemImages: formData.get('showMenuItemImages') === 'on',
       orderingMode: normalizeEnumValue(
         formData.get('orderingMode'),
         ORDERING_MODES,

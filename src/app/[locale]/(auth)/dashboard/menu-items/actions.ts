@@ -6,7 +6,11 @@ import { redirect } from 'next/navigation';
 
 import { getActiveRestaurantOrganizationId } from '@/features/dashboard/RestaurantAccess';
 import { db } from '@/libs/DB';
-import { menuCategorySchema, menuItemSchema } from '@/models/Schema';
+import {
+  menuCategorySchema,
+  menuItemSchema,
+  organizationSchema,
+} from '@/models/Schema';
 import { getMenuItemImageUrl } from '@/utils/MenuItemImageUpload';
 import {
   getPrimaryMenuText,
@@ -15,6 +19,13 @@ import {
 } from '@/utils/MenuTranslations';
 
 const MENU_ITEMS_PATH = '/dashboard/menu-items';
+const RESTAURANT_TEMPLATE_STYLES = [
+  'fast_food',
+  'cafe',
+  'casual_restaurant',
+  'table_service',
+  'shisha_lounge',
+] as const;
 
 const getReturnPath = (formData: FormData) => {
   const returnPath = formData.get('returnPath')?.toString();
@@ -28,6 +39,25 @@ const getReturnPath = (formData: FormData) => {
 
 const redirectWithError = (returnPath: string, error: string): never => {
   redirect(`${returnPath}?error=${error}`);
+};
+
+const normalizeEnumValue = <T extends readonly string[]>(
+  value: FormDataEntryValue | null,
+  allowedValues: T,
+  fallback: T[number],
+) => {
+  const textValue = value?.toString();
+
+  return allowedValues.includes(textValue ?? '') ? textValue as T[number] : fallback;
+};
+
+const normalizeHexColor = (
+  value: FormDataEntryValue | null,
+  fallback: string,
+) => {
+  const textValue = value?.toString() ?? '';
+
+  return /^#[0-9a-f]{6}$/i.test(textValue) ? textValue : fallback;
 };
 
 type CurrencyMode = 'usd' | 'local' | 'both';
@@ -403,4 +433,30 @@ export const deleteMenuItemAction = async (formData: FormData) => {
   revalidatePath(MENU_ITEMS_PATH);
   revalidatePath(returnPath);
   redirect(returnPath);
+};
+
+export const updateMenuAppearanceAction = async (formData: FormData) => {
+  const organizationId = await getActiveRestaurantOrganizationId();
+
+  if (!organizationId) {
+    return;
+  }
+
+  await db
+    .update(organizationSchema)
+    .set({
+      restaurantTemplateStyle: normalizeEnumValue(
+        formData.get('restaurantTemplateStyle'),
+        RESTAURANT_TEMPLATE_STYLES,
+        'casual_restaurant',
+      ),
+      restaurantAccentColor: normalizeHexColor(
+        formData.get('restaurantAccentColor'),
+        '#111827',
+      ),
+      showMenuItemImages: formData.get('showMenuItemImages') === 'on',
+    })
+    .where(eq(organizationSchema.id, organizationId));
+
+  revalidatePath(MENU_ITEMS_PATH);
 };

@@ -30,8 +30,8 @@ const adminCards = [
   },
   {
     href: '/admin/templates',
-    title: 'QR & setup templates',
-    description: 'Configure each restaurant’s menu profile, QR behavior, table flow, and visual setup defaults.',
+    title: 'QR & Tables',
+    description: 'Configure each restaurant’s QR behavior, ordering flow, and table setup.',
   },
   {
     href: '/admin/menu',
@@ -127,7 +127,7 @@ const AdminOverviewPage = async () => {
         </h2>
         <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
           This area is for SaaS-owner operations: client records, commercial tracking,
-          access control, setup templates, and usage signals. Restaurant operations
+          access control, QR/table setup, and usage signals. Restaurant operations
           stay in the restaurant dashboard.
         </p>
 
