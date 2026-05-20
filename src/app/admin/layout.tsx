@@ -11,7 +11,7 @@ const adminNavigation = [
   { href: '/admin/clients', label: 'Clients' },
   { href: '/admin/billing', label: 'Billing' },
   { href: '/admin/access', label: 'Access' },
-  { href: '/admin/templates', label: 'Templates' },
+  { href: '/admin/templates', label: 'QR & Templates' },
   { href: '/admin/menu', label: 'Menu setup' },
   { href: '/admin/usage', label: 'Usage' },
   { href: '/admin/settings', label: 'Settings' },

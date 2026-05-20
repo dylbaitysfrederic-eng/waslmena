@@ -30,8 +30,8 @@ const adminCards = [
   },
   {
     href: '/admin/templates',
-    title: 'Templates & profiles',
-    description: 'Assign restaurant profiles, ordering modes, and QR behavior.',
+    title: 'QR & setup templates',
+    description: 'Configure each restaurant’s menu profile, QR behavior, table flow, and visual setup defaults.',
   },
   {
     href: '/admin/menu',

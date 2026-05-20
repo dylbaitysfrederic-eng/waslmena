@@ -27,9 +27,9 @@ const AdminTemplatesPage = async () => {
     <section className="rounded-md bg-background p-5">
       <div className="mb-5 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div>
-          <h2 className="text-xl font-semibold">Templates & profiles</h2>
+          <h2 className="text-xl font-semibold">QR & setup templates</h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            Assign SaaS-owner setup defaults for restaurant type, order flow, and QR behavior. Open a client to manage templates.
+            Configure each restaurant’s menu profile, QR behavior, table flow, and visual setup defaults.
           </p>
         </div>
       </div>
@@ -92,7 +92,7 @@ const AdminTemplatesPage = async () => {
                             href={`/admin/templates/${organizationId}`}
                             className="inline-flex rounded-md border border-input bg-background px-3 py-2 text-xs font-semibold hover:bg-muted"
                           >
-                            Manage templates/QR
+                            Manage QR & templates
                           </Link>
                         </TableCell>
                       </TableRow>

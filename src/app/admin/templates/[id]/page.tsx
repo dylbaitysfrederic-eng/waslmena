@@ -73,9 +73,9 @@ const AdminTemplatesDetailPage = async (props: {
       >
         <input type="hidden" name="organizationId" value={organizationId} />
         <div className="mb-4">
-          <h3 className="font-semibold">Template & QR configuration</h3>
+          <h3 className="font-semibold">QR & table settings</h3>
           <p className="mt-1 text-sm text-muted-foreground">
-            Assign SaaS-owner setup defaults for restaurant type, order flow, and QR behavior.
+            Configure each restaurant’s menu profile, QR behavior, table flow, and visual setup defaults.
             These settings can be changed later and do not affect existing configurations.
           </p>
         </div>
