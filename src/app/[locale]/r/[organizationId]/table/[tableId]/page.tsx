@@ -285,7 +285,7 @@ const PublicTableMenuPage = async (props: PublicMenuPageProps) => {
     imageUrl: item.imageUrl,
     priceUsdCents: item.priceUsdCents,
     priceLbp: item.priceLbp,
-    isAvailable: item.isAvailable,
+    isAvailable: item.isAvailable !== false,
   }));
 
   const categoriesWithItems = localizedCategories

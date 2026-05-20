@@ -233,7 +233,7 @@ const PublicGeneralMenuPage = async (props: PublicGeneralMenuPageProps) => {
     imageUrl: item.imageUrl,
     priceUsdCents: item.priceUsdCents,
     priceLbp: item.priceLbp,
-    isAvailable: item.isAvailable,
+    isAvailable: item.isAvailable !== false,
   }));
 
   const categoriesWithItems = localizedCategories

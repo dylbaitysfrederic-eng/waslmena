@@ -173,6 +173,10 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
   const templateClassNames = TEMPLATE_CLASS_NAMES[props.templateStyle];
 
   const addItem = (item: MenuItem) => {
+    if (!item.isAvailable) {
+      return;
+    }
+
     setHasOrderError(false);
     setCartItems(current => ({
       ...current,
@@ -281,7 +285,8 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
 
   const renderMenuItem = (item: MenuItem) => {
     const quantity = cartItems[item.id]?.quantity ?? 0;
-    const canOrderItem = props.orderingEnabled && item.isAvailable;
+    const isItemAvailable = item.isAvailable !== false;
+    const canOrderItem = props.orderingEnabled && isItemAvailable;
 
     return (
       <article
@@ -289,7 +294,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
         className={cn(
           'flex flex-col gap-4 p-4 sm:flex-row sm:items-start',
           templateClassNames.item,
-          !item.isAvailable && 'opacity-55',
+          !isItemAvailable && 'opacity-55',
         )}
       >
         {item.imageUrl && (
@@ -306,7 +311,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
           <h3 className={templateClassNames.itemName}>
             {item.name}
           </h3>
-          {!item.isAvailable && (
+          {!isItemAvailable && (
             <div className="mt-1 inline-flex rounded-md border bg-muted px-2 py-1 text-xs font-semibold text-muted-foreground">
               {t('not_available_label')}
             </div>
