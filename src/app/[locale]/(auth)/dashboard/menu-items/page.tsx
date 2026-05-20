@@ -30,7 +30,11 @@ import {
 import { getI18nPath } from '@/utils/Helpers';
 import { getLocalizedMenuText } from '@/utils/MenuTranslations';
 
-import { createMenuCategoryAction } from '../menu-categories/actions';
+import {
+  createMenuCategoryAction,
+  deleteMenuCategoryAction,
+  updateMenuCategoryAction,
+} from '../menu-categories/actions';
 import {
   createMenuItemAction,
   deleteMenuItemAction,
@@ -74,6 +78,7 @@ const VALID_FORM_ERRORS = [
   'currency_mismatch',
   'invalid_image_type',
   'image_too_large',
+  'category_in_use',
 ] as const;
 
 type MenuCategoryOption = {
@@ -83,6 +88,7 @@ type MenuCategoryOption = {
   nameAr: string | null;
   nameFr: string | null;
   parentCategoryId: number | null;
+  displayOrder: number;
 };
 
 const getCategoryLabel = (
@@ -193,6 +199,12 @@ const MenuItemLanguageFields = (props: {
 const MenuCategoryLanguageFields = (props: {
   baseId: string;
   t: (key: string) => string;
+  values?: {
+    nameEn: string | null;
+    nameAr: string | null;
+    nameFr: string | null;
+    legacyName: string;
+  };
 }) => (
   <div className="grid gap-3">
     <p className="text-xs text-muted-foreground">
@@ -203,23 +215,69 @@ const MenuCategoryLanguageFields = (props: {
         <Label htmlFor={`${props.baseId}-name-en`}>
           {props.t('name_en_label')}
         </Label>
-        <Input id={`${props.baseId}-name-en`} name="nameEn" />
+        <Input
+          id={`${props.baseId}-name-en`}
+          name="nameEn"
+          defaultValue={props.values?.nameEn ?? props.values?.legacyName ?? ''}
+        />
       </div>
       <div className="space-y-2">
         <Label htmlFor={`${props.baseId}-name-ar`}>
           {props.t('name_ar_label')}
         </Label>
-        <Input id={`${props.baseId}-name-ar`} name="nameAr" dir="rtl" />
+        <Input
+          id={`${props.baseId}-name-ar`}
+          name="nameAr"
+          dir="rtl"
+          defaultValue={props.values?.nameAr ?? ''}
+        />
       </div>
       <div className="space-y-2">
         <Label htmlFor={`${props.baseId}-name-fr`}>
           {props.t('name_fr_label')}
         </Label>
-        <Input id={`${props.baseId}-name-fr`} name="nameFr" />
+        <Input
+          id={`${props.baseId}-name-fr`}
+          name="nameFr"
+          defaultValue={props.values?.nameFr ?? ''}
+        />
       </div>
     </div>
   </div>
 );
+
+const ParentCategorySelect = (props: {
+  categories: MenuCategoryOption[];
+  currentCategoryId?: number;
+  defaultValue?: number | null;
+  id: string;
+  locale: string;
+  t: (key: string) => string;
+}) => {
+  const availableParents = props.categories.filter(category =>
+    category.id !== props.currentCategoryId
+    && category.parentCategoryId === null,
+  );
+
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={props.id}>{props.t('parent_category_label')}</Label>
+      <select
+        id={props.id}
+        name="parentCategoryId"
+        defaultValue={props.defaultValue ?? ''}
+        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+      >
+        <option value="">{props.t('parent_category_none')}</option>
+        {availableParents.map(category => (
+          <option key={category.id} value={category.id}>
+            {getCategoryLabel(props.locale, category)}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+};
 
 const MenuItemsPage = async (props: {
   params: { locale: string };
@@ -261,6 +319,7 @@ const MenuItemsPage = async (props: {
       nameEn: menuCategorySchema.nameEn,
       nameAr: menuCategorySchema.nameAr,
       nameFr: menuCategorySchema.nameFr,
+      displayOrder: menuCategorySchema.displayOrder,
     })
     .from(menuCategorySchema)
     .where(eq(menuCategorySchema.organizationId, orgId))
@@ -573,244 +632,399 @@ const MenuItemsPage = async (props: {
           </div>
         </DashboardSection>
 
-        <DashboardSection
-          title={t('list_section_title')}
-          description={t('list_section_description')}
-        >
-          {items.length > 0
-            ? (
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>{t('name_header')}</TableHead>
-                        <TableHead>{t('category_header')}</TableHead>
-                        <TableHead>{t('price_header')}</TableHead>
-                        <TableHead>{t('availability_header')}</TableHead>
-                        <TableHead className="w-24 text-right">
-                          {t('actions_header')}
-                        </TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {items.map(item => (
-                        <TableRow key={item.id}>
-                          <TableCell className="min-w-72 font-medium">
-                            <div className="space-y-3">
-                              <div className="flex items-start gap-3">
-                                {item.imageUrl && (
-                                  <MenuItemImagePreview
-                                    src={item.imageUrl}
-                                    alt={getLocalizedMenuText(
-                                      props.params.locale,
-                                      {
-                                        en: item.nameEn,
-                                        ar: item.nameAr,
-                                        fr: item.nameFr,
-                                        legacy: item.name,
-                                      },
-                                      item.name,
-                                    )}
-                                    className="size-14"
-                                  />
-                                )}
-                                <div>
+        <div className="grid gap-6">
+          <DashboardSection
+            title={t('category_list_section_title')}
+            description={t('category_list_section_description')}
+          >
+            {categories.length > 0
+              ? (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>{t('name_header')}</TableHead>
+                          <TableHead>{t('display_order_header')}</TableHead>
+                          <TableHead>{t('parent_category_header')}</TableHead>
+                          <TableHead className="w-24 text-right">
+                            {t('actions_header')}
+                          </TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {categories.map((category) => {
+                          const parentCategory = categories.find(
+                            parent => parent.id === category.parentCategoryId,
+                          );
+
+                          return (
+                            <TableRow key={category.id}>
+                              <TableCell className="min-w-64 font-medium">
+                                <div className="space-y-3">
                                   <div>
                                     {getLocalizedMenuText(
                                       props.params.locale,
                                       {
-                                        en: item.nameEn,
-                                        ar: item.nameAr,
-                                        fr: item.nameFr,
-                                        legacy: item.name,
+                                        en: category.nameEn,
+                                        ar: category.nameAr,
+                                        fr: category.nameFr,
+                                        legacy: category.name,
                                       },
-                                      item.name,
+                                      category.name,
                                     )}
-                                  </div>
-                                  {item.imageUrl && (
-                                    <div className="mt-1 max-w-72 truncate text-xs text-muted-foreground">
-                                      {item.imageUrl}
+                                    <div className="mt-1 text-xs font-normal text-muted-foreground">
+                                      {category.parentCategoryId === null
+                                        ? t('root_category_badge')
+                                        : t('subcategory_badge')}
                                     </div>
-                                  )}
+                                  </div>
+                                  <details className="rounded-md border p-3">
+                                    <summary className="cursor-pointer text-sm font-medium">
+                                      {t('edit_button')}
+                                    </summary>
+                                    <form
+                                      action={updateMenuCategoryAction}
+                                      className="mt-3 grid gap-3"
+                                    >
+                                      <input
+                                        type="hidden"
+                                        name="returnPath"
+                                        value={menuItemsReturnPath}
+                                      />
+                                      <input
+                                        type="hidden"
+                                        name="categoryId"
+                                        value={category.id}
+                                      />
+                                      <MenuCategoryLanguageFields
+                                        baseId={`category-${category.id}`}
+                                        t={t}
+                                        values={{
+                                          nameEn: category.nameEn,
+                                          nameAr: category.nameAr,
+                                          nameFr: category.nameFr,
+                                          legacyName: category.name,
+                                        }}
+                                      />
+                                      <ParentCategorySelect
+                                        id={`category-parent-${category.id}`}
+                                        categories={categories}
+                                        currentCategoryId={category.id}
+                                        defaultValue={category.parentCategoryId}
+                                        locale={props.params.locale}
+                                        t={t}
+                                      />
+                                      <div className="space-y-2">
+                                        <Label htmlFor={`category-order-${category.id}`}>
+                                          {t('display_order_label')}
+                                        </Label>
+                                        <Input
+                                          id={`category-order-${category.id}`}
+                                          name="displayOrder"
+                                          type="number"
+                                          defaultValue={category.displayOrder}
+                                        />
+                                      </div>
+                                      <FormSubmitButton
+                                        pendingLabel={t('update_pending_button')}
+                                        size="sm"
+                                      >
+                                        {t('update_button')}
+                                      </FormSubmitButton>
+                                    </form>
+                                  </details>
                                 </div>
-                              </div>
-                              <details className="rounded-md border p-3">
-                                <summary className="cursor-pointer text-sm font-medium">
-                                  {t('edit_button')}
-                                </summary>
-                                <form
-                                  action={updateMenuItemAction}
-                                  encType="multipart/form-data"
-                                  className="mt-3 grid gap-3"
-                                >
+                              </TableCell>
+                              <TableCell>{category.displayOrder}</TableCell>
+                              <TableCell>
+                                {parentCategory
+                                  ? getLocalizedMenuText(
+                                    props.params.locale,
+                                    {
+                                      en: parentCategory.nameEn,
+                                      ar: parentCategory.nameAr,
+                                      fr: parentCategory.nameFr,
+                                      legacy: parentCategory.name,
+                                    },
+                                    parentCategory.name,
+                                  )
+                                  : t('parent_category_none')}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <form action={deleteMenuCategoryAction}>
                                   <input
                                     type="hidden"
                                     name="returnPath"
-                                    value={getI18nPath(
-                                      '/dashboard/menu-items',
-                                      props.params.locale,
-                                    )}
+                                    value={menuItemsReturnPath}
                                   />
                                   <input
                                     type="hidden"
-                                    name="itemId"
-                                    value={item.id}
+                                    name="categoryId"
+                                    value={category.id}
                                   />
-                                  <div className="space-y-2">
-                                    <Label htmlFor={`item-category-${item.id}`}>
-                                      {t('category_label')}
-                                    </Label>
-                                    <select
-                                      id={`item-category-${item.id}`}
-                                      name="categoryId"
-                                      defaultValue={item.categoryId}
-                                      required
-                                      className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                                    >
-                                      {categories.map(category => (
-                                        <option key={category.id} value={category.id}>
-                                          {getCategoryLabel(props.params.locale, category)}
-                                        </option>
-                                      ))}
-                                    </select>
-                                  </div>
-                                  <MenuItemLanguageFields
-                                    baseId={`item-${item.id}`}
-                                    t={t}
-                                    values={{
-                                      nameEn: item.nameEn,
-                                      nameAr: item.nameAr,
-                                      nameFr: item.nameFr,
-                                      descriptionEn: item.descriptionEn,
-                                      descriptionAr: item.descriptionAr,
-                                      descriptionFr: item.descriptionFr,
-                                      legacyName: item.name,
-                                      legacyDescription: item.description,
-                                    }}
-                                  />
-                                  <MenuItemImageUploadField
-                                    fieldId={`item-image-${item.id}`}
-                                    urlFieldName="imageUrl"
-                                    fileFieldName="imageFile"
-                                    label={t('image_url_label')}
-                                    helpText={t('image_url_help')}
-                                    placeholder={t('image_url_placeholder')}
-                                    currentImageUrl={item.imageUrl}
-                                  />
-                                  <div className="space-y-2">
-                                    <Label htmlFor={`item-usd-${item.id}`}>
-                                      {t('price_usd_cents_label')}
-                                    </Label>
-                                    <p className="text-xs text-muted-foreground">
-                                      {t('price_usd_cents_help')}
-                                    </p>
-                                    <Input
-                                      id={`item-usd-${item.id}`}
-                                      name="priceUsdCents"
-                                      type="number"
-                                      min={0}
-                                      step={1}
-                                      defaultValue={item.priceUsdCents ?? ''}
-                                    />
-                                  </div>
-                                  <div className="space-y-2">
-                                    <Label htmlFor={`item-lbp-${item.id}`}>
-                                      {t('price_local_label', {
-                                        currency: localCurrencyLabel,
-                                      })}
-                                    </Label>
-                                    <Input
-                                      id={`item-lbp-${item.id}`}
-                                      name="priceLbp"
-                                      type="number"
-                                      min={0}
-                                      step={1}
-                                      defaultValue={item.priceLbp ?? ''}
-                                    />
-                                  </div>
-                                  <SwitchField
-                                    id={`item-available-${item.id}`}
-                                    name="isAvailable"
-                                    label={t('is_available_label')}
-                                    description={t('is_available_help')}
-                                    defaultChecked={item.isAvailable}
-                                  />
-                                  <FormSubmitButton
-                                    pendingLabel={t('update_pending_button')}
+                                  <ConfirmSubmitButton
+                                    confirmMessage={t('delete_category_confirm')}
+                                    pendingLabel={t('delete_pending_button')}
+                                    variant="destructive"
                                     size="sm"
                                   >
-                                    {t('update_button')}
-                                  </FormSubmitButton>
+                                    {t('delete_button')}
+                                  </ConfirmSubmitButton>
                                 </form>
-                              </details>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            {getLocalizedMenuText(
-                              props.params.locale,
-                              {
-                                en: item.categoryNameEn,
-                                ar: item.categoryNameAr,
-                                fr: item.categoryNameFr,
-                                legacy: item.categoryName,
-                              },
-                              item.categoryName,
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            <div className="space-y-1">
-                              {item.priceUsdCents !== null && (
-                                <div>{formatUsdCents(item.priceUsdCents)}</div>
-                              )}
-                              {item.priceLbp !== null && (
-                                <div>
-                                  {formatLocalCurrency(item.priceLbp, localCurrencyLabel)}
-                                </div>
-                              )}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            {item.isAvailable
-                              ? t('available_status')
-                              : t('unavailable_status')}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <form action={deleteMenuItemAction}>
-                              <input
-                                type="hidden"
-                                name="returnPath"
-                                value={getI18nPath(
-                                  '/dashboard/menu-items',
-                                  props.params.locale,
-                                )}
-                              />
-                              <input
-                                type="hidden"
-                                name="itemId"
-                                value={item.id}
-                              />
-                              <ConfirmSubmitButton
-                                confirmMessage={t('delete_confirm')}
-                                pendingLabel={t('delete_pending_button')}
-                                variant="destructive"
-                                size="sm"
-                              >
-                                {t('delete_button')}
-                              </ConfirmSubmitButton>
-                            </form>
-                          </TableCell>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )
+              : (
+                  <div className="rounded-md border border-dashed p-6 text-sm text-muted-foreground">
+                    {t('empty_categories_state')}
+                  </div>
+                )}
+          </DashboardSection>
+
+          <DashboardSection
+            title={t('list_section_title')}
+            description={t('list_section_description')}
+          >
+            {items.length > 0
+              ? (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>{t('name_header')}</TableHead>
+                          <TableHead>{t('category_header')}</TableHead>
+                          <TableHead>{t('price_header')}</TableHead>
+                          <TableHead>{t('availability_header')}</TableHead>
+                          <TableHead className="w-24 text-right">
+                            {t('actions_header')}
+                          </TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              )
-            : (
-                <div className="rounded-md border border-dashed p-6 text-sm text-muted-foreground">
-                  {t('empty_state')}
-                </div>
-              )}
-        </DashboardSection>
+                      </TableHeader>
+                      <TableBody>
+                        {items.map(item => (
+                          <TableRow key={item.id}>
+                            <TableCell className="min-w-72 font-medium">
+                              <div className="space-y-3">
+                                <div className="flex items-start gap-3">
+                                  {item.imageUrl && (
+                                    <MenuItemImagePreview
+                                      src={item.imageUrl}
+                                      alt={getLocalizedMenuText(
+                                        props.params.locale,
+                                        {
+                                          en: item.nameEn,
+                                          ar: item.nameAr,
+                                          fr: item.nameFr,
+                                          legacy: item.name,
+                                        },
+                                        item.name,
+                                      )}
+                                      className="size-14"
+                                    />
+                                  )}
+                                  <div>
+                                    <div>
+                                      {getLocalizedMenuText(
+                                        props.params.locale,
+                                        {
+                                          en: item.nameEn,
+                                          ar: item.nameAr,
+                                          fr: item.nameFr,
+                                          legacy: item.name,
+                                        },
+                                        item.name,
+                                      )}
+                                    </div>
+                                    {item.imageUrl && (
+                                      <div className="mt-1 max-w-72 truncate text-xs text-muted-foreground">
+                                        {item.imageUrl}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                                <details className="rounded-md border p-3">
+                                  <summary className="cursor-pointer text-sm font-medium">
+                                    {t('edit_button')}
+                                  </summary>
+                                  <form
+                                    action={updateMenuItemAction}
+                                    encType="multipart/form-data"
+                                    className="mt-3 grid gap-3"
+                                  >
+                                    <input
+                                      type="hidden"
+                                      name="returnPath"
+                                      value={getI18nPath(
+                                        '/dashboard/menu-items',
+                                        props.params.locale,
+                                      )}
+                                    />
+                                    <input
+                                      type="hidden"
+                                      name="itemId"
+                                      value={item.id}
+                                    />
+                                    <div className="space-y-2">
+                                      <Label htmlFor={`item-category-${item.id}`}>
+                                        {t('category_label')}
+                                      </Label>
+                                      <select
+                                        id={`item-category-${item.id}`}
+                                        name="categoryId"
+                                        defaultValue={item.categoryId}
+                                        required
+                                        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                      >
+                                        {categories.map(category => (
+                                          <option key={category.id} value={category.id}>
+                                            {getCategoryLabel(props.params.locale, category)}
+                                          </option>
+                                        ))}
+                                      </select>
+                                    </div>
+                                    <MenuItemLanguageFields
+                                      baseId={`item-${item.id}`}
+                                      t={t}
+                                      values={{
+                                        nameEn: item.nameEn,
+                                        nameAr: item.nameAr,
+                                        nameFr: item.nameFr,
+                                        descriptionEn: item.descriptionEn,
+                                        descriptionAr: item.descriptionAr,
+                                        descriptionFr: item.descriptionFr,
+                                        legacyName: item.name,
+                                        legacyDescription: item.description,
+                                      }}
+                                    />
+                                    <MenuItemImageUploadField
+                                      fieldId={`item-image-${item.id}`}
+                                      urlFieldName="imageUrl"
+                                      fileFieldName="imageFile"
+                                      label={t('image_url_label')}
+                                      helpText={t('image_url_help')}
+                                      placeholder={t('image_url_placeholder')}
+                                      currentImageUrl={item.imageUrl}
+                                    />
+                                    <div className="space-y-2">
+                                      <Label htmlFor={`item-usd-${item.id}`}>
+                                        {t('price_usd_cents_label')}
+                                      </Label>
+                                      <p className="text-xs text-muted-foreground">
+                                        {t('price_usd_cents_help')}
+                                      </p>
+                                      <Input
+                                        id={`item-usd-${item.id}`}
+                                        name="priceUsdCents"
+                                        type="number"
+                                        min={0}
+                                        step={1}
+                                        defaultValue={item.priceUsdCents ?? ''}
+                                      />
+                                    </div>
+                                    <div className="space-y-2">
+                                      <Label htmlFor={`item-lbp-${item.id}`}>
+                                        {t('price_local_label', {
+                                          currency: localCurrencyLabel,
+                                        })}
+                                      </Label>
+                                      <Input
+                                        id={`item-lbp-${item.id}`}
+                                        name="priceLbp"
+                                        type="number"
+                                        min={0}
+                                        step={1}
+                                        defaultValue={item.priceLbp ?? ''}
+                                      />
+                                    </div>
+                                    <SwitchField
+                                      id={`item-available-${item.id}`}
+                                      name="isAvailable"
+                                      label={t('is_available_label')}
+                                      description={t('is_available_help')}
+                                      defaultChecked={item.isAvailable}
+                                    />
+                                    <FormSubmitButton
+                                      pendingLabel={t('update_pending_button')}
+                                      size="sm"
+                                    >
+                                      {t('update_button')}
+                                    </FormSubmitButton>
+                                  </form>
+                                </details>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              {getLocalizedMenuText(
+                                props.params.locale,
+                                {
+                                  en: item.categoryNameEn,
+                                  ar: item.categoryNameAr,
+                                  fr: item.categoryNameFr,
+                                  legacy: item.categoryName,
+                                },
+                                item.categoryName,
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <div className="space-y-1">
+                                {item.priceUsdCents !== null && (
+                                  <div>{formatUsdCents(item.priceUsdCents)}</div>
+                                )}
+                                {item.priceLbp !== null && (
+                                  <div>
+                                    {formatLocalCurrency(item.priceLbp, localCurrencyLabel)}
+                                  </div>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              {item.isAvailable
+                                ? t('available_status')
+                                : t('unavailable_status')}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <form action={deleteMenuItemAction}>
+                                <input
+                                  type="hidden"
+                                  name="returnPath"
+                                  value={getI18nPath(
+                                    '/dashboard/menu-items',
+                                    props.params.locale,
+                                  )}
+                                />
+                                <input
+                                  type="hidden"
+                                  name="itemId"
+                                  value={item.id}
+                                />
+                                <ConfirmSubmitButton
+                                  confirmMessage={t('delete_confirm')}
+                                  pendingLabel={t('delete_pending_button')}
+                                  variant="destructive"
+                                  size="sm"
+                                >
+                                  {t('delete_button')}
+                                </ConfirmSubmitButton>
+                              </form>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )
+              : (
+                  <div className="rounded-md border border-dashed p-6 text-sm text-muted-foreground">
+                    {t('empty_state')}
+                  </div>
+                )}
+          </DashboardSection>
+        </div>
       </div>
     </>
   );

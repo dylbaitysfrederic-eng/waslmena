@@ -375,11 +375,14 @@ const AdminMenuDetailPage = async (props: {
         </form>
       </details>
 
-      <AdminSection
-        title="Starter template"
-        description="Apply a starter menu structure for this restaurant."
-      >
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,380px)_1fr]">
+      <details className="rounded-md border bg-background p-5">
+        <summary className="cursor-pointer font-semibold">
+          Starter template
+        </summary>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Apply a starter menu structure for this restaurant.
+        </p>
+        <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,380px)_1fr]">
           <form
             action={applyAdminMenuTemplateAction}
             className="space-y-4"
@@ -469,11 +472,11 @@ const AdminMenuDetailPage = async (props: {
                 </div>
               )}
         </div>
-      </AdminSection>
+      </details>
 
       <AdminSection
-        title="Categories"
-        description="Create and update the category structure for this restaurant."
+        title="Menu setup"
+        description="Create categories, subcategories, and menu items for this restaurant."
       >
         <div className="grid gap-6 lg:grid-cols-[minmax(0,360px)_1fr]">
           <div className="grid gap-3">
@@ -543,111 +546,199 @@ const AdminMenuDetailPage = async (props: {
                     </div>
                   )}
             </details>
+
+            <details className="rounded-md border p-4">
+              <summary className="cursor-pointer font-medium">
+                Create item
+              </summary>
+              <p className="mt-2 text-xs text-muted-foreground">
+                Add a dish, drink, or product to the menu.
+              </p>
+              {organizationCategories.length > 0
+                ? (
+                    <form
+                      action={createAdminMenuItemAction}
+                      encType="multipart/form-data"
+                      className="mt-4 space-y-4"
+                    >
+                      <input type="hidden" name="organizationId" value={organizationId} />
+                      <div className="space-y-2">
+                        <Label htmlFor="item-category-create">Category</Label>
+                        <select
+                          id="item-category-create"
+                          name="categoryId"
+                          className={selectClassName}
+                          required
+                        >
+                          {organizationCategories.map(category => (
+                            <option key={category.id} value={category.id}>
+                              {getCategoryOptionLabel(category)}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <MultilingualItemFields idPrefix={`item-create-${organizationId}`} />
+                      <MenuItemImageUploadField
+                        fieldId="new-item-image"
+                        urlFieldName="imageUrl"
+                        fileFieldName="imageFile"
+                        label="Image (optional)"
+                        helpText="Optional. Upload a lightweight image file."
+                        placeholder="https://example.com/image.jpg"
+                      />
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <div className="space-y-2">
+                          <Label htmlFor="item-usd-create">USD cents</Label>
+                          <Input
+                            id="item-usd-create"
+                            name="priceUsdCents"
+                            type="number"
+                            min={0}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="item-local-create">{localCurrencyLabel}</Label>
+                          <Input
+                            id="item-local-create"
+                            name="priceLbp"
+                            type="number"
+                            min={0}
+                          />
+                        </div>
+                      </div>
+                      <SwitchField
+                        id="item-available-create"
+                        name="isAvailable"
+                        label="Available for customer orders"
+                        description="Unavailable items remain visible but cannot be ordered."
+                        defaultChecked
+                      />
+                      <FormSubmitButton pendingLabel="Creating...">
+                        Create item
+                      </FormSubmitButton>
+                    </form>
+                  )
+                : (
+                    <div className="mt-4 rounded-md border border-dashed p-4 text-sm text-muted-foreground">
+                      Create at least one category before adding menu items.
+                    </div>
+                  )}
+            </details>
           </div>
 
-          {organizationCategories.length > 0
-            ? (
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Display order</TableHead>
-                        <TableHead>Parent</TableHead>
-                        <TableHead className="w-24 text-right">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {organizationCategories.map((category) => {
-                        const parentCategory = organizationCategories.find(
-                          parent => parent.id === category.parentCategoryId,
-                        );
+          <div className="grid gap-6">
+            <div>
+              <div className="mb-4">
+                <h3 className="font-semibold">Categories</h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Current categories and subcategories for this restaurant.
+                </p>
+              </div>
+              {organizationCategories.length > 0
+                ? (
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Name</TableHead>
+                            <TableHead>Display order</TableHead>
+                            <TableHead>Parent</TableHead>
+                            <TableHead className="w-24 text-right">Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {organizationCategories.map((category) => {
+                            const parentCategory = organizationCategories.find(
+                              parent => parent.id === category.parentCategoryId,
+                            );
 
-                        return (
-                          <TableRow key={category.id}>
-                            <TableCell className="min-w-64 font-medium">
-                              <div className="space-y-3">
-                                <div>
-                                  {getCategoryName(category)}
-                                  <div className="mt-1 text-xs font-normal text-muted-foreground">
-                                    {category.parentCategoryId === null
-                                      ? 'Root category'
-                                      : `Subcategory of ${parentCategory ? getCategoryName(parentCategory) : ''}`}
+                            return (
+                              <TableRow key={category.id}>
+                                <TableCell className="min-w-64 font-medium">
+                                  <div className="space-y-3">
+                                    <div>
+                                      {getCategoryName(category)}
+                                      <div className="mt-1 text-xs font-normal text-muted-foreground">
+                                        {category.parentCategoryId === null
+                                          ? 'Root category'
+                                          : `Subcategory of ${parentCategory ? getCategoryName(parentCategory) : ''}`}
+                                      </div>
+                                    </div>
+                                    <details className="rounded-md border p-3">
+                                      <summary className="cursor-pointer text-sm font-medium">
+                                        Edit
+                                      </summary>
+                                      <form
+                                        action={updateAdminMenuCategoryAction}
+                                        className="mt-3 grid gap-3"
+                                      >
+                                        <input type="hidden" name="organizationId" value={organizationId} />
+                                        <input type="hidden" name="categoryId" value={category.id} />
+                                        <MultilingualNameFields
+                                          idPrefix={`category-${category.id}`}
+                                          values={{
+                                            nameEn: category.nameEn,
+                                            nameAr: category.nameAr,
+                                            nameFr: category.nameFr,
+                                            legacyName: category.name,
+                                          }}
+                                        />
+                                        <CategoryParentSelect
+                                          id={`category-parent-${category.id}`}
+                                          categories={organizationCategories}
+                                          currentCategoryId={category.id}
+                                          defaultValue={category.parentCategoryId}
+                                        />
+                                        <div className="space-y-2 sm:max-w-40">
+                                          <Label htmlFor={`category-order-${category.id}`}>
+                                            Display order
+                                          </Label>
+                                          <Input
+                                            id={`category-order-${category.id}`}
+                                            name="displayOrder"
+                                            type="number"
+                                            defaultValue={category.displayOrder}
+                                          />
+                                        </div>
+                                        <FormSubmitButton pendingLabel="Saving..." size="sm">
+                                          Save category
+                                        </FormSubmitButton>
+                                      </form>
+                                    </details>
                                   </div>
-                                </div>
-                                <details className="rounded-md border p-3">
-                                  <summary className="cursor-pointer text-sm font-medium">
-                                    Edit
-                                  </summary>
-                                  <form
-                                    action={updateAdminMenuCategoryAction}
-                                    className="mt-3 grid gap-3"
-                                  >
+                                </TableCell>
+                                <TableCell>{category.displayOrder}</TableCell>
+                                <TableCell>
+                                  {parentCategory ? getCategoryName(parentCategory) : 'Root category'}
+                                </TableCell>
+                                <TableCell className="text-right">
+                                  <form action={deleteAdminMenuCategoryAction}>
                                     <input type="hidden" name="organizationId" value={organizationId} />
                                     <input type="hidden" name="categoryId" value={category.id} />
-                                    <MultilingualNameFields
-                                      idPrefix={`category-${category.id}`}
-                                      values={{
-                                        nameEn: category.nameEn,
-                                        nameAr: category.nameAr,
-                                        nameFr: category.nameFr,
-                                        legacyName: category.name,
-                                      }}
-                                    />
-                                    <CategoryParentSelect
-                                      id={`category-parent-${category.id}`}
-                                      categories={organizationCategories}
-                                      currentCategoryId={category.id}
-                                      defaultValue={category.parentCategoryId}
-                                    />
-                                    <div className="space-y-2 sm:max-w-40">
-                                      <Label htmlFor={`category-order-${category.id}`}>
-                                        Display order
-                                      </Label>
-                                      <Input
-                                        id={`category-order-${category.id}`}
-                                        name="displayOrder"
-                                        type="number"
-                                        defaultValue={category.displayOrder}
-                                      />
-                                    </div>
-                                    <FormSubmitButton pendingLabel="Saving..." size="sm">
-                                      Save category
-                                    </FormSubmitButton>
+                                    <ConfirmSubmitButton
+                                      confirmMessage="Are you sure you want to delete this category?"
+                                      pendingLabel="Deleting..."
+                                      variant="destructive"
+                                      size="sm"
+                                    >
+                                      Delete
+                                    </ConfirmSubmitButton>
                                   </form>
-                                </details>
-                              </div>
-                            </TableCell>
-                            <TableCell>{category.displayOrder}</TableCell>
-                            <TableCell>
-                              {parentCategory ? getCategoryName(parentCategory) : 'Root category'}
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <form action={deleteAdminMenuCategoryAction}>
-                                <input type="hidden" name="organizationId" value={organizationId} />
-                                <input type="hidden" name="categoryId" value={category.id} />
-                                <ConfirmSubmitButton
-                                  confirmMessage="Are you sure you want to delete this category?"
-                                  pendingLabel="Deleting..."
-                                  variant="destructive"
-                                  size="sm"
-                                >
-                                  Delete
-                                </ConfirmSubmitButton>
-                              </form>
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
-                </div>
-              )
-            : (
-                <div className="rounded-md border border-dashed p-6 text-sm text-muted-foreground">
-                  No categories yet.
-                </div>
-              )}
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )
+                : (
+                    <div className="rounded-md border border-dashed p-6 text-sm text-muted-foreground">
+                      No categories yet.
+                    </div>
+                  )}
+            </div>
+          </div>
         </div>
       </AdminSection>
 
@@ -655,85 +746,7 @@ const AdminMenuDetailPage = async (props: {
         title="Menu items"
         description="Create and update menu items, availability, prices, and images."
       >
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
-          <details className="rounded-md border p-4">
-            <summary className="cursor-pointer font-medium">
-              Create item
-            </summary>
-            <p className="mt-2 text-xs text-muted-foreground">
-              Add a dish, drink, or product to the menu.
-            </p>
-            {organizationCategories.length > 0
-              ? (
-                  <form
-                    action={createAdminMenuItemAction}
-                    encType="multipart/form-data"
-                    className="mt-4 space-y-4"
-                  >
-                    <input type="hidden" name="organizationId" value={organizationId} />
-                    <div className="space-y-2">
-                      <Label htmlFor="item-category-create">Category</Label>
-                      <select
-                        id="item-category-create"
-                        name="categoryId"
-                        className={selectClassName}
-                        required
-                      >
-                        {organizationCategories.map(category => (
-                          <option key={category.id} value={category.id}>
-                            {getCategoryOptionLabel(category)}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <MultilingualItemFields idPrefix={`item-create-${organizationId}`} />
-                    <MenuItemImageUploadField
-                      fieldId="new-item-image"
-                      urlFieldName="imageUrl"
-                      fileFieldName="imageFile"
-                      label="Image (optional)"
-                      helpText="Optional. Upload a lightweight image file."
-                      placeholder="https://example.com/image.jpg"
-                    />
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <div className="space-y-2">
-                        <Label htmlFor="item-usd-create">USD cents</Label>
-                        <Input
-                          id="item-usd-create"
-                          name="priceUsdCents"
-                          type="number"
-                          min={0}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="item-local-create">{localCurrencyLabel}</Label>
-                        <Input
-                          id="item-local-create"
-                          name="priceLbp"
-                          type="number"
-                          min={0}
-                        />
-                      </div>
-                    </div>
-                    <SwitchField
-                      id="item-available-create"
-                      name="isAvailable"
-                      label="Available for customer orders"
-                      description="Unavailable items remain visible but cannot be ordered."
-                      defaultChecked
-                    />
-                    <FormSubmitButton pendingLabel="Creating...">
-                      Create item
-                    </FormSubmitButton>
-                  </form>
-                )
-              : (
-                  <div className="mt-4 rounded-md border border-dashed p-4 text-sm text-muted-foreground">
-                    Create at least one category before adding menu items.
-                  </div>
-                )}
-          </details>
-
+        <div>
           {organizationItems.length > 0
             ? (
                 <div className="overflow-x-auto">
