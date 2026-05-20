@@ -2,9 +2,13 @@ import { asc, eq } from 'drizzle-orm';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-import { TableQrCode } from '@/app/[locale]/(auth)/dashboard/tables/TableQrCode';
 import { ConfirmSubmitButton } from '@/components/ConfirmSubmitButton';
 import { FormSubmitButton } from '@/components/FormSubmitButton';
+import { AdvancedSettingsBlock } from '@/components/layout/AdvancedSettingsBlock';
+import { ManagementSection } from '@/components/layout/ManagementSection';
+import { SettingsSection } from '@/components/layout/SettingsSection';
+import { QRCodeCard } from '@/components/QRCodeCard';
+import { SecondaryActionButton } from '@/components/SecondaryActionButton';
 import { SwitchField } from '@/components/SwitchField';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -57,22 +61,6 @@ const qrModeDescriptions: Record<(typeof QR_MODES)[number], string> = {
   both: 'Keep per-table QR codes and also allow a general menu QR mode.',
 };
 
-const SettingsSection = (props: {
-  children: React.ReactNode;
-  description: string;
-  title: string;
-}) => (
-  <section className="rounded-md border bg-background p-5">
-    <div className="mb-4">
-      <h4 className="font-semibold">{props.title}</h4>
-      <p className="mt-1 text-sm text-muted-foreground">
-        {props.description}
-      </p>
-    </div>
-    {props.children}
-  </section>
-);
-
 const AdminTemplatesDetailPage = async (props: {
   params: { id: string };
   searchParams?: { tableStatus?: string };
@@ -114,25 +102,15 @@ const AdminTemplatesDetailPage = async (props: {
 
       <form
         action={updateAdminTemplatesAction}
-        className="rounded-md bg-background p-5"
+        className="order-3"
       >
         <input type="hidden" name="organizationId" value={organizationId} />
-        <div className="mb-4">
-          <h3 className="font-semibold">QR & Tables</h3>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Configure this restaurant’s QR behavior, ordering flow, and table setup.
-            These settings can be changed later and do not affect existing configurations.
-          </p>
-        </div>
 
-        <details className="rounded-md border bg-background p-5">
-          <summary className="cursor-pointer font-semibold">
-            Advanced QR & ordering settings
-          </summary>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Adjust QR flows, ordering mode, and table options.
-          </p>
-          <div className="mt-5 grid gap-5">
+        <AdvancedSettingsBlock
+          title="Advanced QR & ordering settings"
+          description="Adjust QR flows, ordering mode, and table options."
+        >
+          <div className="grid gap-4">
             <SettingsSection
               title="Restaurant setup"
               description="Choose the restaurant profile and order flow defaults."
@@ -301,7 +279,7 @@ const AdminTemplatesDetailPage = async (props: {
               </div>
             </SettingsSection>
           </div>
-        </details>
+        </AdvancedSettingsBlock>
 
         <FormSubmitButton
           pendingLabel="Saving..."
@@ -312,14 +290,11 @@ const AdminTemplatesDetailPage = async (props: {
         </FormSubmitButton>
       </form>
 
-      <section className="rounded-md bg-background p-5">
-        <div className="mb-4">
-          <h3 className="font-semibold">Tables</h3>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Create, edit, and delete table QR records for this client.
-          </p>
-        </div>
-
+      <ManagementSection
+        title="Tables"
+        description="Create, edit, and delete table QR records for this client."
+        className="order-2"
+      >
         {props.searchParams?.tableStatus === 'delete_blocked' && (
           <div className="mb-4 rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-950">
             This table has existing orders and cannot be deleted.
@@ -404,7 +379,7 @@ const AdminTemplatesDetailPage = async (props: {
                               </details>
                             </TableCell>
                             <TableCell>
-                              <TableQrCode
+                              <QRCodeCard
                                 backgroundColor={organization?.qrBackgroundColor ?? '#ffffff'}
                                 foregroundColor={organization?.qrForegroundColor ?? '#111827'}
                                 frameColor={organization?.qrFrameColor ?? '#111827'}
@@ -434,14 +409,15 @@ const AdminTemplatesDetailPage = async (props: {
                                   value={publicMenuUrl}
                                   readOnly
                                   aria-label="Public menu URL"
-                                  className="min-w-0 truncate font-mono text-xs"
+                                  className="h-9 min-w-0 truncate font-mono text-xs"
                                 />
-                                <Link
-                                  href={publicMenuUrl}
-                                  className="inline-flex h-9 items-center justify-center rounded-md border border-input bg-background px-3 text-sm font-medium hover:bg-muted"
+                                <SecondaryActionButton
+                                  asChild
                                 >
-                                  Open public menu
-                                </Link>
+                                  <Link href={publicMenuUrl}>
+                                    Open public menu
+                                  </Link>
+                                </SecondaryActionButton>
                               </div>
                             </TableCell>
                             <TableCell className="text-right">
@@ -479,7 +455,7 @@ const AdminTemplatesDetailPage = async (props: {
                 </div>
               )}
         </div>
-      </section>
+      </ManagementSection>
     </section>
   );
 };

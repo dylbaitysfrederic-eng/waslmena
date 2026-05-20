@@ -7,8 +7,10 @@ import { getTranslations } from 'next-intl/server';
 import { QrCustomizationFields } from '@/app/admin/templates/QrCustomizationFields';
 import { ConfirmSubmitButton } from '@/components/ConfirmSubmitButton';
 import { FormSubmitButton } from '@/components/FormSubmitButton';
+import { AdvancedSettingsBlock } from '@/components/layout/AdvancedSettingsBlock';
+import { QRCodeCard } from '@/components/QRCodeCard';
+import { SecondaryActionButton } from '@/components/SecondaryActionButton';
 import { SwitchField } from '@/components/SwitchField';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -30,7 +32,6 @@ import {
   updateRestaurantQrSettingsAction,
   updateRestaurantTableAction,
 } from './actions';
-import { TableQrCode } from './TableQrCode';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -159,9 +160,9 @@ const RestaurantTablesPage = async (props: {
         >
           <div className="grid gap-5">
             {showGeneralQr && (
-              <div className="mx-auto box-border grid w-full max-w-lg gap-6 rounded-md border bg-background p-4 sm:p-5">
+              <div className="mx-auto box-border grid w-full max-w-md gap-4 rounded-lg border bg-background p-4 shadow-sm sm:p-5">
                 <div className="flex w-full justify-center">
-                  <TableQrCode
+                  <QRCodeCard
                     backgroundColor={organization?.qrBackgroundColor ?? '#ffffff'}
                     foregroundColor={organization?.qrForegroundColor ?? '#111827'}
                     frameColor={organization?.qrFrameColor ?? '#111827'}
@@ -182,7 +183,7 @@ const RestaurantTablesPage = async (props: {
                     qrCodeTitle={t('general_qr_code_title')}
                   />
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-1 text-center">
                   <h3 className="text-base font-semibold">
                     {t('general_qr_section_title')}
                   </h3>
@@ -195,13 +196,15 @@ const RestaurantTablesPage = async (props: {
                     value={generalMenuUrl}
                     readOnly
                     aria-label={t('public_menu_url_label')}
-                    className="w-full truncate font-mono text-xs"
+                    className="h-9 w-full truncate font-mono text-xs"
                   />
-                  <Button asChild variant="outline" size="sm" className="w-full">
+                  <SecondaryActionButton
+                    asChild
+                  >
                     <Link href={generalMenuUrl}>
                       {t('open_public_menu_link')}
                     </Link>
-                  </Button>
+                  </SecondaryActionButton>
                 </div>
               </div>
             )}
@@ -269,7 +272,7 @@ const RestaurantTablesPage = async (props: {
                                 </code>
                               </TableCell>
                               <TableCell>
-                                <TableQrCode
+                                <QRCodeCard
                                   backgroundColor={
                                     organization?.qrBackgroundColor ?? '#ffffff'
                                   }
@@ -306,13 +309,15 @@ const RestaurantTablesPage = async (props: {
                                     value={publicMenuUrl}
                                     readOnly
                                     aria-label={t('public_menu_url_label')}
-                                    className="min-w-0 truncate font-mono text-xs"
+                                    className="h-9 min-w-0 truncate font-mono text-xs"
                                   />
-                                  <Button asChild variant="outline" size="sm">
+                                  <SecondaryActionButton
+                                    asChild
+                                  >
                                     <Link href={publicMenuUrl}>
                                       {t('open_public_menu_link')}
                                     </Link>
-                                  </Button>
+                                  </SecondaryActionButton>
                                 </div>
                               </TableCell>
                               <TableCell className="text-right">
@@ -348,14 +353,11 @@ const RestaurantTablesPage = async (props: {
         </DashboardSection>
       </div>
 
-      <details className="rounded-md border bg-background p-5">
-        <summary className="cursor-pointer font-semibold">
-          {t('advanced_section_title')}
-        </summary>
-        <p className="mt-2 text-sm text-muted-foreground">
-          {t('advanced_section_description')}
-        </p>
-        <form action={updateRestaurantQrSettingsAction} className="mt-5 grid gap-5">
+      <AdvancedSettingsBlock
+        title={t('advanced_section_title')}
+        description={t('advanced_section_description')}
+      >
+        <form action={updateRestaurantQrSettingsAction} className="grid gap-4">
           <div className="grid gap-3 md:grid-cols-2">
             <label className="grid gap-1 text-xs font-medium text-muted-foreground">
               {t('restaurant_profile_label')}
@@ -449,7 +451,7 @@ const RestaurantTablesPage = async (props: {
             {t('advanced_save_button')}
           </FormSubmitButton>
         </form>
-      </details>
+      </AdvancedSettingsBlock>
     </>
   );
 };

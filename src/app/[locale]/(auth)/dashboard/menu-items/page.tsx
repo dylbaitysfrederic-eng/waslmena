@@ -6,6 +6,8 @@ import { getTranslations } from 'next-intl/server';
 import { TemplateStylePicker } from '@/app/admin/templates/TemplateStylePicker';
 import { ConfirmSubmitButton } from '@/components/ConfirmSubmitButton';
 import { FormSubmitButton } from '@/components/FormSubmitButton';
+import { AdvancedSettingsBlock } from '@/components/layout/AdvancedSettingsBlock';
+import { CreatePanel } from '@/components/layout/CreatePanel';
 import { MenuItemImagePreview } from '@/components/MenuItemImagePreview';
 import { MenuItemImageUploadField } from '@/components/MenuItemImageUploadField';
 import { SwitchField } from '@/components/SwitchField';
@@ -375,55 +377,16 @@ const MenuItemsPage = async (props: {
         description={t('title_bar_description')}
       />
 
-      <details className="rounded-md border bg-background p-5">
-        <summary className="cursor-pointer font-semibold">
-          {t('advanced_appearance_title')}
-        </summary>
-        <p className="mt-2 text-sm text-muted-foreground">
-          {t('advanced_appearance_description')}
-        </p>
-        <form action={updateMenuAppearanceAction} className="mt-5 grid gap-5">
-          <label className="grid gap-1 text-xs font-medium text-muted-foreground md:max-w-sm">
-            {t('public_menu_accent_color_label')}
-            <input
-              name="restaurantAccentColor"
-              type="color"
-              defaultValue={organization?.restaurantAccentColor ?? '#111827'}
-              className="h-9 w-full rounded-md border border-input bg-background p-1"
-            />
-          </label>
-          <SwitchField
-            id="show-menu-item-images"
-            name="showMenuItemImages"
-            label={t('show_menu_item_images_label')}
-            description={t('show_menu_item_images_help')}
-            defaultChecked={organization?.showMenuItemImages ?? true}
-          />
-          <TemplateStylePicker
-            defaultValue={organization?.restaurantTemplateStyle}
-            localCurrencyLabel={localCurrencyLabel}
-            organizationId={orgId}
-            restaurantName={organization?.restaurantDisplayName ?? 'Restaurant'}
-          />
-          <FormSubmitButton pendingLabel={t('appearance_save_pending')} size="sm">
-            {t('appearance_save_button')}
-          </FormSubmitButton>
-        </form>
-      </details>
-
       <div className="grid gap-6 lg:grid-cols-[minmax(0,380px)_1fr]">
         <DashboardSection
           title={t('create_section_title')}
           description={t('create_section_description')}
         >
           <div className="grid gap-3">
-            <details className="rounded-md border p-4">
-              <summary className="cursor-pointer font-medium">
-                {t('create_category_title')}
-              </summary>
-              <p className="mt-2 text-xs text-muted-foreground">
-                {t('create_category_help')}
-              </p>
+            <CreatePanel
+              title={t('create_category_title')}
+              description={t('create_category_help')}
+            >
               <form action={createMenuCategoryAction} className="mt-4 space-y-4">
                 <input
                   type="hidden"
@@ -449,15 +412,12 @@ const MenuItemsPage = async (props: {
                   {t('create_category_button')}
                 </FormSubmitButton>
               </form>
-            </details>
+            </CreatePanel>
 
-            <details className="rounded-md border p-4">
-              <summary className="cursor-pointer font-medium">
-                {t('create_subcategory_title')}
-              </summary>
-              <p className="mt-2 text-xs text-muted-foreground">
-                {t('create_subcategory_help')}
-              </p>
+            <CreatePanel
+              title={t('create_subcategory_title')}
+              description={t('create_subcategory_help')}
+            >
               {mainCategories.length > 0
                 ? (
                     <form
@@ -515,15 +475,12 @@ const MenuItemsPage = async (props: {
                       {t('no_parent_categories_state')}
                     </div>
                   )}
-            </details>
+            </CreatePanel>
 
-            <details className="rounded-md border p-4">
-              <summary className="cursor-pointer font-medium">
-                {t('create_item_title')}
-              </summary>
-              <p className="mt-2 text-xs text-muted-foreground">
-                {t('create_item_help')}
-              </p>
+            <CreatePanel
+              title={t('create_item_title')}
+              description={t('create_item_help')}
+            >
               {categories.length > 0
                 ? (
                     <form
@@ -628,7 +585,7 @@ const MenuItemsPage = async (props: {
                       {t('no_categories_state')}
                     </div>
                   )}
-            </details>
+            </CreatePanel>
           </div>
         </DashboardSection>
 
@@ -1026,6 +983,39 @@ const MenuItemsPage = async (props: {
           </DashboardSection>
         </div>
       </div>
+
+      <AdvancedSettingsBlock
+        title={t('advanced_appearance_title')}
+        description={t('advanced_appearance_description')}
+      >
+        <form action={updateMenuAppearanceAction} className="grid gap-4">
+          <label className="grid gap-1 text-xs font-medium text-muted-foreground md:max-w-sm">
+            {t('public_menu_accent_color_label')}
+            <input
+              name="restaurantAccentColor"
+              type="color"
+              defaultValue={organization?.restaurantAccentColor ?? '#111827'}
+              className="h-9 w-full rounded-md border border-input bg-background p-1"
+            />
+          </label>
+          <SwitchField
+            id="show-menu-item-images"
+            name="showMenuItemImages"
+            label={t('show_menu_item_images_label')}
+            description={t('show_menu_item_images_help')}
+            defaultChecked={organization?.showMenuItemImages ?? true}
+          />
+          <TemplateStylePicker
+            defaultValue={organization?.restaurantTemplateStyle}
+            localCurrencyLabel={localCurrencyLabel}
+            organizationId={orgId}
+            restaurantName={organization?.restaurantDisplayName ?? 'Restaurant'}
+          />
+          <FormSubmitButton pendingLabel={t('appearance_save_pending')} size="sm">
+            {t('appearance_save_button')}
+          </FormSubmitButton>
+        </form>
+      </AdvancedSettingsBlock>
     </>
   );
 };

@@ -5,6 +5,9 @@ import { notFound } from 'next/navigation';
 import { TemplateStylePicker } from '@/app/admin/templates/TemplateStylePicker';
 import { ConfirmSubmitButton } from '@/components/ConfirmSubmitButton';
 import { FormSubmitButton } from '@/components/FormSubmitButton';
+import { AdvancedSettingsBlock } from '@/components/layout/AdvancedSettingsBlock';
+import { CreatePanel } from '@/components/layout/CreatePanel';
+import { ManagementSection } from '@/components/layout/ManagementSection';
 import { MenuItemImagePreview } from '@/components/MenuItemImagePreview';
 import { MenuItemImageUploadField } from '@/components/MenuItemImageUploadField';
 import { SwitchField } from '@/components/SwitchField';
@@ -99,24 +102,6 @@ const formatLocalCurrency = (
 
   return `${new Intl.NumberFormat('en-US').format(amount)} ${localCurrencyLabel}`;
 };
-
-const AdminSection = (props: {
-  children: React.ReactNode;
-  description?: string;
-  title: string;
-}) => (
-  <section className="rounded-md bg-background p-5">
-    <div className="mb-4">
-      <h3 className="font-semibold">{props.title}</h3>
-      {props.description && (
-        <p className="mt-1 text-sm text-muted-foreground">
-          {props.description}
-        </p>
-      )}
-    </div>
-    {props.children}
-  </section>
-);
 
 const MultilingualNameFields = (props: {
   idPrefix: string;
@@ -334,49 +319,6 @@ const AdminMenuDetailPage = async (props: {
 
       <details className="rounded-md border bg-background p-5">
         <summary className="cursor-pointer font-semibold">
-          Menu appearance settings
-        </summary>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Control public menu style and item photo visibility for this restaurant.
-        </p>
-        <form action={updateAdminMenuAppearanceAction} className="mt-5 grid gap-5">
-          <input type="hidden" name="organizationId" value={organizationId} />
-          <label
-            htmlFor={`public-menu-accent-color-${organizationId}`}
-            className="grid gap-1 text-xs font-medium text-muted-foreground md:max-w-sm"
-          >
-            Public menu accent color
-            <input
-              id={`public-menu-accent-color-${organizationId}`}
-              name="restaurantAccentColor"
-              type="color"
-              defaultValue={organization?.restaurantAccentColor ?? '#111827'}
-              className="h-9 w-full rounded-md border border-input bg-background p-1"
-            />
-          </label>
-          <SwitchField
-            id={`show-menu-item-images-${organizationId}`}
-            name="showMenuItemImages"
-            label="Show item photos on public menu"
-            description="Photos remain stored and can be shown again later."
-            defaultChecked={organization?.showMenuItemImages ?? true}
-          />
-          <TemplateStylePicker
-            defaultValue={organization?.restaurantTemplateStyle}
-            localCurrencyLabel={localCurrencyLabel}
-            organizationId={organizationId}
-            restaurantName={
-              organization?.restaurantDisplayName || 'Unnamed restaurant'
-            }
-          />
-          <FormSubmitButton pendingLabel="Saving..." size="sm">
-            Save menu appearance
-          </FormSubmitButton>
-        </form>
-      </details>
-
-      <details className="rounded-md border bg-background p-5">
-        <summary className="cursor-pointer font-semibold">
           Starter template
         </summary>
         <p className="mt-2 text-sm text-muted-foreground">
@@ -474,19 +416,16 @@ const AdminMenuDetailPage = async (props: {
         </div>
       </details>
 
-      <AdminSection
+      <ManagementSection
         title="Menu setup"
         description="Create categories, subcategories, and menu items for this restaurant."
       >
         <div className="grid gap-6 lg:grid-cols-[minmax(0,360px)_1fr]">
           <div className="grid gap-3">
-            <details className="rounded-md border p-4">
-              <summary className="cursor-pointer font-medium">
-                Create category
-              </summary>
-              <p className="mt-2 text-xs text-muted-foreground">
-                Create a main section of the menu.
-              </p>
+            <CreatePanel
+              title="Create category"
+              description="Create a main section of the menu."
+            >
               <form
                 action={createAdminMenuCategoryAction}
                 className="mt-4 space-y-4"
@@ -497,15 +436,12 @@ const AdminMenuDetailPage = async (props: {
                   Create category
                 </FormSubmitButton>
               </form>
-            </details>
+            </CreatePanel>
 
-            <details className="rounded-md border p-4">
-              <summary className="cursor-pointer font-medium">
-                Create subcategory
-              </summary>
-              <p className="mt-2 text-xs text-muted-foreground">
-                Create a rubric inside an existing category.
-              </p>
+            <CreatePanel
+              title="Create subcategory"
+              description="Create a rubric inside an existing category."
+            >
               {mainCategories.length > 0
                 ? (
                     <form
@@ -545,15 +481,12 @@ const AdminMenuDetailPage = async (props: {
                       Create a category before adding subcategories.
                     </div>
                   )}
-            </details>
+            </CreatePanel>
 
-            <details className="rounded-md border p-4">
-              <summary className="cursor-pointer font-medium">
-                Create item
-              </summary>
-              <p className="mt-2 text-xs text-muted-foreground">
-                Add a dish, drink, or product to the menu.
-              </p>
+            <CreatePanel
+              title="Create item"
+              description="Add a dish, drink, or product to the menu."
+            >
               {organizationCategories.length > 0
                 ? (
                     <form
@@ -623,7 +556,7 @@ const AdminMenuDetailPage = async (props: {
                       Create at least one category before adding menu items.
                     </div>
                   )}
-            </details>
+            </CreatePanel>
           </div>
 
           <div className="grid gap-6">
@@ -740,9 +673,9 @@ const AdminMenuDetailPage = async (props: {
             </div>
           </div>
         </div>
-      </AdminSection>
+      </ManagementSection>
 
-      <AdminSection
+      <ManagementSection
         title="Menu items"
         description="Create and update menu items, availability, prices, and images."
       >
@@ -943,7 +876,47 @@ const AdminMenuDetailPage = async (props: {
                 </div>
               )}
         </div>
-      </AdminSection>
+      </ManagementSection>
+
+      <AdvancedSettingsBlock
+        title="Advanced menu appearance"
+        description="Control public menu style and item photo visibility for this restaurant."
+      >
+        <form action={updateAdminMenuAppearanceAction} className="grid gap-4">
+          <input type="hidden" name="organizationId" value={organizationId} />
+          <label
+            htmlFor={`public-menu-accent-color-${organizationId}`}
+            className="grid gap-1 text-xs font-medium text-muted-foreground md:max-w-sm"
+          >
+            Public menu accent color
+            <input
+              id={`public-menu-accent-color-${organizationId}`}
+              name="restaurantAccentColor"
+              type="color"
+              defaultValue={organization?.restaurantAccentColor ?? '#111827'}
+              className="h-9 w-full rounded-md border border-input bg-background p-1"
+            />
+          </label>
+          <SwitchField
+            id={`show-menu-item-images-${organizationId}`}
+            name="showMenuItemImages"
+            label="Show item photos on public menu"
+            description="Photos remain stored and can be shown again later."
+            defaultChecked={organization?.showMenuItemImages ?? true}
+          />
+          <TemplateStylePicker
+            defaultValue={organization?.restaurantTemplateStyle}
+            localCurrencyLabel={localCurrencyLabel}
+            organizationId={organizationId}
+            restaurantName={
+              organization?.restaurantDisplayName || 'Unnamed restaurant'
+            }
+          />
+          <FormSubmitButton pendingLabel="Saving..." size="sm">
+            Save menu appearance
+          </FormSubmitButton>
+        </form>
+      </AdvancedSettingsBlock>
     </section>
   );
 };
