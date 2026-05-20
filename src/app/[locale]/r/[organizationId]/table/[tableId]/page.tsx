@@ -158,6 +158,7 @@ const PublicTableMenuPage = async (props: PublicMenuPageProps) => {
       restaurantWhatsappNumber: organizationSchema.restaurantWhatsappNumber,
       enableWhatsappContact: organizationSchema.enableWhatsappContact,
       localCurrencyLabel: organizationSchema.localCurrencyLabel,
+      orderingMode: organizationSchema.orderingMode,
       accessStatus: organizationSchema.accessStatus,
       accessSuspended: organizationSchema.accessSuspended,
     })
@@ -320,6 +321,8 @@ const PublicTableMenuPage = async (props: PublicMenuPageProps) => {
     )}`
     : null;
   const localCurrencyLabel = organization?.localCurrencyLabel ?? 'LL';
+  const orderingEnabled = organization.orderingMode === 'table_ordering'
+    || organization.orderingMode === 'both';
 
   return (
     <main
@@ -443,7 +446,7 @@ const PublicTableMenuPage = async (props: PublicMenuPageProps) => {
                 accentColor={organization?.restaurantAccentColor ?? null}
                 primaryColor={organization?.restaurantPrimaryColor ?? null}
                 tableId={restaurantTable.id}
-                orderingEnabled
+                orderingEnabled={orderingEnabled}
                 templateStyle={templateStyle}
                 localCurrencyLabel={localCurrencyLabel}
               />
