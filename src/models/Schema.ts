@@ -190,7 +190,7 @@ export const menuItemSchema = pgTable('menu_item', {
 export const orderSchema = pgTable('order', {
   id: serial('id').primaryKey(),
   organizationId: text('organization_id').notNull(),
-  tableId: integer('table_id').notNull(),
+  tableId: integer('table_id'),
   customerName: text('customer_name'),
   customerNote: text('customer_note'),
   status: text('status').default('pending').notNull(),

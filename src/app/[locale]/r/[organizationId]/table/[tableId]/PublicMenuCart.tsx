@@ -240,9 +240,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
   };
 
   const submitOrder = () => {
-    const tableId = props.tableId;
-
-    if (isSubmitting || !props.orderingEnabled || tableId === null) {
+    if (isSubmitting || !props.orderingEnabled) {
       return;
     }
 
@@ -260,7 +258,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
     startTransition(async () => {
       const result = await submitPublicOrderAction({
         organizationId: props.organizationId,
-        tableId,
+        tableId: props.tableId,
         customerName: trimmedCustomerName,
         customerNote: orderNote,
         items: cart.map(item => ({

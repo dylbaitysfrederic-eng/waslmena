@@ -171,6 +171,7 @@ const StatisticsPage = async (props: {
   const orders = await db
     .select({
       id: orderSchema.id,
+      tableId: orderSchema.tableId,
       tableNumber: restaurantTableSchema.tableNumber,
       customerName: orderSchema.customerName,
       status: orderSchema.status,
@@ -573,9 +574,11 @@ const StatisticsPage = async (props: {
                               : t('no_customer_name')}
                           </div>
                           <div className="mt-1 text-sm text-muted-foreground">
-                            {order.tableNumber
-                              ? t('table_line', { tableNumber: order.tableNumber })
-                              : t('deleted_table')}
+                            {order.tableId === null
+                              ? t('general_menu_label')
+                              : order.tableNumber
+                                ? t('table_line', { tableNumber: order.tableNumber })
+                                : t('deleted_table')}
                           </div>
                         </div>
 

@@ -13,7 +13,7 @@ import {
 
 type SubmitOrderInput = {
   organizationId: string;
-  tableId: number;
+  tableId?: number | null;
   customerName: string;
   customerNote?: string;
   items: {
@@ -41,7 +41,9 @@ const normalizeCustomerNote = (value: string | undefined) => {
 export const submitPublicOrderAction = async (
   input: SubmitOrderInput,
 ): Promise<SubmitOrderResult> => {
-  const tableId = Number.isInteger(input.tableId) ? input.tableId : Number.NaN;
+  const tableId = input.tableId === null || input.tableId === undefined
+    ? null
+    : Number.isInteger(input.tableId) ? input.tableId : Number.NaN;
   const customerName = input.customerName.trim();
   const customerNote = normalizeCustomerNote(input.customerNote);
   const cartItems = input.items
@@ -60,7 +62,7 @@ export const submitPublicOrderAction = async (
 
   if (
     !input.organizationId
-    || Number.isNaN(tableId)
+    || (tableId !== null && Number.isNaN(tableId))
     || customerName.length === 0
     || customerName.length > 50
     || cartItems.length === 0
@@ -68,19 +70,21 @@ export const submitPublicOrderAction = async (
     return { ok: false };
   }
 
-  const [restaurantTable] = await db
-    .select({ id: restaurantTableSchema.id })
-    .from(restaurantTableSchema)
-    .where(
-      and(
-        eq(restaurantTableSchema.id, tableId),
-        eq(restaurantTableSchema.organizationId, input.organizationId),
-      ),
-    )
-    .limit(1);
+  if (tableId !== null) {
+    const [restaurantTable] = await db
+      .select({ id: restaurantTableSchema.id })
+      .from(restaurantTableSchema)
+      .where(
+        and(
+          eq(restaurantTableSchema.id, tableId),
+          eq(restaurantTableSchema.organizationId, input.organizationId),
+        ),
+      )
+      .limit(1);
 
-  if (!restaurantTable) {
-    return { ok: false };
+    if (!restaurantTable) {
+      return { ok: false };
+    }
   }
 
   const [organization] = await db

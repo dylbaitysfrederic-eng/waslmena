@@ -199,6 +199,7 @@ const OrdersPage = async (props: { params: { locale: string } }) => {
   const orders = await db
     .select({
       id: orderSchema.id,
+      tableId: orderSchema.tableId,
       tableNumber: restaurantTableSchema.tableNumber,
       customerName: orderSchema.customerName,
       customerNote: orderSchema.customerNote,
@@ -358,8 +359,13 @@ const OrdersPage = async (props: { params: { locale: string } }) => {
                                 ];
                                 const canCancel = order.status !== 'cancelled'
                                   && order.status !== 'served';
-                                const tableNumber = order.tableNumber
-                                  ?? t('deleted_table');
+                                const orderSourceLabel = order.tableId === null
+                                  ? t('general_menu_label')
+                                  : order.tableNumber === null
+                                    ? t('deleted_table')
+                                    : t('table_label', {
+                                      tableNumber: order.tableNumber,
+                                    });
                                 const completedAt = getFinalStatusCompletedAt(
                                   order.status,
                                   order.updatedAt,
@@ -391,7 +397,7 @@ const OrdersPage = async (props: { params: { locale: string } }) => {
                                     }`
                                     : null,
                                   `${t('status_label')}: ${t(`status_${order.status}`)}`,
-                                  t('table_label', { tableNumber }),
+                                  orderSourceLabel,
                                   order.customerName
                                     ? t('ticket_customer', {
                                       customerName: order.customerName,
@@ -503,9 +509,7 @@ const OrdersPage = async (props: { params: { locale: string } }) => {
                                               {' · '}
                                             </>
                                           )}
-                                          {t('table_label', {
-                                            tableNumber,
-                                          })}
+                                          {orderSourceLabel}
                                           {' · '}
                                           {formatDateTime(order.createdAt, props.params.locale)}
                                         </div>
@@ -902,7 +906,7 @@ const OrdersPage = async (props: { params: { locale: string } }) => {
                                           </div>
                                         )}
                                         <div>
-                                          {t('table_label', { tableNumber })}
+                                          {orderSourceLabel}
                                         </div>
                                         <div>
                                           {order.customerName
