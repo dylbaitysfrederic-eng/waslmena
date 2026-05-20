@@ -18,7 +18,7 @@ type MenuItem = {
   imageUrl: string | null;
   priceUsdCents: number | null;
   priceLbp: number | null;
-  isAvailable: boolean;
+  isAvailable: boolean | null | undefined;
 };
 
 type MenuCategory = {
@@ -173,7 +173,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
   const templateClassNames = TEMPLATE_CLASS_NAMES[props.templateStyle];
 
   const addItem = (item: MenuItem) => {
-    if (!item.isAvailable) {
+    if (item.isAvailable === false) {
       return;
     }
 
