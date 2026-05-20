@@ -757,6 +757,7 @@ export const updateAdminClientAction = async (formData: FormData) => {
     mainContactWhatsappNumber: normalizeOptionalText(
       formData.get('mainContactWhatsappNumber'),
     ),
+    restaurantAddress: normalizeOptionalText(formData.get('restaurantAddress')),
     internalAdminNotes: normalizeOptionalText(
       formData.get('internalAdminNotes'),
     ),

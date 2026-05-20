@@ -53,6 +53,10 @@ const isValidCurrencyLabel = (value: string | null) => {
   return value === null || value.length <= 12;
 };
 
+const isValidAddress = (value: string | null) => {
+  return value === null || value.length <= 240;
+};
+
 const normalizeThemeMode = (value: FormDataEntryValue | null) => {
   const textValue = value?.toString() ?? 'day';
 
@@ -87,6 +91,9 @@ export const updateRestaurantBrandingAction = async (formData: FormData) => {
   const restaurantLogoUrl = normalizeOptionalText(
     formData.get('restaurantLogoUrl'),
   );
+  const restaurantAddress = normalizeOptionalText(
+    formData.get('restaurantAddress'),
+  );
   const restaurantPrimaryColor = normalizeOptionalText(
     formData.get('restaurantPrimaryColor'),
   );
@@ -118,6 +125,7 @@ export const updateRestaurantBrandingAction = async (formData: FormData) => {
     || !isValidHexColor(restaurantPrimaryColor)
     || !isValidHexColor(restaurantAccentColor)
     || !isValidWhatsappNumber(restaurantWhatsappNumber)
+    || !isValidAddress(restaurantAddress)
     || !isValidCurrencyCode(localCurrencyCode)
     || !isValidCurrencyLabel(localCurrencyLabel)
   ) {
@@ -130,6 +138,7 @@ export const updateRestaurantBrandingAction = async (formData: FormData) => {
       id: orgId,
       restaurantDisplayName,
       restaurantLogoUrl,
+      restaurantAddress,
       restaurantPrimaryColor,
       restaurantAccentColor,
       restaurantThemeMode,
@@ -145,6 +154,7 @@ export const updateRestaurantBrandingAction = async (formData: FormData) => {
       set: {
         restaurantDisplayName,
         restaurantLogoUrl,
+        restaurantAddress,
         restaurantPrimaryColor,
         restaurantAccentColor,
         restaurantThemeMode,

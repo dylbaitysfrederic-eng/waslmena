@@ -30,6 +30,7 @@ export const organizationSchema = pgTable(
     mainContactFirstName: text('main_contact_first_name'),
     mainContactLastName: text('main_contact_last_name'),
     mainContactWhatsappNumber: text('main_contact_whatsapp_number'),
+    restaurantAddress: text('restaurant_address'),
     restaurantLogoUrl: text('restaurant_logo_url'),
     restaurantPrimaryColor: text('restaurant_primary_color'),
     restaurantAccentColor: text('restaurant_accent_color'),

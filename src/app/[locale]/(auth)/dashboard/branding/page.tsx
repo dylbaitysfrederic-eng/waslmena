@@ -47,6 +47,7 @@ const RestaurantBrandingPage = async (props: {
   const [organization] = await db
     .select({
       restaurantDisplayName: organizationSchema.restaurantDisplayName,
+      restaurantAddress: organizationSchema.restaurantAddress,
       restaurantLogoUrl: organizationSchema.restaurantLogoUrl,
       restaurantPrimaryColor: organizationSchema.restaurantPrimaryColor,
       restaurantAccentColor: organizationSchema.restaurantAccentColor,
@@ -105,6 +106,24 @@ const RestaurantBrandingPage = async (props: {
               placeholder={t('display_name_placeholder')}
               maxLength={80}
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="restaurantAddress">
+              {t('address_label')}
+            </Label>
+            <textarea
+              id="restaurantAddress"
+              name="restaurantAddress"
+              defaultValue={organization?.restaurantAddress ?? ''}
+              placeholder={t('address_placeholder')}
+              maxLength={240}
+              rows={3}
+              className="flex min-h-20 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            />
+            <p className="text-sm text-muted-foreground">
+              {t('address_help')}
+            </p>
           </div>
 
           <div className="space-y-2">

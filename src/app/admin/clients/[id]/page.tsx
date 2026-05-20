@@ -150,6 +150,21 @@ const ClientDetailPage = async (props: { params: { id: string } }) => {
                   placeholder="+961 00 000 000"
                 />
               </label>
+              <label
+                htmlFor="restaurant-address"
+                className="grid gap-1 text-xs font-medium text-muted-foreground md:col-span-2"
+              >
+                Restaurant address
+                <textarea
+                  id="restaurant-address"
+                  name="restaurantAddress"
+                  defaultValue={organization?.restaurantAddress ?? ''}
+                  placeholder="Street, neighborhood, city"
+                  maxLength={240}
+                  rows={3}
+                  className="min-h-20 rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
+                />
+              </label>
             </div>
 
             <div className="grid gap-3 md:grid-cols-2">

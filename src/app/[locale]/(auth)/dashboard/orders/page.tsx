@@ -20,6 +20,7 @@ import { cn, getI18nPath } from '@/utils/Helpers';
 
 import { updateOrderAction, updateOrderStatusAction } from './actions';
 import { CopyTicketButton } from './CopyTicketButton';
+import { OrderStatusGroups } from './OrderStatusGroups';
 import { PendingOrderNotifier } from './PendingOrderNotifier';
 import { PrintTicketButton } from './PrintTicketButton';
 
@@ -56,10 +57,10 @@ const ORDER_STATUS_STYLES = {
     statusPanel: 'border-sky-400 bg-sky-100 text-sky-950',
   },
   preparing: {
-    section: 'border-blue-300 bg-blue-50',
-    badge: 'border-blue-400 bg-blue-100 text-blue-950',
-    card: 'border-blue-300 bg-blue-50/60',
-    statusPanel: 'border-blue-400 bg-blue-100 text-blue-950',
+    section: 'border-purple-300 bg-purple-50',
+    badge: 'border-purple-400 bg-purple-100 text-purple-950',
+    card: 'border-purple-300 bg-purple-50/80 shadow-sm',
+    statusPanel: 'border-purple-400 bg-purple-100 text-purple-950',
   },
   ready: {
     section: 'border-green-400 bg-green-50',
@@ -68,22 +69,22 @@ const ORDER_STATUS_STYLES = {
     statusPanel: 'border-green-500 bg-green-100 text-green-950',
   },
   completed: {
-    section: 'border-slate-300 bg-slate-50',
-    badge: 'border-slate-300 bg-slate-100 text-slate-700',
-    card: 'border-slate-300 bg-slate-50/70',
-    statusPanel: 'border-slate-300 bg-slate-100 text-slate-700',
+    section: 'border-slate-200 bg-slate-50/60',
+    badge: 'border-slate-200 bg-slate-100 text-slate-600',
+    card: 'border-slate-200 bg-slate-50/40 opacity-85',
+    statusPanel: 'border-slate-200 bg-slate-100 text-slate-600',
   },
   delivered: {
-    section: 'border-slate-300 bg-slate-50',
-    badge: 'border-slate-300 bg-slate-100 text-slate-700',
-    card: 'border-slate-300 bg-slate-50/70',
-    statusPanel: 'border-slate-300 bg-slate-100 text-slate-700',
+    section: 'border-slate-200 bg-slate-50/60',
+    badge: 'border-slate-200 bg-slate-100 text-slate-600',
+    card: 'border-slate-200 bg-slate-50/40 opacity-85',
+    statusPanel: 'border-slate-200 bg-slate-100 text-slate-600',
   },
   cancelled: {
-    section: 'border-red-300 bg-red-50',
-    badge: 'border-red-400 bg-red-100 text-red-950',
-    card: 'border-red-300 bg-red-50/70',
-    statusPanel: 'border-red-400 bg-red-100 text-red-950',
+    section: 'border-red-200 bg-red-50/60',
+    badge: 'border-red-300 bg-red-100 text-red-800',
+    card: 'border-red-200 bg-red-50/35 opacity-85',
+    statusPanel: 'border-red-300 bg-red-100 text-red-800',
   },
 } as const;
 
@@ -177,6 +178,8 @@ const OrdersPage = async (props: { params: { locale: string } }) => {
   const [organization] = await db
     .select({
       restaurantDisplayName: organizationSchema.restaurantDisplayName,
+      restaurantAddress: organizationSchema.restaurantAddress,
+      restaurantWhatsappNumber: organizationSchema.restaurantWhatsappNumber,
       restaurantLogoUrl: organizationSchema.restaurantLogoUrl,
       restaurantPrimaryColor: organizationSchema.restaurantPrimaryColor,
       restaurantAccentColor: organizationSchema.restaurantAccentColor,
@@ -191,6 +194,8 @@ const OrdersPage = async (props: { params: { locale: string } }) => {
     .limit(1);
   const localCurrencyLabel = organization?.localCurrencyLabel ?? 'LL';
   const restaurantDisplayName = organization?.restaurantDisplayName ?? 'Restaurant';
+  const restaurantAddress = organization?.restaurantAddress ?? null;
+  const restaurantWhatsappNumber = organization?.restaurantWhatsappNumber ?? null;
   const restaurantLogoUrl = organization?.restaurantLogoUrl ?? null;
   const restaurantPrimaryColor = organization?.restaurantPrimaryColor ?? null;
   const restaurantAccentColor = organization?.restaurantAccentColor
@@ -316,17 +321,27 @@ const OrdersPage = async (props: { params: { locale: string } }) => {
 
         {orders.length > 0
           ? (
-              <div className="space-y-8">
+              <OrderStatusGroups
+                collapseAllLabel={t('collapse_all_groups')}
+                expandAllLabel={t('expand_all_groups')}
+              >
                 {ORDER_STATUSES.map((status) => {
                   const statusOrders = ordersByStatus.get(status) ?? [];
                   const isPendingSection = status === 'pending';
+                  const isFinalSection = status === 'completed'
+                    || status === 'cancelled';
                   const sectionStatusStyle = getOrderStatusStyle(status);
 
                   return (
-                    <section key={status} className="space-y-3">
-                      <div
+                    <details
+                      key={status}
+                      data-order-status-group
+                      open={!isFinalSection}
+                      className="space-y-3"
+                    >
+                      <summary
                         className={cn(
-                          'flex items-center justify-between rounded-md border px-4 py-3',
+                          'flex cursor-pointer list-none items-center justify-between rounded-md border px-4 py-3 [&::-webkit-details-marker]:hidden',
                           sectionStatusStyle.section,
                         )}
                       >
@@ -350,11 +365,11 @@ const OrdersPage = async (props: { params: { locale: string } }) => {
                             {t('needs_attention')}
                           </span>
                         )}
-                      </div>
+                      </summary>
 
                       {statusOrders.length > 0
                         ? (
-                            <div className="space-y-4">
+                            <div className="mt-3 space-y-4">
                               {statusOrders.map((order) => {
                                 const items = itemsByOrderId.get(order.id) ?? [];
                                 const orderStatusStyle = getOrderStatusStyle(
@@ -387,6 +402,16 @@ const OrdersPage = async (props: { params: { locale: string } }) => {
                                   && order.status !== 'cancelled';
                                 const copyTicketText = [
                                   restaurantDisplayName,
+                                  ...(restaurantAddress
+                                    ? [restaurantAddress]
+                                    : []),
+                                  ...(restaurantWhatsappNumber
+                                    ? [
+                                        t('ticket_whatsapp', {
+                                          whatsappNumber: restaurantWhatsappNumber,
+                                        }),
+                                      ]
+                                    : []),
                                   RECEIPT_DIVIDER,
                                   t('order_title', { orderId: order.id }),
                                   `${t('ticket_sent_at')}: ${
@@ -398,6 +423,9 @@ const OrdersPage = async (props: { params: { locale: string } }) => {
                                     }`
                                     : null,
                                   `${t('status_label')}: ${t(`status_${order.status}`)}`,
+                                  t('payment_method_label', {
+                                    paymentMethod: order.paymentMethod,
+                                  }),
                                   orderSourceLabel,
                                   order.customerName
                                     ? t('ticket_customer', {
@@ -871,6 +899,18 @@ const OrdersPage = async (props: { params: { locale: string } }) => {
                                       >
                                         {restaurantDisplayName}
                                       </div>
+                                      {restaurantAddress && (
+                                        <div className="mt-1 text-center text-xs">
+                                          {restaurantAddress}
+                                        </div>
+                                      )}
+                                      {restaurantWhatsappNumber && (
+                                        <div className="mt-1 text-center text-xs">
+                                          {t('ticket_whatsapp', {
+                                            whatsappNumber: restaurantWhatsappNumber,
+                                          })}
+                                        </div>
+                                      )}
 
                                       <div
                                         className="my-3"
@@ -901,6 +941,11 @@ const OrdersPage = async (props: { params: { locale: string } }) => {
                                         )}
                                         <div>
                                           {orderSourceLabel}
+                                        </div>
+                                        <div>
+                                          {t('payment_method_label', {
+                                            paymentMethod: order.paymentMethod,
+                                          })}
                                         </div>
                                         <div>
                                           {order.customerName
@@ -1004,14 +1049,14 @@ const OrdersPage = async (props: { params: { locale: string } }) => {
                             </div>
                           )
                         : (
-                            <div className="rounded-md border border-dashed bg-background p-4 text-sm text-muted-foreground">
+                            <div className="mt-3 rounded-md border border-dashed bg-background p-4 text-sm text-muted-foreground">
                               {t('empty_status_section')}
                             </div>
                           )}
-                    </section>
+                    </details>
                   );
                 })}
-              </div>
+              </OrderStatusGroups>
             )
           : (
               <div className="rounded-md border border-dashed p-6 text-sm text-muted-foreground">
