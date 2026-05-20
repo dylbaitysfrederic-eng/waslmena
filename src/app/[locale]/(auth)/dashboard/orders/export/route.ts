@@ -1,5 +1,5 @@
 import { auth } from '@clerk/nextjs/server';
-import { and, desc, eq, gte } from 'drizzle-orm';
+import { and, desc, eq, gte, inArray, lt } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
 
 import { db } from '@/libs/DB';
@@ -11,7 +11,11 @@ import {
   restaurantTableSchema,
 } from '@/models/Schema';
 
-import { getOrderPeriodStartDate, normalizeOrderPeriod } from '../periods';
+import {
+  getOrderRange,
+  normalizeOrderPeriod,
+  ORDER_EXPORT_RANGE_LIMIT_DAYS,
+} from '../periods';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -73,13 +77,36 @@ export const GET = async (
   const period = normalizeOrderPeriod(
     request.nextUrl.searchParams.get('period') ?? undefined,
   );
-  const periodStartDate = getOrderPeriodStartDate(period, new Date());
-  const orderPeriodWhere = periodStartDate
-    ? and(
-      eq(orderSchema.organizationId, orgId),
-      gte(orderSchema.createdAt, periodStartDate),
-    )
-    : eq(orderSchema.organizationId, orgId);
+  const selectedRange = getOrderRange(
+    {
+      from: request.nextUrl.searchParams.get('from') ?? undefined,
+      period,
+      to: request.nextUrl.searchParams.get('to') ?? undefined,
+    },
+    new Date(),
+    ORDER_EXPORT_RANGE_LIMIT_DAYS,
+  );
+
+  if (!selectedRange.isValid) {
+    return new Response(
+      'For performance reasons, exports are limited to 90 days at a time.',
+      {
+        headers: {
+          'Content-Type': 'text/plain; charset=utf-8',
+        },
+        status: 400,
+      },
+    );
+  }
+
+  const orderDateFilters = [
+    eq(orderSchema.organizationId, orgId),
+    gte(orderSchema.createdAt, selectedRange.startDate ?? new Date(0)),
+    ...(selectedRange.endDateExclusive
+      ? [lt(orderSchema.createdAt, selectedRange.endDateExclusive)]
+      : []),
+  ];
+  const orderPeriodWhere = and(...orderDateFilters);
 
   const [organization] = await db
     .select({
@@ -112,18 +139,20 @@ export const GET = async (
     .where(orderPeriodWhere)
     .orderBy(desc(orderSchema.createdAt));
 
-  const orderItems = await db
-    .select({
-      orderId: orderItemSchema.orderId,
-      orderItemId: orderItemSchema.id,
-      quantity: orderItemSchema.quantity,
-      itemName: menuItemSchema.name,
-    })
-    .from(orderItemSchema)
-    .leftJoin(menuItemSchema, eq(orderItemSchema.menuItemId, menuItemSchema.id))
-    .innerJoin(orderSchema, eq(orderItemSchema.orderId, orderSchema.id))
-    .where(orderPeriodWhere)
-    .orderBy(orderItemSchema.id);
+  const orderIds = orders.map(order => order.id);
+  const orderItems = orderIds.length > 0
+    ? await db
+      .select({
+        orderId: orderItemSchema.orderId,
+        orderItemId: orderItemSchema.id,
+        quantity: orderItemSchema.quantity,
+        itemName: menuItemSchema.name,
+      })
+      .from(orderItemSchema)
+      .leftJoin(menuItemSchema, eq(orderItemSchema.menuItemId, menuItemSchema.id))
+      .where(inArray(orderItemSchema.orderId, orderIds))
+      .orderBy(orderItemSchema.id)
+    : [];
 
   const itemsByOrderId = new Map<number, typeof orderItems>();
 
@@ -167,7 +196,9 @@ export const GET = async (
     .map(row => row.map(escapeCsvValue).join(','))
     .join('\n');
 
-  const fileName = `orders-${period}.csv`;
+  const fileName = period === 'custom'
+    ? `orders-${selectedRange.from}-${selectedRange.to}.csv`
+    : `orders-${period}.csv`;
 
   return new Response(`\uFEFF${csv}\n`, {
     headers: {
