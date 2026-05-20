@@ -4,8 +4,11 @@ import { unstable_noStore as noStore } from 'next/cache';
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 
+import { QrCustomizationFields } from '@/app/admin/templates/QrCustomizationFields';
+import { TemplateStylePicker } from '@/app/admin/templates/TemplateStylePicker';
 import { ConfirmSubmitButton } from '@/components/ConfirmSubmitButton';
 import { FormSubmitButton } from '@/components/FormSubmitButton';
+import { SwitchField } from '@/components/SwitchField';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -25,6 +28,8 @@ import { organizationSchema, restaurantTableSchema } from '@/models/Schema';
 import {
   createRestaurantTableAction,
   deleteRestaurantTableAction,
+  updateRestaurantQrSettingsAction,
+  updateRestaurantTableAction,
 } from './actions';
 import { TableQrCode } from './TableQrCode';
 
@@ -43,7 +48,27 @@ export async function generateMetadata(props: { params: { locale: string } }) {
   };
 }
 
-const RestaurantTablesPage = async (props: { params: { locale: string } }) => {
+const RESTAURANT_PROFILES = [
+  'fast_food',
+  'cafe',
+  'casual_dining',
+  'table_service',
+  'shisha_lounge',
+] as const;
+const ORDERING_MODES = ['table_ordering', 'counter_pickup', 'both'] as const;
+const QR_MODES = ['per_table', 'general_menu', 'both'] as const;
+
+const formatSettingLabel = (value: string) => value
+  .split('_')
+  .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+  .join(' ');
+
+const selectClassName = 'h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground';
+
+const RestaurantTablesPage = async (props: {
+  params: { locale: string };
+  searchParams?: { tableStatus?: string };
+}) => {
   noStore();
 
   const { orgId } = await auth();
@@ -67,6 +92,14 @@ const RestaurantTablesPage = async (props: { params: { locale: string } }) => {
       .select({
         restaurantDisplayName: organizationSchema.restaurantDisplayName,
         restaurantLogoUrl: organizationSchema.restaurantLogoUrl,
+        localCurrencyLabel: organizationSchema.localCurrencyLabel,
+        restaurantProfile: organizationSchema.restaurantProfile,
+        restaurantTemplateStyle: organizationSchema.restaurantTemplateStyle,
+        orderingMode: organizationSchema.orderingMode,
+        enableTableNumbers: organizationSchema.enableTableNumbers,
+        enableNamedTables: organizationSchema.enableNamedTables,
+        enableCustomerName: organizationSchema.enableCustomerName,
+        enableWhatsappContact: organizationSchema.enableWhatsappContact,
         qrMode: organizationSchema.qrMode,
         qrFrameColor: organizationSchema.qrFrameColor,
         qrForegroundColor: organizationSchema.qrForegroundColor,
@@ -93,31 +126,35 @@ const RestaurantTablesPage = async (props: { params: { locale: string } }) => {
         description={t('title_bar_description')}
       />
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,360px)_1fr]">
-        {showPerTableQr && (
-          <DashboardSection
-            title={t('create_section_title')}
-            description={t('create_section_description')}
-          >
-            <form action={createRestaurantTableAction} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="tableNumber">{t('table_number_label')}</Label>
-                <Input
-                  id="tableNumber"
-                  name="tableNumber"
-                  type="number"
-                  min={1}
-                  step={1}
-                  required
-                />
-              </div>
+      {props.searchParams?.tableStatus === 'delete_blocked' && (
+        <div className="rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-950">
+          {t('delete_blocked_message')}
+        </div>
+      )}
 
-              <FormSubmitButton pendingLabel={t('create_pending_button')}>
-                {t('create_button')}
-              </FormSubmitButton>
-            </form>
-          </DashboardSection>
-        )}
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,360px)_1fr]">
+        <DashboardSection
+          title={t('create_section_title')}
+          description={t('create_section_description')}
+        >
+          <form action={createRestaurantTableAction} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="tableNumber">{t('table_number_label')}</Label>
+              <Input
+                id="tableNumber"
+                name="tableNumber"
+                type="number"
+                min={1}
+                step={1}
+                required
+              />
+            </div>
+
+            <FormSubmitButton pendingLabel={t('create_pending_button')}>
+              {t('create_button')}
+            </FormSubmitButton>
+          </form>
+        </DashboardSection>
 
         <DashboardSection
           title={t('list_section_title')}
@@ -172,7 +209,7 @@ const RestaurantTablesPage = async (props: { params: { locale: string } }) => {
               </div>
             )}
 
-            {showPerTableQr && tables.length > 0
+            {tables.length > 0
               ? (
                   <div className="overflow-x-auto">
                     <Table>
@@ -194,7 +231,40 @@ const RestaurantTablesPage = async (props: { params: { locale: string } }) => {
                           return (
                             <TableRow key={table.id}>
                               <TableCell className="font-medium">
-                                {table.tableNumber}
+                                <div>{table.tableNumber}</div>
+                                <details className="mt-2 rounded-md border p-2">
+                                  <summary className="cursor-pointer text-xs font-medium text-muted-foreground">
+                                    {t('edit_table_summary')}
+                                  </summary>
+                                  <form
+                                    action={updateRestaurantTableAction}
+                                    className="mt-2 grid gap-2"
+                                  >
+                                    <input
+                                      type="hidden"
+                                      name="tableId"
+                                      value={table.id}
+                                    />
+                                    <Label htmlFor={`table-number-${table.id}`}>
+                                      {t('table_number_label')}
+                                    </Label>
+                                    <Input
+                                      id={`table-number-${table.id}`}
+                                      name="tableNumber"
+                                      type="number"
+                                      min={1}
+                                      step={1}
+                                      defaultValue={table.tableNumber}
+                                      required
+                                    />
+                                    <FormSubmitButton
+                                      pendingLabel={t('edit_pending_button')}
+                                      size="sm"
+                                    >
+                                      {t('edit_button')}
+                                    </FormSubmitButton>
+                                  </form>
+                                </details>
                               </TableCell>
                               <TableCell>
                                 <code className="break-all rounded bg-muted px-2 py-1 text-xs">
@@ -272,20 +342,124 @@ const RestaurantTablesPage = async (props: { params: { locale: string } }) => {
                     </Table>
                   </div>
                 )
-              : showPerTableQr
-                ? (
-                    <div className="rounded-md border border-dashed p-6 text-sm text-muted-foreground">
-                      {t('empty_state')}
-                    </div>
-                  )
-                : (
-                    <div className="rounded-md border border-dashed p-6 text-sm text-muted-foreground">
-                      {t('general_menu_no_tables')}
-                    </div>
-                  )}
+              : (
+                  <div className="rounded-md border border-dashed p-6 text-sm text-muted-foreground">
+                    {showPerTableQr ? t('empty_state') : t('general_menu_no_tables')}
+                  </div>
+                )}
           </div>
         </DashboardSection>
       </div>
+
+      <details className="rounded-md border bg-background p-5">
+        <summary className="cursor-pointer font-semibold">
+          {t('advanced_section_title')}
+        </summary>
+        <p className="mt-2 text-sm text-muted-foreground">
+          {t('advanced_section_description')}
+        </p>
+        <form action={updateRestaurantQrSettingsAction} className="mt-5 grid gap-5">
+          <div className="grid gap-3 md:grid-cols-2">
+            <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+              {t('restaurant_profile_label')}
+              <select
+                name="restaurantProfile"
+                defaultValue={organization?.restaurantProfile ?? 'table_service'}
+                className={selectClassName}
+              >
+                {RESTAURANT_PROFILES.map(profile => (
+                  <option key={profile} value={profile}>
+                    {formatSettingLabel(profile)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+              {t('ordering_mode_label')}
+              <select
+                name="orderingMode"
+                defaultValue={organization?.orderingMode ?? 'table_ordering'}
+                className={selectClassName}
+              >
+                {ORDERING_MODES.map(mode => (
+                  <option key={mode} value={mode}>
+                    {formatSettingLabel(mode)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+              {t('qr_mode_label')}
+              <select
+                name="qrMode"
+                defaultValue={organization?.qrMode ?? 'per_table'}
+                className={selectClassName}
+              >
+                {QR_MODES.map(mode => (
+                  <option key={mode} value={mode}>
+                    {formatSettingLabel(mode)}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <SwitchField
+              id="enable-table-numbers"
+              name="enableTableNumbers"
+              label={t('enable_table_numbers_label')}
+              description={t('enable_table_numbers_help')}
+              defaultChecked={organization?.enableTableNumbers ?? true}
+            />
+            <SwitchField
+              id="enable-named-tables"
+              name="enableNamedTables"
+              label={t('enable_named_tables_label')}
+              description={t('enable_named_tables_help')}
+              defaultChecked={organization?.enableNamedTables ?? false}
+            />
+            <SwitchField
+              id="enable-customer-name"
+              name="enableCustomerName"
+              label={t('enable_customer_name_label')}
+              description={t('enable_customer_name_help')}
+              defaultChecked={organization?.enableCustomerName ?? true}
+            />
+            <SwitchField
+              id="enable-whatsapp-contact"
+              name="enableWhatsappContact"
+              label={t('enable_whatsapp_contact_label')}
+              description={t('enable_whatsapp_contact_help')}
+              defaultChecked={organization?.enableWhatsappContact ?? true}
+            />
+          </div>
+
+          <QrCustomizationFields
+            defaultBackgroundColor={organization?.qrBackgroundColor}
+            defaultForegroundColor={organization?.qrForegroundColor}
+            defaultFrameColor={organization?.qrFrameColor}
+            defaultLabelText={organization?.qrLabelText}
+            defaultLogoUrl={organization?.restaurantLogoUrl}
+            defaultShowRestaurantName={organization?.qrShowRestaurantName}
+            defaultShowTableNumber={organization?.qrShowTableNumber}
+            defaultStyleTemplate={organization?.qrStyleTemplate}
+            organizationId={orgId}
+            restaurantName={organization?.restaurantDisplayName ?? 'Restaurant'}
+          />
+
+          <TemplateStylePicker
+            defaultValue={organization?.restaurantTemplateStyle}
+            localCurrencyLabel={organization?.localCurrencyLabel ?? 'LL'}
+            organizationId={orgId}
+            restaurantName={organization?.restaurantDisplayName ?? 'Restaurant'}
+          />
+
+          <FormSubmitButton pendingLabel={t('advanced_save_pending')} size="sm">
+            {t('advanced_save_button')}
+          </FormSubmitButton>
+        </form>
+      </details>
     </>
   );
 };

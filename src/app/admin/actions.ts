@@ -11,7 +11,9 @@ import { getSuspensionEmailTemplate } from '@/libs/EmailTemplates';
 import {
   menuCategorySchema,
   menuItemSchema,
+  orderSchema,
   organizationSchema,
+  restaurantTableSchema,
   saasSettingsSchema,
 } from '@/models/Schema';
 import { ORG_ROLE } from '@/types/Auth';
@@ -1168,6 +1170,89 @@ export const updateAdminTemplatesAction = async (formData: FormData) => {
     '/dashboard/tables',
     `/r/${organizationId}/menu`,
   );
+};
+
+export const createAdminRestaurantTableAction = async (formData: FormData) => {
+  await assertAdmin();
+
+  const organizationId = getOrganizationId(formData);
+  const tableNumber = normalizeOptionalInteger(formData.get('tableNumber'));
+
+  if (!organizationId || tableNumber === null) {
+    return;
+  }
+
+  await db.insert(restaurantTableSchema).values({
+    organizationId,
+    tableNumber,
+    qrCode: `restaurant-table-${organizationId}-${tableNumber}`,
+  });
+
+  revalidateAdminPaths(`/admin/templates/${organizationId}`, '/dashboard/tables');
+};
+
+export const updateAdminRestaurantTableAction = async (formData: FormData) => {
+  await assertAdmin();
+
+  const organizationId = getOrganizationId(formData);
+  const tableId = normalizeOptionalInteger(formData.get('tableId'));
+  const tableNumber = normalizeOptionalInteger(formData.get('tableNumber'));
+
+  if (!organizationId || tableId === null || tableNumber === null) {
+    return;
+  }
+
+  await db
+    .update(restaurantTableSchema)
+    .set({
+      tableNumber,
+      qrCode: `restaurant-table-${organizationId}-${tableNumber}`,
+    })
+    .where(
+      and(
+        eq(restaurantTableSchema.id, tableId),
+        eq(restaurantTableSchema.organizationId, organizationId),
+      ),
+    );
+
+  revalidateAdminPaths(`/admin/templates/${organizationId}`, '/dashboard/tables');
+};
+
+export const deleteAdminRestaurantTableAction = async (formData: FormData) => {
+  await assertAdmin();
+
+  const organizationId = getOrganizationId(formData);
+  const tableId = normalizeOptionalInteger(formData.get('tableId'));
+
+  if (!organizationId || tableId === null) {
+    return;
+  }
+
+  const [referencedOrder] = await db
+    .select({ id: orderSchema.id })
+    .from(orderSchema)
+    .where(
+      and(
+        eq(orderSchema.organizationId, organizationId),
+        eq(orderSchema.tableId, tableId),
+      ),
+    )
+    .limit(1);
+
+  if (referencedOrder) {
+    redirect(`/admin/templates/${organizationId}?tableStatus=delete_blocked`);
+  }
+
+  await db
+    .delete(restaurantTableSchema)
+    .where(
+      and(
+        eq(restaurantTableSchema.id, tableId),
+        eq(restaurantTableSchema.organizationId, organizationId),
+      ),
+    );
+
+  revalidateAdminPaths(`/admin/templates/${organizationId}`, '/dashboard/tables');
 };
 
 export const applyAdminMenuTemplateAction = async (formData: FormData) => {
