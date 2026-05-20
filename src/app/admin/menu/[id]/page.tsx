@@ -555,7 +555,7 @@ const AdminMenuDetailPage = async (props: {
         title="Menu items"
         description="Create and update menu items, availability, prices, and images."
       >
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,380px)_1fr]">
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
           {organizationCategories.length > 0
             ? (
                 <form
