@@ -30,6 +30,7 @@ import {
 import { getI18nPath } from '@/utils/Helpers';
 import { getLocalizedMenuText } from '@/utils/MenuTranslations';
 
+import { createMenuCategoryAction } from '../menu-categories/actions';
 import {
   createMenuItemAction,
   deleteMenuItemAction,
@@ -189,6 +190,37 @@ const MenuItemLanguageFields = (props: {
   </div>
 );
 
+const MenuCategoryLanguageFields = (props: {
+  baseId: string;
+  t: (key: string) => string;
+}) => (
+  <div className="grid gap-3">
+    <p className="text-xs text-muted-foreground">
+      {props.t('category_language_help')}
+    </p>
+    <div className="grid gap-3 sm:grid-cols-3">
+      <div className="space-y-2">
+        <Label htmlFor={`${props.baseId}-name-en`}>
+          {props.t('name_en_label')}
+        </Label>
+        <Input id={`${props.baseId}-name-en`} name="nameEn" />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor={`${props.baseId}-name-ar`}>
+          {props.t('name_ar_label')}
+        </Label>
+        <Input id={`${props.baseId}-name-ar`} name="nameAr" dir="rtl" />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor={`${props.baseId}-name-fr`}>
+          {props.t('name_fr_label')}
+        </Label>
+        <Input id={`${props.baseId}-name-fr`} name="nameFr" />
+      </div>
+    </div>
+  </div>
+);
+
 const MenuItemsPage = async (props: {
   params: { locale: string };
   searchParams: { error?: string };
@@ -269,6 +301,13 @@ const MenuItemsPage = async (props: {
       asc(menuCategorySchema.name),
       asc(menuItemSchema.name),
     );
+  const mainCategories = categories.filter(
+    category => category.parentCategoryId === null,
+  );
+  const menuItemsReturnPath = getI18nPath(
+    '/dashboard/menu-items',
+    props.params.locale,
+  );
 
   return (
     <>
@@ -318,113 +357,220 @@ const MenuItemsPage = async (props: {
           title={t('create_section_title')}
           description={t('create_section_description')}
         >
-          {categories.length > 0
-            ? (
-                <form
-                  action={createMenuItemAction}
-                  encType="multipart/form-data"
-                  className="space-y-4"
-                >
-                  <input
-                    type="hidden"
-                    name="returnPath"
-                    value={getI18nPath(
-                      '/dashboard/menu-items',
-                      props.params.locale,
-                    )}
+          <div className="grid gap-3">
+            <details className="rounded-md border p-4">
+              <summary className="cursor-pointer font-medium">
+                {t('create_category_title')}
+              </summary>
+              <p className="mt-2 text-xs text-muted-foreground">
+                {t('create_category_help')}
+              </p>
+              <form action={createMenuCategoryAction} className="mt-4 space-y-4">
+                <input
+                  type="hidden"
+                  name="returnPath"
+                  value={menuItemsReturnPath}
+                />
+                <MenuCategoryLanguageFields
+                  baseId="category-create"
+                  t={t}
+                />
+                <div className="space-y-2">
+                  <Label htmlFor="category-display-order">
+                    {t('display_order_label')}
+                  </Label>
+                  <Input
+                    id="category-display-order"
+                    name="displayOrder"
+                    type="number"
+                    defaultValue={0}
                   />
+                </div>
+                <FormSubmitButton pendingLabel={t('create_category_pending_button')}>
+                  {t('create_category_button')}
+                </FormSubmitButton>
+              </form>
+            </details>
 
-                  {formError && (
-                    <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm font-medium text-destructive">
-                      {t(`error_${formError}`, { currency: localCurrencyLabel })}
+            <details className="rounded-md border p-4">
+              <summary className="cursor-pointer font-medium">
+                {t('create_subcategory_title')}
+              </summary>
+              <p className="mt-2 text-xs text-muted-foreground">
+                {t('create_subcategory_help')}
+              </p>
+              {mainCategories.length > 0
+                ? (
+                    <form
+                      action={createMenuCategoryAction}
+                      className="mt-4 space-y-4"
+                    >
+                      <input
+                        type="hidden"
+                        name="returnPath"
+                        value={menuItemsReturnPath}
+                      />
+                      <div className="space-y-2">
+                        <Label htmlFor="subcategory-parent-category">
+                          {t('parent_category_label')}
+                        </Label>
+                        <select
+                          id="subcategory-parent-category"
+                          name="parentCategoryId"
+                          required
+                          defaultValue=""
+                          className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                        >
+                          <option value="" disabled>
+                            {t('parent_category_placeholder')}
+                          </option>
+                          {mainCategories.map(category => (
+                            <option key={category.id} value={category.id}>
+                              {getCategoryLabel(props.params.locale, category)}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <MenuCategoryLanguageFields
+                        baseId="subcategory-create"
+                        t={t}
+                      />
+                      <div className="space-y-2">
+                        <Label htmlFor="subcategory-display-order">
+                          {t('display_order_label')}
+                        </Label>
+                        <Input
+                          id="subcategory-display-order"
+                          name="displayOrder"
+                          type="number"
+                          defaultValue={0}
+                        />
+                      </div>
+                      <FormSubmitButton pendingLabel={t('create_category_pending_button')}>
+                        {t('create_subcategory_button')}
+                      </FormSubmitButton>
+                    </form>
+                  )
+                : (
+                    <div className="mt-4 rounded-md border border-dashed p-4 text-sm text-muted-foreground">
+                      {t('no_parent_categories_state')}
                     </div>
                   )}
+            </details>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="categoryId">{t('category_label')}</Label>
-                    <select
-                      id="categoryId"
-                      name="categoryId"
-                      required
-                      defaultValue=""
-                      className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            <details className="rounded-md border p-4">
+              <summary className="cursor-pointer font-medium">
+                {t('create_item_title')}
+              </summary>
+              <p className="mt-2 text-xs text-muted-foreground">
+                {t('create_item_help')}
+              </p>
+              {categories.length > 0
+                ? (
+                    <form
+                      action={createMenuItemAction}
+                      encType="multipart/form-data"
+                      className="mt-4 space-y-4"
                     >
-                      <option value="" disabled>
-                        {t('category_placeholder')}
-                      </option>
-                      {categories.map(category => (
-                        <option key={category.id} value={category.id}>
-                          {getCategoryLabel(props.params.locale, category)}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                      <input
+                        type="hidden"
+                        name="returnPath"
+                        value={menuItemsReturnPath}
+                      />
 
-                  <MenuItemLanguageFields baseId="item-create" t={t} />
+                      {formError && (
+                        <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm font-medium text-destructive">
+                          {t(`error_${formError}`, { currency: localCurrencyLabel })}
+                        </div>
+                      )}
 
-                  <MenuItemImageUploadField
-                    fieldId="imageUrl"
-                    urlFieldName="imageUrl"
-                    fileFieldName="imageFile"
-                    label={t('image_url_label')}
-                    helpText={t('image_url_help')}
-                    placeholder={t('image_url_placeholder')}
-                  />
+                      <div className="space-y-2">
+                        <Label htmlFor="categoryId">{t('category_label')}</Label>
+                        <select
+                          id="categoryId"
+                          name="categoryId"
+                          required
+                          defaultValue=""
+                          className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                        >
+                          <option value="" disabled>
+                            {t('category_placeholder')}
+                          </option>
+                          {categories.map(category => (
+                            <option key={category.id} value={category.id}>
+                              {getCategoryLabel(props.params.locale, category)}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="priceUsdCents">
-                      {t('price_usd_cents_label')}
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      {t('price_usd_cents_help')}
-                    </p>
-                    <Input
-                      id="priceUsdCents"
-                      name="priceUsdCents"
-                      type="number"
-                      min={0}
-                      step={1}
-                    />
-                  </div>
+                      <MenuItemLanguageFields baseId="item-create" t={t} />
 
-                  <div className="space-y-2">
-                    <Label htmlFor="priceLbp">
-                      {t('price_local_label', { currency: localCurrencyLabel })}
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      {t('price_local_help', { currency: localCurrencyLabel })}
-                    </p>
-                    <Input
-                      id="priceLbp"
-                      name="priceLbp"
-                      type="number"
-                      min={0}
-                      step={1}
-                    />
-                  </div>
+                      <MenuItemImageUploadField
+                        fieldId="imageUrl"
+                        urlFieldName="imageUrl"
+                        fileFieldName="imageFile"
+                        label={t('image_url_label')}
+                        helpText={t('image_url_help')}
+                        placeholder={t('image_url_placeholder')}
+                      />
 
-                  <p className="text-sm text-muted-foreground">
-                    {t('price_requirement', { currency: localCurrencyLabel })}
-                  </p>
+                      <div className="space-y-2">
+                        <Label htmlFor="priceUsdCents">
+                          {t('price_usd_cents_label')}
+                        </Label>
+                        <p className="text-xs text-muted-foreground">
+                          {t('price_usd_cents_help')}
+                        </p>
+                        <Input
+                          id="priceUsdCents"
+                          name="priceUsdCents"
+                          type="number"
+                          min={0}
+                          step={1}
+                        />
+                      </div>
 
-                  <SwitchField
-                    id="isAvailable"
-                    name="isAvailable"
-                    label={t('is_available_label')}
-                    description={t('is_available_help')}
-                    defaultChecked
-                  />
+                      <div className="space-y-2">
+                        <Label htmlFor="priceLbp">
+                          {t('price_local_label', { currency: localCurrencyLabel })}
+                        </Label>
+                        <p className="text-xs text-muted-foreground">
+                          {t('price_local_help', { currency: localCurrencyLabel })}
+                        </p>
+                        <Input
+                          id="priceLbp"
+                          name="priceLbp"
+                          type="number"
+                          min={0}
+                          step={1}
+                        />
+                      </div>
 
-                  <FormSubmitButton pendingLabel={t('create_pending_button')}>
-                    {t('create_button')}
-                  </FormSubmitButton>
-                </form>
-              )
-            : (
-                <div className="rounded-md border border-dashed p-6 text-sm text-muted-foreground">
-                  {t('no_categories_state')}
-                </div>
-              )}
+                      <p className="text-sm text-muted-foreground">
+                        {t('price_requirement', { currency: localCurrencyLabel })}
+                      </p>
+
+                      <SwitchField
+                        id="isAvailable"
+                        name="isAvailable"
+                        label={t('is_available_label')}
+                        description={t('is_available_help')}
+                        defaultChecked
+                      />
+
+                      <FormSubmitButton pendingLabel={t('create_pending_button')}>
+                        {t('create_button')}
+                      </FormSubmitButton>
+                    </form>
+                  )
+                : (
+                    <div className="mt-4 rounded-md border border-dashed p-4 text-sm text-muted-foreground">
+                      {t('no_categories_state')}
+                    </div>
+                  )}
+            </details>
+          </div>
         </DashboardSection>
 
         <DashboardSection

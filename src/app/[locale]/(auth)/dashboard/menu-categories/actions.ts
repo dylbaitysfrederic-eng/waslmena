@@ -14,11 +14,15 @@ import {
 } from '@/utils/MenuTranslations';
 
 const MENU_CATEGORIES_PATH = '/dashboard/menu-categories';
+const MENU_ITEMS_PATH = '/dashboard/menu-items';
 
 const getReturnPath = (formData: FormData) => {
   const returnPath = formData.get('returnPath')?.toString();
 
-  if (returnPath?.endsWith('/dashboard/menu-categories')) {
+  if (
+    returnPath?.endsWith(MENU_CATEGORIES_PATH)
+    || returnPath?.endsWith(MENU_ITEMS_PATH)
+  ) {
     return returnPath;
   }
 
@@ -93,6 +97,7 @@ export const createMenuCategoryAction = async (formData: FormData) => {
   });
 
   revalidatePath(MENU_CATEGORIES_PATH);
+  revalidatePath(MENU_ITEMS_PATH);
   revalidatePath(returnPath);
   redirect(returnPath);
 };
@@ -150,6 +155,7 @@ export const updateMenuCategoryAction = async (formData: FormData) => {
     );
 
   revalidatePath(MENU_CATEGORIES_PATH);
+  revalidatePath(MENU_ITEMS_PATH);
   revalidatePath(returnPath);
   redirect(returnPath);
 };
@@ -204,6 +210,7 @@ export const deleteMenuCategoryAction = async (formData: FormData) => {
     );
 
   revalidatePath(MENU_CATEGORIES_PATH);
+  revalidatePath(MENU_ITEMS_PATH);
   revalidatePath(returnPath);
   redirect(returnPath);
 };

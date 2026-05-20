@@ -476,23 +476,74 @@ const AdminMenuDetailPage = async (props: {
         description="Create and update the category structure for this restaurant."
       >
         <div className="grid gap-6 lg:grid-cols-[minmax(0,360px)_1fr]">
-          <form action={createAdminMenuCategoryAction} className="space-y-4">
-            <input type="hidden" name="organizationId" value={organizationId} />
-            <div>
-              <div className="font-medium">Add category</div>
-              <p className="text-xs text-muted-foreground">
-                At least one translated name is required.
+          <div className="grid gap-3">
+            <details className="rounded-md border p-4">
+              <summary className="cursor-pointer font-medium">
+                Create category
+              </summary>
+              <p className="mt-2 text-xs text-muted-foreground">
+                Create a main section of the menu.
               </p>
-            </div>
-            <MultilingualNameFields idPrefix={`category-create-${organizationId}`} />
-            <CategoryParentSelect
-              id="category-parent-create"
-              categories={organizationCategories}
-            />
-            <FormSubmitButton pendingLabel="Creating...">
-              Create category
-            </FormSubmitButton>
-          </form>
+              <form
+                action={createAdminMenuCategoryAction}
+                className="mt-4 space-y-4"
+              >
+                <input type="hidden" name="organizationId" value={organizationId} />
+                <MultilingualNameFields idPrefix={`category-create-${organizationId}`} />
+                <FormSubmitButton pendingLabel="Creating...">
+                  Create category
+                </FormSubmitButton>
+              </form>
+            </details>
+
+            <details className="rounded-md border p-4">
+              <summary className="cursor-pointer font-medium">
+                Create subcategory
+              </summary>
+              <p className="mt-2 text-xs text-muted-foreground">
+                Create a rubric inside an existing category.
+              </p>
+              {mainCategories.length > 0
+                ? (
+                    <form
+                      action={createAdminMenuCategoryAction}
+                      className="mt-4 space-y-4"
+                    >
+                      <input type="hidden" name="organizationId" value={organizationId} />
+                      <div className="space-y-2">
+                        <Label htmlFor="subcategory-parent-create">
+                          Parent category
+                        </Label>
+                        <select
+                          id="subcategory-parent-create"
+                          name="parentCategoryId"
+                          className={selectClassName}
+                          required
+                          defaultValue=""
+                        >
+                          <option value="" disabled>
+                            Select a category
+                          </option>
+                          {mainCategories.map(category => (
+                            <option key={category.id} value={category.id}>
+                              {getCategoryName(category)}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <MultilingualNameFields idPrefix={`subcategory-create-${organizationId}`} />
+                      <FormSubmitButton pendingLabel="Creating...">
+                        Create subcategory
+                      </FormSubmitButton>
+                    </form>
+                  )
+                : (
+                    <div className="mt-4 rounded-md border border-dashed p-4 text-sm text-muted-foreground">
+                      Create a category before adding subcategories.
+                    </div>
+                  )}
+            </details>
+          </div>
 
           {organizationCategories.length > 0
             ? (
@@ -605,81 +656,83 @@ const AdminMenuDetailPage = async (props: {
         description="Create and update menu items, availability, prices, and images."
       >
         <div className="grid gap-6 xl:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
-          {organizationCategories.length > 0
-            ? (
-                <form
-                  action={createAdminMenuItemAction}
-                  encType="multipart/form-data"
-                  className="space-y-4"
-                >
-                  <input type="hidden" name="organizationId" value={organizationId} />
-                  <div>
-                    <div className="font-medium">Add menu item</div>
-                    <p className="text-xs text-muted-foreground">
-                      At least one translated item name and one price are required.
-                    </p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="item-category-create">Category</Label>
-                    <select
-                      id="item-category-create"
-                      name="categoryId"
-                      className={selectClassName}
-                      required
-                    >
-                      {organizationCategories.map(category => (
-                        <option key={category.id} value={category.id}>
-                          {getCategoryOptionLabel(category)}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <MultilingualItemFields idPrefix={`item-create-${organizationId}`} />
-                  <MenuItemImageUploadField
-                    fieldId="new-item-image"
-                    urlFieldName="imageUrl"
-                    fileFieldName="imageFile"
-                    label="Image (optional)"
-                    helpText="Optional. Upload a lightweight image file."
-                    placeholder="https://example.com/image.jpg"
-                  />
-                  <div className="grid gap-3 sm:grid-cols-2">
+          <details className="rounded-md border p-4">
+            <summary className="cursor-pointer font-medium">
+              Create item
+            </summary>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Add a dish, drink, or product to the menu.
+            </p>
+            {organizationCategories.length > 0
+              ? (
+                  <form
+                    action={createAdminMenuItemAction}
+                    encType="multipart/form-data"
+                    className="mt-4 space-y-4"
+                  >
+                    <input type="hidden" name="organizationId" value={organizationId} />
                     <div className="space-y-2">
-                      <Label htmlFor="item-usd-create">USD cents</Label>
-                      <Input
-                        id="item-usd-create"
-                        name="priceUsdCents"
-                        type="number"
-                        min={0}
-                      />
+                      <Label htmlFor="item-category-create">Category</Label>
+                      <select
+                        id="item-category-create"
+                        name="categoryId"
+                        className={selectClassName}
+                        required
+                      >
+                        {organizationCategories.map(category => (
+                          <option key={category.id} value={category.id}>
+                            {getCategoryOptionLabel(category)}
+                          </option>
+                        ))}
+                      </select>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="item-local-create">{localCurrencyLabel}</Label>
-                      <Input
-                        id="item-local-create"
-                        name="priceLbp"
-                        type="number"
-                        min={0}
-                      />
+                    <MultilingualItemFields idPrefix={`item-create-${organizationId}`} />
+                    <MenuItemImageUploadField
+                      fieldId="new-item-image"
+                      urlFieldName="imageUrl"
+                      fileFieldName="imageFile"
+                      label="Image (optional)"
+                      helpText="Optional. Upload a lightweight image file."
+                      placeholder="https://example.com/image.jpg"
+                    />
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="item-usd-create">USD cents</Label>
+                        <Input
+                          id="item-usd-create"
+                          name="priceUsdCents"
+                          type="number"
+                          min={0}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="item-local-create">{localCurrencyLabel}</Label>
+                        <Input
+                          id="item-local-create"
+                          name="priceLbp"
+                          type="number"
+                          min={0}
+                        />
+                      </div>
                     </div>
+                    <SwitchField
+                      id="item-available-create"
+                      name="isAvailable"
+                      label="Available for customer orders"
+                      description="Unavailable items remain visible but cannot be ordered."
+                      defaultChecked
+                    />
+                    <FormSubmitButton pendingLabel="Creating...">
+                      Create item
+                    </FormSubmitButton>
+                  </form>
+                )
+              : (
+                  <div className="mt-4 rounded-md border border-dashed p-4 text-sm text-muted-foreground">
+                    Create at least one category before adding menu items.
                   </div>
-                  <SwitchField
-                    id="item-available-create"
-                    name="isAvailable"
-                    label="Available for customer orders"
-                    description="Unavailable items remain visible but cannot be ordered."
-                    defaultChecked
-                  />
-                  <FormSubmitButton pendingLabel="Creating...">
-                    Create item
-                  </FormSubmitButton>
-                </form>
-              )
-            : (
-                <div className="rounded-md border border-dashed p-6 text-sm text-muted-foreground">
-                  Create at least one category before adding menu items.
-                </div>
-              )}
+                )}
+          </details>
 
           {organizationItems.length > 0
             ? (
