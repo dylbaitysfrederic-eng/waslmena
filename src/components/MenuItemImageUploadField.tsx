@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 
 import { MenuItemImagePreview } from '@/components/MenuItemImagePreview';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 const ACCEPTED_FILE_TYPES = '.jpg,.jpeg,.png,.webp';
@@ -21,11 +20,11 @@ type MenuItemImageUploadFieldProps = {
 
 export const MenuItemImageUploadField = ({
   fieldId,
-  urlFieldName,
+  urlFieldName: _urlFieldName,
   fileFieldName,
   label,
   helpText,
-  placeholder,
+  placeholder: _placeholder,
   currentImageUrl,
 }: MenuItemImageUploadFieldProps) => {
   const [selectedFileName, setSelectedFileName] = useState('');
@@ -59,31 +58,20 @@ export const MenuItemImageUploadField = ({
 
   return (
     <div className="space-y-2">
-      <Label htmlFor={fieldId}>{label}</Label>
+      <Label htmlFor={`${fieldId}-file`}>{label}</Label>
       <p className="text-xs text-muted-foreground">{helpText}</p>
-      <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
-        <Input
-          id={fieldId}
-          name={urlFieldName}
-          type="url"
-          placeholder={placeholder}
-        />
-        <label className="flex h-9 items-center rounded-md border border-input bg-background px-3 text-sm text-foreground">
-          <span className="truncate">Choose file</span>
-          <input
-            id={`${fieldId}-file`}
-            name={fileFieldName}
-            type="file"
-            accept={ACCEPTED_FILE_TYPES}
-            onChange={handleFileChange}
-            className="ml-3 block size-full cursor-pointer opacity-0"
-          />
-        </label>
-      </div>
+      <input
+        id={`${fieldId}-file`}
+        name={fileFieldName}
+        type="file"
+        accept={ACCEPTED_FILE_TYPES}
+        onChange={handleFileChange}
+        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:mr-3 file:rounded-md file:border-0 file:bg-muted file:px-3 file:py-1 file:text-sm file:font-medium file:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+      />
       <p className="text-xs text-muted-foreground">
         Upload JPG, JPEG, PNG or WEBP up to
         {MAX_UPLOAD_KB}
-        KB. Uploaded file overrides the image URL.
+        KB. Uploading a new file replaces the current image.
       </p>
       {selectedFileName && (
         <p className="text-xs text-muted-foreground">
