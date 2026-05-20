@@ -614,10 +614,21 @@ const AdminMenuDetailPage = async (props: {
                       />
                     </div>
                   </div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                    <input name="isAvailable" type="checkbox" defaultChecked className="size-4" />
-                    Available
-                  </label>
+                  <div className="flex items-start gap-2 text-sm font-medium text-muted-foreground">
+                    <input
+                      id="item-available-create"
+                      name="isAvailable"
+                      type="checkbox"
+                      defaultChecked
+                      className="mt-0.5 size-4"
+                    />
+                    <label htmlFor="item-available-create">
+                      <span className="block">Available for customer orders</span>
+                      <span className="mt-1 block text-xs font-normal leading-5">
+                        Unavailable items remain visible but cannot be ordered.
+                      </span>
+                    </label>
+                  </div>
                   <FormSubmitButton pendingLabel="Creating...">
                     Create item
                   </FormSubmitButton>
@@ -766,15 +777,21 @@ const AdminMenuDetailPage = async (props: {
                                         />
                                       </div>
                                     </div>
-                                    <label className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                                    <div className="flex items-start gap-2 text-sm font-medium text-muted-foreground">
                                       <input
+                                        id={`item-available-${item.id}`}
                                         name="isAvailable"
                                         type="checkbox"
                                         defaultChecked={item.isAvailable}
-                                        className="size-4"
+                                        className="mt-0.5 size-4"
                                       />
-                                      Available
-                                    </label>
+                                      <label htmlFor={`item-available-${item.id}`}>
+                                        <span className="block">Available for customer orders</span>
+                                        <span className="mt-1 block text-xs font-normal leading-5">
+                                          Unavailable items remain visible but cannot be ordered.
+                                        </span>
+                                      </label>
+                                    </div>
                                     <FormSubmitButton pendingLabel="Saving..." size="sm">
                                       Save item
                                     </FormSubmitButton>

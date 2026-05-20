@@ -154,13 +154,6 @@ export const createMenuItemAction = async (formData: FormData) => {
     fr: normalizeMenuText(formData.get('descriptionFr')),
   };
   const imageUrlField = formData.get('imageUrl')?.toString().trim() || null;
-  let imageUrl: string | null = null;
-
-  try {
-    imageUrl = await getMenuItemImageUrl(imageUrlField, formData.get('imageFile'));
-  } catch (error) {
-    redirectWithError(returnPath, (error as Error)?.message || 'invalid_image_type');
-  }
 
   const priceUsdCents = parseOptionalPrice(formData.get('priceUsdCents'));
   const priceLbp = parseOptionalPrice(formData.get('priceLbp'));
@@ -168,6 +161,18 @@ export const createMenuItemAction = async (formData: FormData) => {
 
   if (!organizationId) {
     return;
+  }
+
+  let imageUrl: string | null = null;
+
+  try {
+    imageUrl = await getMenuItemImageUrl(
+      organizationId,
+      imageUrlField,
+      formData.get('imageFile'),
+    );
+  } catch (error) {
+    redirectWithError(returnPath, (error as Error)?.message || 'invalid_image_type');
   }
 
   if (!hasAnyMenuText(names)) {
@@ -314,6 +319,7 @@ export const updateMenuItemAction = async (formData: FormData) => {
 
   try {
     imageUrl = await getMenuItemImageUrl(
+      organizationId,
       imageUrlField || existingItem?.imageUrl || null,
       formData.get('imageFile'),
     );

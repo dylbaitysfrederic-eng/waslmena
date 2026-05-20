@@ -15,6 +15,7 @@ const EXTENSION_BY_MIME_TYPE: Record<string, string> = {
 export type MenuItemImageUploadError = 'invalid_image_type' | 'image_too_large';
 
 export const saveMenuItemImageFile = async (
+  organizationId: string,
   file: File,
 ): Promise<string> => {
   if (!ALLOWED_IMAGE_MIME_TYPES.has(file.type)) {
@@ -26,7 +27,7 @@ export const saveMenuItemImageFile = async (
   }
 
   const extension = EXTENSION_BY_MIME_TYPE[file.type] ?? '.jpg';
-  const fileName = `menu-items/${crypto.randomUUID()}${extension}`;
+  const fileName = `menu-items/${encodeURIComponent(organizationId)}/${crypto.randomUUID()}${extension}`;
 
   const blob = await put(fileName, file, {
     access: 'public',
@@ -37,13 +38,14 @@ export const saveMenuItemImageFile = async (
 };
 
 export const getMenuItemImageUrl = async (
+  organizationId: string,
   imageUrl: string | null,
   imageFileValue: FormDataEntryValue | null,
 ): Promise<string | null> => {
   const imageFile = imageFileValue as File | undefined;
 
   if (imageFile && imageFile.size > 0 && typeof imageFile.arrayBuffer === 'function') {
-    return await saveMenuItemImageFile(imageFile);
+    return await saveMenuItemImageFile(organizationId, imageFile);
   }
 
   return imageUrl || null;

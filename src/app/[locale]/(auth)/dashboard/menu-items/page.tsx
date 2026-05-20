@@ -369,6 +369,7 @@ const MenuItemsPage = async (props: {
                     id="isAvailable"
                     name="isAvailable"
                     label={t('is_available_label')}
+                    description={t('is_available_help')}
                     defaultChecked
                   />
 
@@ -543,6 +544,7 @@ const MenuItemsPage = async (props: {
                                     id={`item-available-${item.id}`}
                                     name="isAvailable"
                                     label={t('is_available_label')}
+                                    description={t('is_available_help')}
                                     defaultChecked={item.isAvailable}
                                   />
                                   <FormSubmitButton
