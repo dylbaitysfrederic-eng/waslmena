@@ -38,7 +38,7 @@ export async function generateMetadata(props: { params: { locale: string } }) {
 const PERIODS = ['today', '7d', '30d', '365d'] as const;
 
 type Period = typeof PERIODS[number];
-type TrackedStatus = 'pending' | 'preparing' | 'served' | 'cancelled';
+type TrackedStatus = 'pending' | 'preparing' | 'completed' | 'cancelled';
 
 const PERIOD_START_OFFSETS = {
   'today': 0,
@@ -50,7 +50,7 @@ const PERIOD_START_OFFSETS = {
 const TRACKED_STATUSES = [
   'pending',
   'preparing',
-  'served',
+  'completed',
   'cancelled',
 ] as const;
 
@@ -115,12 +115,17 @@ const normalizeStatusForStats = (status: string): TrackedStatus | null => {
     return 'pending';
   }
 
-  if (status === 'validated' || status === 'preparing' || status === 'ready') {
+  if (
+    status === 'confirmed'
+    || status === 'validated'
+    || status === 'preparing'
+    || status === 'ready'
+  ) {
     return 'preparing';
   }
 
-  if (status === 'served' || status === 'delivered') {
-    return 'served';
+  if (status === 'completed' || status === 'served' || status === 'delivered') {
+    return 'completed';
   }
 
   if (status === 'cancelled') {

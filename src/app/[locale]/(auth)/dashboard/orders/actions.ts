@@ -11,12 +11,14 @@ const ORDERS_PATH = '/dashboard/orders';
 
 const ORDER_STATUSES = [
   'pending',
-  'validated',
+  'confirmed',
   'preparing',
   'ready',
-  'served',
+  'completed',
   'cancelled',
 ] as const;
+
+const FINAL_ORDER_STATUSES = new Set(['completed', 'served', 'delivered', 'cancelled']);
 
 export const updateOrderStatusAction = async (formData: FormData) => {
   const organizationId = await getActiveRestaurantOrganizationId();
@@ -93,7 +95,7 @@ export const updateOrderAction = async (formData: FormData) => {
     )
     .limit(1);
 
-  if (!order || order.status === 'served' || order.status === 'cancelled') {
+  if (!order || FINAL_ORDER_STATUSES.has(order.status)) {
     return;
   }
 

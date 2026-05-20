@@ -28,18 +28,18 @@ export const revalidate = 0;
 
 const ORDER_STATUSES = [
   'pending',
-  'validated',
+  'confirmed',
   'preparing',
   'ready',
-  'served',
+  'completed',
   'cancelled',
 ] as const;
 
 const NEXT_STATUS = {
-  pending: 'validated',
-  validated: 'preparing',
+  pending: 'confirmed',
+  confirmed: 'preparing',
   preparing: 'ready',
-  ready: 'served',
+  ready: 'completed',
 } as const;
 
 const ORDER_STATUS_STYLES = {
@@ -49,7 +49,7 @@ const ORDER_STATUS_STYLES = {
     card: 'border-amber-400 bg-amber-50/90 shadow-sm',
     statusPanel: 'border-amber-400 bg-amber-100 text-amber-950',
   },
-  validated: {
+  confirmed: {
     section: 'border-sky-300 bg-sky-50',
     badge: 'border-sky-400 bg-sky-100 text-sky-950',
     card: 'border-sky-300 bg-sky-50/90 shadow-sm',
@@ -67,7 +67,7 @@ const ORDER_STATUS_STYLES = {
     card: 'border-green-500 bg-green-50 shadow-sm',
     statusPanel: 'border-green-500 bg-green-100 text-green-950',
   },
-  served: {
+  completed: {
     section: 'border-slate-300 bg-slate-50',
     badge: 'border-slate-300 bg-slate-100 text-slate-700',
     card: 'border-slate-300 bg-slate-50/70',
@@ -93,7 +93,15 @@ const getOrderStatusStyle = (status: string) => {
 };
 
 const normalizeOrderStatus = (status: string) => {
-  return status === 'delivered' ? 'served' : status;
+  if (status === 'validated') {
+    return 'confirmed';
+  }
+
+  if (status === 'served' || status === 'delivered') {
+    return 'completed';
+  }
+
+  return status;
 };
 
 export async function generateMetadata(props: { params: { locale: string } }) {
@@ -152,7 +160,7 @@ const formatElapsedTime = (date: Date, now: Date, t: Awaited<ReturnType<typeof g
 const RECEIPT_DIVIDER = '--------------------------------';
 
 const getFinalStatusCompletedAt = (status: string, updatedAt: Date) => {
-  return status === 'served' || status === 'cancelled' ? updatedAt : null;
+  return status === 'completed' || status === 'cancelled' ? updatedAt : null;
 };
 
 const OrdersPage = async (props: { params: { locale: string } }) => {
@@ -189,6 +197,10 @@ const OrdersPage = async (props: { params: { locale: string } }) => {
   const restaurantAccentColor = organization?.restaurantAccentColor
     ?? restaurantPrimaryColor;
   const restaurantContact = organization?.restaurantWhatsappNumber ?? null;
+  const restaurantWhatsappDigits = restaurantContact?.replace(/\D/g, '') ?? '';
+  const restaurantWhatsappUrl = restaurantWhatsappDigits
+    ? `https://wa.me/${restaurantWhatsappDigits}`
+    : null;
   const orderVisualNotificationsEnabled = (
     organization?.orderVisualNotificationsEnabled ?? true
   );
@@ -291,6 +303,18 @@ const OrdersPage = async (props: { params: { locale: string } }) => {
             {t('refresh_helper')}
           </p>
           <div className="flex flex-wrap items-center gap-2">
+            {restaurantWhatsappUrl && (
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs text-muted-foreground">
+                  {restaurantContact}
+                </span>
+                <Button asChild variant="outline">
+                  <Link href={restaurantWhatsappUrl} rel="noreferrer" target="_blank">
+                    {t('whatsapp_contact_button')}
+                  </Link>
+                </Button>
+              </div>
+            )}
             <Button asChild>
               <Link href={getI18nPath('/dashboard/orders', props.params.locale)}>
                 {t('refresh_button')}
@@ -358,7 +382,7 @@ const OrdersPage = async (props: { params: { locale: string } }) => {
                                   order.status as keyof typeof NEXT_STATUS
                                 ];
                                 const canCancel = order.status !== 'cancelled'
-                                  && order.status !== 'served';
+                                  && order.status !== 'completed';
                                 const orderSourceLabel = order.tableId === null
                                   ? t('general_menu_label')
                                   : order.tableNumber === null
@@ -377,7 +401,7 @@ const OrdersPage = async (props: { params: { locale: string } }) => {
                                 ) => item.unitPriceUsdCents !== null
                                   && item.unitPriceLbp !== null;
                                 const ticketId = `order-ticket-${order.id}`;
-                                const canEdit = order.status !== 'served'
+                                const canEdit = order.status !== 'completed'
                                   && order.status !== 'cancelled';
                                 const copyTicketText = [
                                   restaurantDisplayName,
