@@ -181,7 +181,6 @@ const OrdersPage = async (props: { params: { locale: string } }) => {
       restaurantPrimaryColor: organizationSchema.restaurantPrimaryColor,
       restaurantAccentColor: organizationSchema.restaurantAccentColor,
       localCurrencyLabel: organizationSchema.localCurrencyLabel,
-      restaurantWhatsappNumber: organizationSchema.restaurantWhatsappNumber,
       orderVisualNotificationsEnabled:
         organizationSchema.orderVisualNotificationsEnabled,
       orderSoundNotificationsEnabled:
@@ -196,11 +195,6 @@ const OrdersPage = async (props: { params: { locale: string } }) => {
   const restaurantPrimaryColor = organization?.restaurantPrimaryColor ?? null;
   const restaurantAccentColor = organization?.restaurantAccentColor
     ?? restaurantPrimaryColor;
-  const restaurantContact = organization?.restaurantWhatsappNumber ?? null;
-  const restaurantWhatsappDigits = restaurantContact?.replace(/\D/g, '') ?? '';
-  const restaurantWhatsappUrl = restaurantWhatsappDigits
-    ? `https://wa.me/${restaurantWhatsappDigits}`
-    : null;
   const orderVisualNotificationsEnabled = (
     organization?.orderVisualNotificationsEnabled ?? true
   );
@@ -303,18 +297,6 @@ const OrdersPage = async (props: { params: { locale: string } }) => {
             {t('refresh_helper')}
           </p>
           <div className="flex flex-wrap items-center gap-2">
-            {restaurantWhatsappUrl && (
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-xs text-muted-foreground">
-                  {restaurantContact}
-                </span>
-                <Button asChild variant="outline">
-                  <Link href={restaurantWhatsappUrl} rel="noreferrer" target="_blank">
-                    {t('whatsapp_contact_button')}
-                  </Link>
-                </Button>
-              </div>
-            )}
             <Button asChild>
               <Link href={getI18nPath('/dashboard/orders', props.params.locale)}>
                 {t('refresh_button')}
@@ -405,11 +387,6 @@ const OrdersPage = async (props: { params: { locale: string } }) => {
                                   && order.status !== 'cancelled';
                                 const copyTicketText = [
                                   restaurantDisplayName,
-                                  restaurantContact
-                                    ? t('ticket_contact', {
-                                      contact: restaurantContact,
-                                    })
-                                    : null,
                                   RECEIPT_DIVIDER,
                                   t('order_title', { orderId: order.id }),
                                   `${t('ticket_sent_at')}: ${
@@ -894,13 +871,6 @@ const OrdersPage = async (props: { params: { locale: string } }) => {
                                       >
                                         {restaurantDisplayName}
                                       </div>
-                                      {restaurantContact && (
-                                        <div className="mt-1 text-center text-xs">
-                                          {t('ticket_contact', {
-                                            contact: restaurantContact,
-                                          })}
-                                        </div>
-                                      )}
 
                                       <div
                                         className="my-3"

@@ -646,7 +646,6 @@
     "list_section_description": "تظهر الطلبات الأحدث أولاً.",
     "refresh_button": "تحديث الطلبات",
     "refresh_helper": "الطلبات الجديدة لا تظهر تلقائياً بعد. حدّث هذه الصفحة أثناء الخدمة لرؤية الطلبات الجديدة.",
-    "whatsapp_contact_button": "تواصل عبر واتساب",
     "section_count": "{count, plural, =0 {لا توجد طلبات} =1 {طلب واحد} =2 {طلبان} few {# طلبات} many {# طلباً} other {# طلب}}",
     "needs_attention": "بحاجة للمتابعة",
     "elapsed_now": "الآن",
