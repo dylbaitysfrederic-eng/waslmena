@@ -356,34 +356,52 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
 
         {canOrderItem && (
           <div className="flex shrink-0 items-center justify-between gap-2 border-t pt-3 sm:border-t-0 sm:pt-0">
-            {quantity > 0 && (
-              <div className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => decreaseItem(item.id)}
-                  aria-label={t('decrease_item_label', {
-                    itemName: item.name,
-                  })}
-                >
-                  -
-                </Button>
-                <span className="w-6 text-center text-sm font-medium">
-                  {quantity}
-                </span>
-              </div>
-            )}
-
-            <Button
-              type="button"
-              size="sm"
-              className={cn('min-h-10 flex-1 font-semibold sm:flex-none', templateClassNames.button)}
-              style={primaryButtonStyle}
-              onClick={() => addItem(item)}
-            >
-              {quantity > 0 ? t('increase_button') : t('add_button')}
-            </Button>
+            {quantity === 0
+              ? (
+                  <Button
+                    type="button"
+                    size="sm"
+                    className={cn(
+                      'min-h-11 flex-1 font-semibold sm:min-w-28 sm:flex-none',
+                      templateClassNames.button,
+                    )}
+                    style={primaryButtonStyle}
+                    onClick={() => addItem(item)}
+                  >
+                    {t('add_button')}
+                  </Button>
+                )
+              : (
+                  <div className="grid min-h-11 flex-1 grid-cols-[44px_1fr_44px] items-center overflow-hidden rounded-full border bg-background sm:min-w-36 sm:flex-none">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="min-h-11 rounded-none border-r px-0 text-lg"
+                      onClick={() => decreaseItem(item.id)}
+                      aria-label={t('decrease_item_label', {
+                        itemName: item.name,
+                      })}
+                    >
+                      -
+                    </Button>
+                    <span className="text-center text-sm font-semibold">
+                      {quantity}
+                    </span>
+                    <Button
+                      type="button"
+                      size="sm"
+                      className="min-h-11 rounded-none px-0 text-lg font-semibold"
+                      style={primaryButtonStyle}
+                      onClick={() => addItem(item)}
+                      aria-label={t('increase_item_label', {
+                        itemName: item.name,
+                      })}
+                    >
+                      +
+                    </Button>
+                  </div>
+                )}
           </div>
         )}
       </article>

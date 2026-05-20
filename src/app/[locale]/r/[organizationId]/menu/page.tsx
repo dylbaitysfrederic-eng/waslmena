@@ -257,9 +257,6 @@ const PublicGeneralMenuPage = async (props: PublicGeneralMenuPageProps) => {
     );
   const templateStyle = getTemplateStyle(organization.restaurantTemplateStyle);
   const templateClassNames = TEMPLATE_CLASS_NAMES[templateStyle];
-  const primaryColorStyle = organization.restaurantPrimaryColor
-    ? { color: organization.restaurantPrimaryColor }
-    : undefined;
   const whatsappDigits = organization.enableWhatsappContact === false
     ? null
     : organization.restaurantWhatsappNumber?.replace(/\D/g, '');
@@ -284,70 +281,57 @@ const PublicGeneralMenuPage = async (props: PublicGeneralMenuPageProps) => {
         organization.restaurantAccentColor,
       )}
     >
-      <div
-        className={cn(
-          'mx-auto flex w-full flex-col gap-6 px-4 py-6',
-          templateClassNames.shell,
-        )}
-      >
-        <header className={cn('space-y-2', templateClassNames.header)}>
-          <div className="flex justify-end">
-            <LocaleSwitcher />
-          </div>
-          <div className="flex items-center gap-3">
+      <header className="sticky top-0 z-40 border-b border-zinc-900/10 bg-background/95 shadow-sm backdrop-blur-sm">
+        <div
+          className={cn(
+            'mx-auto flex min-h-14 w-full items-center justify-between gap-3 px-4 py-3',
+            templateClassNames.shell,
+          )}
+        >
+          <div className="flex min-w-0 items-center gap-3">
             {organization.restaurantLogoUrl && (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={organization.restaurantLogoUrl}
                 alt=""
-                className={cn(
-                  'size-14 border object-cover',
-                  templateClassNames.logo,
-                )}
+                className="size-10 flex-none rounded-md border object-cover"
               />
             )}
-            <div>
-              {organization.restaurantDisplayName && (
-                <p className="text-sm font-semibold text-muted-foreground">
-                  {organization.restaurantDisplayName}
-                </p>
-              )}
-              <h1
-                className={cn(
-                  'text-3xl font-semibold tracking-normal',
-                  templateClassNames.title,
-                )}
-                style={primaryColorStyle}
-              >
-                {t('title')}
-              </h1>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold">
+                {organization.restaurantDisplayName || t('title')}
+              </p>
             </div>
           </div>
-          <p className="text-sm text-muted-foreground">
-            {t('description')}
-          </p>
-          {whatsappUrl && (
-            <a
-              href={whatsappUrl}
-              target="_blank"
-              rel="noreferrer"
-              className={cn(
-                'inline-flex min-h-11 items-center justify-center border px-4 py-2 text-sm font-semibold text-foreground',
-                templateClassNames.contactButton,
-              )}
-              style={organization.restaurantPrimaryColor
-                ? {
-                    borderColor: organization.restaurantAccentColor
-                      ?? organization.restaurantPrimaryColor,
-                    color: organization.restaurantPrimaryColor,
-                  }
-                : undefined}
-            >
-              {t('whatsapp_contact_button')}
-            </a>
-          )}
-        </header>
+          <div className="flex shrink-0 items-center gap-2">
+            {whatsappUrl && (
+              <a
+                href={whatsappUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="hidden rounded-full border px-3 py-1.5 text-xs font-semibold text-foreground sm:inline-flex"
+                style={organization.restaurantPrimaryColor
+                  ? {
+                      borderColor: organization.restaurantAccentColor
+                        ?? organization.restaurantPrimaryColor,
+                      color: organization.restaurantPrimaryColor,
+                    }
+                  : undefined}
+              >
+                {t('whatsapp_contact_button')}
+              </a>
+            )}
+            <LocaleSwitcher />
+          </div>
+        </div>
+      </header>
 
+      <div
+        className={cn(
+          'mx-auto flex w-full flex-col gap-5 px-4 py-4',
+          templateClassNames.shell,
+        )}
+      >
         {categoriesWithItems.length > 0
           ? (
               <PublicMenuCart

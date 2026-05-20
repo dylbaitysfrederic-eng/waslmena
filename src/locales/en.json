@@ -216,6 +216,7 @@
     "empty_state": "No available menu items yet.",
     "add_button": "Add",
     "increase_button": "Add one",
+    "increase_item_label": "Increase quantity for {itemName}",
     "not_available_label": "Not available",
     "remove_button": "Remove",
     "cart_title": "Cart",

@@ -309,9 +309,6 @@ const PublicTableMenuPage = async (props: PublicMenuPageProps) => {
     );
   const templateStyle = getTemplateStyle(organization?.restaurantTemplateStyle);
   const templateClassNames = TEMPLATE_CLASS_NAMES[templateStyle];
-  const primaryColorStyle = organization?.restaurantPrimaryColor
-    ? { color: organization.restaurantPrimaryColor }
-    : undefined;
   const whatsappDigits = organization?.enableWhatsappContact === false
     ? null
     : organization?.restaurantWhatsappNumber
@@ -337,107 +334,62 @@ const PublicTableMenuPage = async (props: PublicMenuPageProps) => {
         organization.restaurantAccentColor,
       )}
     >
-      <div className="sm:hidden">
-        <div className="sticky top-0 z-40 border-b border-zinc-900/10 bg-background/95 shadow-sm backdrop-blur-sm">
-          <div className="mx-auto flex min-h-14 max-w-2xl items-center justify-between gap-3 px-4 py-3">
-            <div className="flex min-w-0 items-center gap-3">
-              {organization?.restaurantLogoUrl && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={organization.restaurantLogoUrl}
-                  alt=""
-                  className="size-10 flex-none rounded-md border object-cover"
-                />
-              )}
-              <div className="min-w-0">
-                {organization?.restaurantDisplayName && (
-                  <p className="truncate text-sm font-semibold">
-                    {organization.restaurantDisplayName}
-                  </p>
-                )}
-                <p className="truncate text-xs text-muted-foreground">
-                  {t('table_label', { tableNumber: restaurantTable.tableNumber })}
-                </p>
-              </div>
-            </div>
-            <LocaleSwitcher />
-          </div>
-        </div>
-      </div>
-
-      <div
-        className={cn(
-          'mx-auto flex w-full flex-col gap-6 px-4 pt-20 pb-6 sm:pt-6',
-          templateClassNames.shell,
-        )}
-      >
-        <header className={cn('hidden space-y-2 sm:block', templateClassNames.header)}>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <p
-              className={cn(
-                'text-sm font-medium text-muted-foreground',
-                templateClassNames.tableBadge,
-              )}
-              style={primaryColorStyle}
-            >
-              {t('table_label', { tableNumber: restaurantTable.tableNumber })}
-            </p>
-            <LocaleSwitcher />
-          </div>
-          <div className="flex items-center gap-3">
+      <header className="sticky top-0 z-40 border-b border-zinc-900/10 bg-background/95 shadow-sm backdrop-blur-sm">
+        <div
+          className={cn(
+            'mx-auto flex min-h-14 w-full items-center justify-between gap-3 px-4 py-3',
+            templateClassNames.shell,
+          )}
+        >
+          <div className="flex min-w-0 items-center gap-3">
             {organization?.restaurantLogoUrl && (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={organization.restaurantLogoUrl}
                 alt=""
-                className={cn(
-                  'size-14 border object-cover',
-                  templateClassNames.logo,
-                )}
+                className="size-10 flex-none rounded-md border object-cover"
               />
             )}
-            <div>
+            <div className="min-w-0">
               {organization?.restaurantDisplayName && (
-                <p className="text-sm font-semibold text-muted-foreground">
+                <p className="truncate text-sm font-semibold">
                   {organization.restaurantDisplayName}
                 </p>
               )}
-              <h1
-                className={cn(
-                  'text-3xl font-semibold tracking-normal',
-                  templateClassNames.title,
-                )}
-                style={primaryColorStyle}
-              >
-                {t('title')}
-              </h1>
+              <p className="truncate text-xs text-muted-foreground">
+                {t('table_label', { tableNumber: restaurantTable.tableNumber })}
+              </p>
             </div>
           </div>
-          <p className="text-sm text-muted-foreground">
-            {t('description')}
-          </p>
-          {whatsappUrl && (
-            <a
-              href={whatsappUrl}
-              target="_blank"
-              rel="noreferrer"
-              className={cn(
-                'inline-flex min-h-11 items-center justify-center border px-4 py-2 text-sm font-semibold text-foreground',
-                templateClassNames.contactButton,
-              )}
-              style={organization?.restaurantPrimaryColor
-                ? {
-                    borderColor: organization.restaurantAccentColor
-                      ?? organization.restaurantPrimaryColor,
-                    color: organization.restaurantPrimaryColor,
-                  }
-                : undefined}
-            >
-              {t('whatsapp_contact_button')}
-            </a>
-          )}
-        </header>
+          <div className="flex shrink-0 items-center gap-2">
+            {whatsappUrl && (
+              <a
+                href={whatsappUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="hidden rounded-full border px-3 py-1.5 text-xs font-semibold text-foreground sm:inline-flex"
+                style={organization.restaurantPrimaryColor
+                  ? {
+                      borderColor: organization.restaurantAccentColor
+                        ?? organization.restaurantPrimaryColor,
+                      color: organization.restaurantPrimaryColor,
+                    }
+                  : undefined}
+              >
+                {t('whatsapp_contact_button')}
+              </a>
+            )}
+            <LocaleSwitcher />
+          </div>
+        </div>
+      </header>
 
+      <div
+        className={cn(
+          'mx-auto flex w-full flex-col gap-5 px-4 py-4',
+          templateClassNames.shell,
+        )}
+      >
         {categoriesWithItems.length > 0
           ? (
               <PublicMenuCart

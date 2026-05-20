@@ -216,6 +216,7 @@
     "empty_state": "Aucun article disponible pour le moment.",
     "add_button": "Ajouter",
     "increase_button": "Ajouter un",
+    "increase_item_label": "Augmenter la quantité pour {itemName}",
     "not_available_label": "Indisponible",
     "remove_button": "Retirer",
     "cart_title": "Panier",

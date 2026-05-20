@@ -216,6 +216,7 @@
     "empty_state": "لا توجد أصناف متاحة حالياً.",
     "add_button": "إضافة",
     "increase_button": "إضافة واحد",
+    "increase_item_label": "زيادة الكمية لـ {itemName}",
     "not_available_label": "غير متاح",
     "remove_button": "إزالة",
     "cart_title": "السلة",
