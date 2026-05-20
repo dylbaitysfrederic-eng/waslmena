@@ -106,6 +106,7 @@ const PublicGeneralMenuPage = async (props: PublicGeneralMenuPageProps) => {
       restaurantWhatsappNumber: organizationSchema.restaurantWhatsappNumber,
       enableWhatsappContact: organizationSchema.enableWhatsappContact,
       localCurrencyLabel: organizationSchema.localCurrencyLabel,
+      showMenuItemImages: organizationSchema.showMenuItemImages,
       accessStatus: organizationSchema.accessStatus,
       accessSuspended: organizationSchema.accessSuspended,
     })
@@ -359,6 +360,7 @@ const PublicGeneralMenuPage = async (props: PublicGeneralMenuPageProps) => {
                 orderingEnabled={false}
                 templateStyle={templateStyle}
                 localCurrencyLabel={localCurrencyLabel}
+                showMenuItemImages={organization.showMenuItemImages ?? true}
               />
             )
           : (

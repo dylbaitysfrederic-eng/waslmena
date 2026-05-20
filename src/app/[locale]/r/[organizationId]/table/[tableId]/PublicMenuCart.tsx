@@ -51,6 +51,7 @@ type PublicMenuCartProps = {
     | 'table_service'
     | 'shisha_lounge';
   localCurrencyLabel: string;
+  showMenuItemImages: boolean;
 };
 
 const TEMPLATE_CLASS_NAMES = {
@@ -289,7 +290,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
           templateClassNames.item,
         )}
       >
-        {item.imageUrl && (
+        {item.imageUrl && props.showMenuItemImages && (
           <div className="shrink-0 sm:order-last">
             <MenuItemImagePreview
               src={item.imageUrl}

@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import { ConfirmSubmitButton } from '@/components/ConfirmSubmitButton';
 import { FormSubmitButton } from '@/components/FormSubmitButton';
 import { MenuItemImageUploadField } from '@/components/MenuItemImageUploadField';
+import { SwitchField } from '@/components/SwitchField';
 import { db } from '@/libs/DB';
 import { menuCategorySchema, menuItemSchema } from '@/models/Schema';
 import { getLocalizedMenuText } from '@/utils/MenuTranslations';
@@ -22,6 +23,7 @@ import {
   deleteAdminMenuItemAction,
   updateAdminMenuCategoryAction,
   updateAdminMenuItemAction,
+  updateAdminMenuVisibilityAction,
 } from '../../actions';
 
 export const dynamic = 'force-dynamic';
@@ -271,6 +273,20 @@ const AdminMenuDetailPage = async (props: {
                 </label>
               )
             : null}
+        </form>
+
+        <form action={updateAdminMenuVisibilityAction} className="grid gap-3 rounded-md border p-4">
+          <input type="hidden" name="organizationId" value={organizationId} />
+          <SwitchField
+            id="showMenuItemImages"
+            name="showMenuItemImages"
+            label="Show menu item images"
+            description="Display images on the public menu and in the customer ordering interface."
+            defaultChecked={organization?.showMenuItemImages ?? true}
+          />
+          <FormSubmitButton pendingLabel="Saving..." size="sm">
+            Save preference
+          </FormSubmitButton>
         </form>
 
         {organizationCategories.length > 0 && (
