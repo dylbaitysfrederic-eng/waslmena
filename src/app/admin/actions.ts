@@ -1434,13 +1434,6 @@ export const updateAdminMenuItemAction = async (formData: FormData) => {
   const names = getMenuNamesFromForm(formData);
   const descriptions = getMenuDescriptionsFromForm(formData);
   const imageUrlField = formData.get('imageUrl')?.toString().trim() || null;
-  let imageUrl: string | null = null;
-
-  try {
-    imageUrl = await getMenuItemImageUrl(imageUrlField, formData.get('imageFile'));
-  } catch (error) {
-    redirect(`/admin/menu/${organizationId}?status=${(error as Error)?.message || 'invalid_image_type'}`);
-  }
 
   const priceUsdCents = normalizeOptionalInteger(formData.get('priceUsdCents'));
   const priceLbp = normalizeOptionalInteger(formData.get('priceLbp'));
@@ -1468,6 +1461,32 @@ export const updateAdminMenuItemAction = async (formData: FormData) => {
 
   if (!category) {
     return;
+  }
+
+  const [existingItem] = await db
+    .select({ imageUrl: menuItemSchema.imageUrl })
+    .from(menuItemSchema)
+    .where(
+      and(
+        eq(menuItemSchema.id, itemId),
+        eq(menuItemSchema.organizationId, organizationId),
+      ),
+    )
+    .limit(1);
+
+  if (!existingItem) {
+    return;
+  }
+
+  let imageUrl: string | null = null;
+
+  try {
+    imageUrl = await getMenuItemImageUrl(
+      imageUrlField || existingItem?.imageUrl || null,
+      formData.get('imageFile'),
+    );
+  } catch (error) {
+    redirect(`/admin/menu/${organizationId}?status=${(error as Error)?.message || 'invalid_image_type'}`);
   }
 
   await db

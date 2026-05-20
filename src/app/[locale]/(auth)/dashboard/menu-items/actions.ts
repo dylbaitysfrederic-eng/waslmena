@@ -262,13 +262,6 @@ export const updateMenuItemAction = async (formData: FormData) => {
     fr: normalizeMenuText(formData.get('descriptionFr')),
   };
   const imageUrlField = formData.get('imageUrl')?.toString().trim() || null;
-  let imageUrl: string | null = null;
-
-  try {
-    imageUrl = await getMenuItemImageUrl(imageUrlField, formData.get('imageFile'));
-  } catch (error) {
-    redirectWithError(returnPath, (error as Error)?.message || 'invalid_image_type');
-  }
 
   const priceUsdCents = parseOptionalPrice(formData.get('priceUsdCents'));
   const priceLbp = parseOptionalPrice(formData.get('priceLbp'));
@@ -300,6 +293,32 @@ export const updateMenuItemAction = async (formData: FormData) => {
 
   if (priceUsdCents.value === null && priceLbp.value === null) {
     redirectWithError(returnPath, 'missing_price');
+  }
+
+  const [existingItem] = await db
+    .select({ imageUrl: menuItemSchema.imageUrl })
+    .from(menuItemSchema)
+    .where(
+      and(
+        eq(menuItemSchema.id, itemId),
+        eq(menuItemSchema.organizationId, organizationId),
+      ),
+    )
+    .limit(1);
+
+  if (!existingItem) {
+    redirectWithError(returnPath, 'invalid_item');
+  }
+
+  let imageUrl: string | null = null;
+
+  try {
+    imageUrl = await getMenuItemImageUrl(
+      imageUrlField || existingItem?.imageUrl || null,
+      formData.get('imageFile'),
+    );
+  } catch (error) {
+    redirectWithError(returnPath, (error as Error)?.message || 'invalid_image_type');
   }
 
   await validateCurrencyMode(
