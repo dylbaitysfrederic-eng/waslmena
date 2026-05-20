@@ -216,6 +216,7 @@
     "empty_state": "لا توجد أصناف متاحة حالياً.",
     "add_button": "إضافة",
     "increase_button": "إضافة واحد",
+    "not_available_label": "غير متاح",
     "remove_button": "إزالة",
     "cart_title": "السلة",
     "cart_bar_button": "عرض السلة",

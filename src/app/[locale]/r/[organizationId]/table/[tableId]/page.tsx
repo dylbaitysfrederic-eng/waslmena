@@ -218,14 +218,10 @@ const PublicTableMenuPage = async (props: PublicMenuPageProps) => {
       imageUrl: menuItemSchema.imageUrl,
       priceUsdCents: menuItemSchema.priceUsdCents,
       priceLbp: menuItemSchema.priceLbp,
+      isAvailable: menuItemSchema.isAvailable,
     })
     .from(menuItemSchema)
-    .where(
-      and(
-        eq(menuItemSchema.organizationId, props.params.organizationId),
-        eq(menuItemSchema.isAvailable, true),
-      ),
-    )
+    .where(eq(menuItemSchema.organizationId, props.params.organizationId))
     .orderBy(asc(menuItemSchema.name));
 
   const itemsByCategory = new Map<number, typeof items>();
@@ -289,6 +285,7 @@ const PublicTableMenuPage = async (props: PublicMenuPageProps) => {
     imageUrl: item.imageUrl,
     priceUsdCents: item.priceUsdCents,
     priceLbp: item.priceLbp,
+    isAvailable: item.isAvailable,
   }));
 
   const categoriesWithItems = localizedCategories

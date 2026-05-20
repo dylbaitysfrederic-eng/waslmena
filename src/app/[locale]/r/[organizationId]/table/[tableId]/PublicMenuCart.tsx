@@ -18,6 +18,7 @@ type MenuItem = {
   imageUrl: string | null;
   priceUsdCents: number | null;
   priceLbp: number | null;
+  isAvailable: boolean;
 };
 
 type MenuCategory = {
@@ -280,6 +281,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
 
   const renderMenuItem = (item: MenuItem) => {
     const quantity = cartItems[item.id]?.quantity ?? 0;
+    const canOrderItem = props.orderingEnabled && item.isAvailable;
 
     return (
       <article
@@ -287,6 +289,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
         className={cn(
           'flex flex-col gap-4 p-4 sm:flex-row sm:items-start',
           templateClassNames.item,
+          !item.isAvailable && 'opacity-55',
         )}
       >
         {item.imageUrl && (
@@ -303,6 +306,11 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
           <h3 className={templateClassNames.itemName}>
             {item.name}
           </h3>
+          {!item.isAvailable && (
+            <div className="mt-1 inline-flex rounded-md border bg-muted px-2 py-1 text-xs font-semibold text-muted-foreground">
+              {t('not_available_label')}
+            </div>
+          )}
           {item.description && (
             <p className="mt-1 text-sm leading-6 text-muted-foreground">
               {item.description}
@@ -318,7 +326,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
           </div>
         </div>
 
-        {props.orderingEnabled && (
+        {canOrderItem && (
           <div className="flex shrink-0 items-center justify-between gap-2 sm:justify-end">
             {quantity > 0 && (
               <div className="flex items-center gap-2">

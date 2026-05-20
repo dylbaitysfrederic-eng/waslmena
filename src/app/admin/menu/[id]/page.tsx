@@ -6,6 +6,7 @@ import { ConfirmSubmitButton } from '@/components/ConfirmSubmitButton';
 import { FormSubmitButton } from '@/components/FormSubmitButton';
 import { MenuItemImagePreview } from '@/components/MenuItemImagePreview';
 import { MenuItemImageUploadField } from '@/components/MenuItemImageUploadField';
+import { SwitchField } from '@/components/SwitchField';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -614,21 +615,13 @@ const AdminMenuDetailPage = async (props: {
                       />
                     </div>
                   </div>
-                  <div className="flex items-start gap-2 text-sm font-medium text-muted-foreground">
-                    <input
-                      id="item-available-create"
-                      name="isAvailable"
-                      type="checkbox"
-                      defaultChecked
-                      className="mt-0.5 size-4"
-                    />
-                    <label htmlFor="item-available-create">
-                      <span className="block">Available for customer orders</span>
-                      <span className="mt-1 block text-xs font-normal leading-5">
-                        Unavailable items remain visible but cannot be ordered.
-                      </span>
-                    </label>
-                  </div>
+                  <SwitchField
+                    id="item-available-create"
+                    name="isAvailable"
+                    label="Available for customer orders"
+                    description="Unavailable items remain visible but cannot be ordered."
+                    defaultChecked
+                  />
                   <FormSubmitButton pendingLabel="Creating...">
                     Create item
                   </FormSubmitButton>
@@ -777,21 +770,13 @@ const AdminMenuDetailPage = async (props: {
                                         />
                                       </div>
                                     </div>
-                                    <div className="flex items-start gap-2 text-sm font-medium text-muted-foreground">
-                                      <input
-                                        id={`item-available-${item.id}`}
-                                        name="isAvailable"
-                                        type="checkbox"
-                                        defaultChecked={item.isAvailable}
-                                        className="mt-0.5 size-4"
-                                      />
-                                      <label htmlFor={`item-available-${item.id}`}>
-                                        <span className="block">Available for customer orders</span>
-                                        <span className="mt-1 block text-xs font-normal leading-5">
-                                          Unavailable items remain visible but cannot be ordered.
-                                        </span>
-                                      </label>
-                                    </div>
+                                    <SwitchField
+                                      id={`item-available-${item.id}`}
+                                      name="isAvailable"
+                                      label="Available for customer orders"
+                                      description="Unavailable items remain visible but cannot be ordered."
+                                      defaultChecked={item.isAvailable}
+                                    />
                                     <FormSubmitButton pendingLabel="Saving..." size="sm">
                                       Save item
                                     </FormSubmitButton>

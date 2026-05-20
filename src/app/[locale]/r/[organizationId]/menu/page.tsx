@@ -1,4 +1,4 @@
-import { and, asc, eq } from 'drizzle-orm';
+import { asc, eq } from 'drizzle-orm';
 import { unstable_noStore as noStore } from 'next/cache';
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
@@ -166,14 +166,10 @@ const PublicGeneralMenuPage = async (props: PublicGeneralMenuPageProps) => {
       imageUrl: menuItemSchema.imageUrl,
       priceUsdCents: menuItemSchema.priceUsdCents,
       priceLbp: menuItemSchema.priceLbp,
+      isAvailable: menuItemSchema.isAvailable,
     })
     .from(menuItemSchema)
-    .where(
-      and(
-        eq(menuItemSchema.organizationId, props.params.organizationId),
-        eq(menuItemSchema.isAvailable, true),
-      ),
-    )
+    .where(eq(menuItemSchema.organizationId, props.params.organizationId))
     .orderBy(asc(menuItemSchema.name));
 
   const itemsByCategory = new Map<number, typeof items>();
@@ -237,6 +233,7 @@ const PublicGeneralMenuPage = async (props: PublicGeneralMenuPageProps) => {
     imageUrl: item.imageUrl,
     priceUsdCents: item.priceUsdCents,
     priceLbp: item.priceLbp,
+    isAvailable: item.isAvailable,
   }));
 
   const categoriesWithItems = localizedCategories
