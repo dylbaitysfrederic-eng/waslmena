@@ -370,7 +370,7 @@ const PublicTableMenuPage = async (props: PublicMenuPageProps) => {
           templateClassNames.shell,
         )}
       >
-        <header className={cn('space-y-2', templateClassNames.header)}>
+        <header className={cn('hidden space-y-2 sm:block', templateClassNames.header)}>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <p
               className={cn(
