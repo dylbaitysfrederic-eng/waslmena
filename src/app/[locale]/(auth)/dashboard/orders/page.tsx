@@ -368,7 +368,7 @@ const OrdersPage = async (props: {
     (latestId, order) => Math.max(latestId ?? 0, order.id),
     null,
   );
-  const renderOperationsTools = () => (
+  const renderFilterExportTools = () => (
     <>
       <div className="rounded-md border bg-background p-4">
         <div className="flex flex-wrap items-center gap-2 lg:grid lg:grid-cols-1">
@@ -484,12 +484,21 @@ const OrdersPage = async (props: {
           {t('export_limit_helper')}
         </p>
       </div>
-
-      <div className="rounded-md border bg-background p-4">
-        <p className="text-sm text-muted-foreground">
-          {t('refresh_helper')}
-        </p>
-        <Button asChild className="mt-3 w-full">
+    </>
+  );
+  const renderLiveServiceTools = () => (
+    <div className="mb-5 space-y-3">
+      <div className="flex flex-col gap-3 rounded-md border bg-background p-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <div className="text-lg font-semibold">{t('list_section_title')}</div>
+          <div className="text-sm font-medium text-muted-foreground">
+            {t('list_section_description')}
+          </div>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {t('refresh_helper')}
+          </p>
+        </div>
+        <Button asChild className="shrink-0">
           <Link href={getOrdersHref(selectedPeriod)}>
             {t('refresh_button')}
           </Link>
@@ -503,7 +512,7 @@ const OrdersPage = async (props: {
         soundEnabled={orderSoundNotificationsEnabled}
         visualEnabled={orderVisualNotificationsEnabled}
       />
-    </>
+    </div>
   );
 
   return (
@@ -514,26 +523,18 @@ const OrdersPage = async (props: {
       />
 
       <div className="rounded-md bg-card p-4 sm:p-5">
-        <div className="mb-4">
-          <div className="text-lg font-semibold">{t('list_section_title')}</div>
-          <div className="text-sm font-medium text-muted-foreground">
-            {t('list_section_description')}
-          </div>
-        </div>
-
         <div className="grid gap-5 lg:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[320px_minmax(0,1fr)]">
-          <aside className="order-2 lg:sticky lg:top-4 lg:order-1 lg:self-start">
-            <details open className="rounded-md border bg-background p-4">
-              <summary className="cursor-pointer text-sm font-semibold">
+          <aside className="hidden lg:sticky lg:top-4 lg:order-1 lg:block lg:self-start">
+            <div className="space-y-4">
+              <div className="text-sm font-semibold">
                 {t('mobile_tools_summary')}
-              </summary>
-              <div className="mt-4 space-y-4">
-                {renderOperationsTools()}
               </div>
-            </details>
+              {renderFilterExportTools()}
+            </div>
           </aside>
 
           <main className="order-1 min-w-0 lg:order-2">
+            {renderLiveServiceTools()}
 
             {orders.length > 0
               ? (
@@ -1292,6 +1293,14 @@ const OrdersPage = async (props: {
                 )}
           </main>
 
+          <details className="order-2 rounded-md border bg-background p-4 lg:hidden">
+            <summary className="cursor-pointer text-sm font-semibold">
+              {t('mobile_tools_summary')}
+            </summary>
+            <div className="mt-4 space-y-4">
+              {renderFilterExportTools()}
+            </div>
+          </details>
         </div>
       </div>
     </>
