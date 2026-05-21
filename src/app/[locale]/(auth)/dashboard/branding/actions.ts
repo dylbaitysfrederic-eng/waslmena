@@ -1,5 +1,6 @@
 'use server';
 
+import { eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
@@ -7,6 +8,7 @@ import { getActiveRestaurantOrganizationId } from '@/features/dashboard/Restaura
 import { db } from '@/libs/DB';
 import { organizationSchema } from '@/models/Schema';
 import { RESTAURANT_THEME_MODES } from '@/utils/RestaurantTheme';
+import { saveWelcomeScreenImageFile } from '@/utils/WelcomeScreenImageUpload';
 
 const normalizeOptionalText = (value: FormDataEntryValue | null) => {
   const textValue = typeof value === 'string' ? value.trim() : '';
@@ -55,6 +57,10 @@ const isValidCurrencyLabel = (value: string | null) => {
 
 const isValidAddress = (value: string | null) => {
   return value === null || value.length <= 240;
+};
+
+const isValidWelcomeButtonLabel = (value: string | null) => {
+  return value === null || value.length <= 32;
 };
 
 const normalizeThemeMode = (value: FormDataEntryValue | null) => {
@@ -119,17 +125,84 @@ export const updateRestaurantBrandingAction = async (formData: FormData) => {
   const localCurrencyLabel = normalizeOptionalText(
     formData.get('localCurrencyLabel'),
   );
+  const welcomeScreenEnabled = formData.get('welcomeScreenEnabled') === 'on';
+  const welcomeButtonLabel = normalizeOptionalText(
+    formData.get('welcomeButtonLabel'),
+  );
+  const welcomeButtonColor = normalizeOptionalText(
+    formData.get('welcomeButtonColor'),
+  );
 
   if (
     !isValidUrl(restaurantLogoUrl)
     || !isValidHexColor(restaurantPrimaryColor)
     || !isValidHexColor(restaurantAccentColor)
+    || !isValidHexColor(welcomeButtonColor)
     || !isValidWhatsappNumber(restaurantWhatsappNumber)
     || !isValidAddress(restaurantAddress)
     || !isValidCurrencyCode(localCurrencyCode)
     || !isValidCurrencyLabel(localCurrencyLabel)
+    || !isValidWelcomeButtonLabel(welcomeButtonLabel)
   ) {
     redirect(`${returnPath}?error=invalid_branding`);
+  }
+
+  const [existingOrganization] = await db
+    .select({
+      restaurantAccentColor: organizationSchema.restaurantAccentColor,
+      welcomeImageAvifUrl: organizationSchema.welcomeImageAvifUrl,
+      welcomeImageUrl: organizationSchema.welcomeImageUrl,
+      welcomeButtonColor: organizationSchema.welcomeButtonColor,
+      welcomeGeneratedAccentColor: organizationSchema.welcomeGeneratedAccentColor,
+    })
+    .from(organizationSchema)
+    .where(eq(organizationSchema.id, orgId))
+    .limit(1);
+  const welcomeImageFile = formData.get('welcomeImageFile') as File | null;
+  const removeWelcomeImage = formData.get('removeWelcomeImage') === 'on';
+  let welcomeImageUrl = existingOrganization?.welcomeImageUrl ?? null;
+  let welcomeImageAvifUrl = existingOrganization?.welcomeImageAvifUrl ?? null;
+  let welcomeGeneratedAccentColor = existingOrganization?.welcomeGeneratedAccentColor ?? null;
+  let nextWelcomeButtonColor = welcomeButtonColor
+    ?? existingOrganization?.welcomeButtonColor
+    ?? null;
+  let nextRestaurantAccentColor = restaurantAccentColor;
+  let nextWelcomeScreenEnabled = welcomeScreenEnabled;
+
+  if (removeWelcomeImage) {
+    welcomeImageUrl = null;
+    welcomeImageAvifUrl = null;
+    welcomeGeneratedAccentColor = null;
+    nextWelcomeButtonColor = welcomeButtonColor;
+    nextWelcomeScreenEnabled = false;
+  }
+
+  if (
+    !removeWelcomeImage
+    && (
+      welcomeImageFile
+      && welcomeImageFile.size > 0
+      && typeof welcomeImageFile.arrayBuffer === 'function'
+    )
+  ) {
+    try {
+      const upload = await saveWelcomeScreenImageFile(orgId, welcomeImageFile);
+      welcomeImageUrl = upload.imageUrl;
+      welcomeImageAvifUrl = upload.avifUrl;
+      welcomeGeneratedAccentColor = upload.accentColor;
+      nextWelcomeButtonColor = existingOrganization?.welcomeButtonColor
+        ? (welcomeButtonColor ?? existingOrganization.welcomeButtonColor)
+        : upload.accentColor;
+
+      if (
+        !existingOrganization?.restaurantAccentColor
+        && (!restaurantAccentColor || restaurantAccentColor === '#111827')
+      ) {
+        nextRestaurantAccentColor = upload.accentColor;
+      }
+    } catch {
+      redirect(`${returnPath}?error=invalid_welcome_image`);
+    }
   }
 
   await db
@@ -140,10 +213,16 @@ export const updateRestaurantBrandingAction = async (formData: FormData) => {
       restaurantLogoUrl,
       restaurantAddress,
       restaurantPrimaryColor,
-      restaurantAccentColor,
+      restaurantAccentColor: nextRestaurantAccentColor,
       restaurantThemeMode,
       restaurantWhatsappNumber,
       enableWhatsappContact,
+      welcomeScreenEnabled: nextWelcomeScreenEnabled,
+      welcomeImageUrl,
+      welcomeImageAvifUrl,
+      welcomeButtonLabel,
+      welcomeButtonColor: nextWelcomeButtonColor,
+      welcomeGeneratedAccentColor,
       orderVisualNotificationsEnabled,
       orderSoundNotificationsEnabled,
       localCurrencyCode,
@@ -156,10 +235,16 @@ export const updateRestaurantBrandingAction = async (formData: FormData) => {
         restaurantLogoUrl,
         restaurantAddress,
         restaurantPrimaryColor,
-        restaurantAccentColor,
+        restaurantAccentColor: nextRestaurantAccentColor,
         restaurantThemeMode,
         restaurantWhatsappNumber,
         enableWhatsappContact,
+        welcomeScreenEnabled: nextWelcomeScreenEnabled,
+        welcomeImageUrl,
+        welcomeImageAvifUrl,
+        welcomeButtonLabel,
+        welcomeButtonColor: nextWelcomeButtonColor,
+        welcomeGeneratedAccentColor,
         orderVisualNotificationsEnabled,
         orderSoundNotificationsEnabled,
         localCurrencyCode,

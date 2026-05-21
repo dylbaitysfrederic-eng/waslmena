@@ -17,6 +17,7 @@ import {
   getRestaurantThemeClassName,
 } from '@/utils/RestaurantTheme';
 
+import { PublicMenuSplash } from '../PublicMenuSplash';
 import { PublicMenuCart } from '../table/[tableId]/PublicMenuCart';
 
 export const dynamic = 'force-dynamic';
@@ -26,6 +27,9 @@ type PublicGeneralMenuPageProps = {
   params: {
     locale: string;
     organizationId: string;
+  };
+  searchParams?: {
+    menu?: string;
   };
 };
 
@@ -99,6 +103,11 @@ const PublicGeneralMenuPage = async (props: PublicGeneralMenuPageProps) => {
     .select({
       restaurantDisplayName: organizationSchema.restaurantDisplayName,
       restaurantLogoUrl: organizationSchema.restaurantLogoUrl,
+      welcomeScreenEnabled: organizationSchema.welcomeScreenEnabled,
+      welcomeImageAvifUrl: organizationSchema.welcomeImageAvifUrl,
+      welcomeImageUrl: organizationSchema.welcomeImageUrl,
+      welcomeButtonLabel: organizationSchema.welcomeButtonLabel,
+      welcomeButtonColor: organizationSchema.welcomeButtonColor,
       restaurantPrimaryColor: organizationSchema.restaurantPrimaryColor,
       restaurantAccentColor: organizationSchema.restaurantAccentColor,
       showMenuItemImages: organizationSchema.showMenuItemImages,
@@ -134,6 +143,36 @@ const PublicGeneralMenuPage = async (props: PublicGeneralMenuPageProps) => {
           </div>
         </div>
       </main>
+    );
+  }
+
+  if (
+    props.searchParams?.menu !== '1'
+    && organization.welcomeScreenEnabled
+    && organization.welcomeImageUrl
+  ) {
+    return (
+      <>
+        <link
+          rel="preload"
+          as="image"
+          href={organization.welcomeImageAvifUrl ?? organization.welcomeImageUrl}
+        />
+        <PublicMenuSplash
+          buttonColor={
+            organization.welcomeButtonColor
+            ?? organization.restaurantAccentColor
+            ?? organization.restaurantPrimaryColor
+            ?? null
+          }
+          buttonLabel={organization.welcomeButtonLabel || t('open_menu_button')}
+          imageAvifUrl={organization.welcomeImageAvifUrl ?? null}
+          imageUrl={organization.welcomeImageUrl}
+          logoUrl={organization.restaurantLogoUrl ?? null}
+          menuHref={`/${props.params.locale}/r/${props.params.organizationId}/menu?menu=1`}
+          restaurantName={organization.restaurantDisplayName || t('title')}
+        />
+      </>
     );
   }
 

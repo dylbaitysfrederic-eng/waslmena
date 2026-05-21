@@ -49,6 +49,12 @@ const RestaurantBrandingPage = async (props: {
       restaurantDisplayName: organizationSchema.restaurantDisplayName,
       restaurantAddress: organizationSchema.restaurantAddress,
       restaurantLogoUrl: organizationSchema.restaurantLogoUrl,
+      welcomeScreenEnabled: organizationSchema.welcomeScreenEnabled,
+      welcomeImageAvifUrl: organizationSchema.welcomeImageAvifUrl,
+      welcomeImageUrl: organizationSchema.welcomeImageUrl,
+      welcomeButtonLabel: organizationSchema.welcomeButtonLabel,
+      welcomeButtonColor: organizationSchema.welcomeButtonColor,
+      welcomeGeneratedAccentColor: organizationSchema.welcomeGeneratedAccentColor,
       restaurantPrimaryColor: organizationSchema.restaurantPrimaryColor,
       restaurantAccentColor: organizationSchema.restaurantAccentColor,
       restaurantThemeMode: organizationSchema.restaurantThemeMode,
@@ -76,7 +82,11 @@ const RestaurantBrandingPage = async (props: {
         title={t('section_title')}
         description={t('section_description')}
       >
-        <form action={updateRestaurantBrandingAction} className="max-w-xl space-y-4">
+        <form
+          action={updateRestaurantBrandingAction}
+          encType="multipart/form-data"
+          className="max-w-xl space-y-4"
+        >
           <input
             type="hidden"
             name="returnPath"
@@ -92,6 +102,12 @@ const RestaurantBrandingPage = async (props: {
           {props.searchParams.error === 'invalid_branding' && (
             <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm font-medium text-destructive">
               {t('error_invalid_branding')}
+            </div>
+          )}
+
+          {props.searchParams.error === 'invalid_welcome_image' && (
+            <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm font-medium text-destructive">
+              {t('error_invalid_welcome_image')}
             </div>
           )}
 
@@ -224,6 +240,126 @@ const RestaurantBrandingPage = async (props: {
             description={t('whatsapp_enabled_help')}
             defaultChecked={organization?.enableWhatsappContact ?? true}
           />
+
+          <div className="rounded-md border bg-muted/30 p-4">
+            <div className="font-semibold">
+              {t('welcome_screen_title')}
+            </div>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {t('welcome_screen_description')}
+            </p>
+            <div className="mt-4 grid gap-4">
+              <SwitchField
+                id="welcomeScreenEnabled"
+                name="welcomeScreenEnabled"
+                label={t('welcome_enabled_label')}
+                description={t('welcome_enabled_help')}
+                defaultChecked={organization?.welcomeScreenEnabled ?? false}
+              />
+
+              <div className="space-y-2">
+                <Label htmlFor="welcomeImageFile">
+                  {t('welcome_image_label')}
+                </Label>
+                <p className="text-sm text-muted-foreground">
+                  {t('welcome_image_help')}
+                </p>
+                <input
+                  id="welcomeImageFile"
+                  name="welcomeImageFile"
+                  type="file"
+                  accept=".jpg,.jpeg,.webp"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:mr-3 file:rounded-md file:border-0 file:bg-muted file:px-3 file:py-1 file:text-sm file:font-medium file:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                />
+                <p className="text-xs text-muted-foreground">
+                  {t('welcome_image_upload_note')}
+                </p>
+              </div>
+
+              {organization?.welcomeImageUrl && (
+                <div className="grid gap-3 rounded-md border bg-background p-3 sm:grid-cols-[96px_1fr]">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={organization.welcomeImageUrl}
+                    alt=""
+                    className="h-40 w-24 rounded-md object-cover"
+                  />
+                  <div className="text-sm text-muted-foreground">
+                    <div className="font-medium text-foreground">
+                      {t('welcome_preview_label')}
+                    </div>
+                    <p className="mt-1">
+                      {t('welcome_preview_help')}
+                    </p>
+                    <label className="mt-3 flex items-start gap-2 text-sm font-medium text-foreground">
+                      <input
+                        type="checkbox"
+                        name="removeWelcomeImage"
+                        className="mt-1"
+                      />
+                      <span>{t('welcome_remove_label')}</span>
+                    </label>
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Label htmlFor="welcomeButtonLabel">
+                  {t('welcome_button_label')}
+                </Label>
+                <Input
+                  id="welcomeButtonLabel"
+                  name="welcomeButtonLabel"
+                  defaultValue={organization?.welcomeButtonLabel ?? ''}
+                  placeholder={t('welcome_button_placeholder')}
+                  maxLength={32}
+                />
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="welcomeButtonColor">
+                    {t('welcome_button_color_label')}
+                  </Label>
+                  <Input
+                    id="welcomeButtonColor"
+                    name="welcomeButtonColor"
+                    type="color"
+                    defaultValue={
+                      organization?.welcomeButtonColor
+                      ?? organization?.welcomeGeneratedAccentColor
+                      ?? organization?.restaurantAccentColor
+                      ?? organization?.restaurantPrimaryColor
+                      ?? '#111827'
+                    }
+                    className="h-11 w-24 p-1"
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    {t('welcome_button_color_help')}
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="text-sm font-medium">
+                    {t('welcome_generated_color_label')}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="size-8 rounded-md border"
+                      style={{
+                        backgroundColor:
+                          organization?.welcomeGeneratedAccentColor ?? '#111827',
+                      }}
+                    />
+                    <span className="text-sm text-muted-foreground">
+                      {organization?.welcomeGeneratedAccentColor
+                      ?? t('welcome_generated_color_empty')}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
           <div className="rounded-md border bg-muted/30 p-4">
             <div className="font-semibold">
