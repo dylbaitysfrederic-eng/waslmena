@@ -23,12 +23,22 @@ export type QRCodeCardProps = {
   qrCodeTitle: string;
 };
 
+const getStableQrCodeUrl = (publicMenuUrl: string) => {
+  const url = new URL(publicMenuUrl, window.location.origin);
+
+  // Printed QR codes must stay stable; visual/menu settings belong on the destination page, not in the encoded URL.
+  url.search = '';
+  url.hash = '';
+
+  return url.href;
+};
+
 export const QRCodeCard = (props: QRCodeCardProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [qrCodeValue, setQrCodeValue] = useState(props.publicMenuUrl);
 
   useEffect(() => {
-    setQrCodeValue(new URL(props.publicMenuUrl, window.location.origin).href);
+    setQrCodeValue(getStableQrCodeUrl(props.publicMenuUrl));
   }, [props.publicMenuUrl]);
 
   const createDownloadLink = (dataUrl: string) => {
