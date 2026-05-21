@@ -1,5 +1,5 @@
 import { auth } from '@clerk/nextjs/server';
-import { and, desc, eq, gte } from 'drizzle-orm';
+import { and, desc, eq, gte, lt } from 'drizzle-orm';
 import { unstable_noStore as noStore } from 'next/cache';
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
@@ -12,44 +12,34 @@ import { DashboardSection } from '@/features/dashboard/DashboardSection';
 import { TitleBar } from '@/features/dashboard/TitleBar';
 import { db } from '@/libs/DB';
 import {
+  menuItemSchema,
+  orderItemSchema,
   orderSchema,
   organizationSchema,
-  restaurantTableSchema,
 } from '@/models/Schema';
-import { cn, getI18nPath } from '@/utils/Helpers';
+import { getI18nPath } from '@/utils/Helpers';
+import { getLocalizedMenuText } from '@/utils/MenuTranslations';
 
+import {
+  getDefaultCustomRange,
+  getOrderRange,
+  normalizeOrderPeriod,
+  ORDER_PAGE_RANGE_LIMIT_DAYS,
+  ORDER_PERIODS,
+} from '../orders/periods';
 import { updateFinanceSnapshotAction } from './actions';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-export async function generateMetadata(props: { params: { locale: string } }) {
-  const t = await getTranslations({
-    locale: props.params.locale,
-    namespace: 'Statistics',
-  });
+type FinanceCostKey = typeof FINANCE_COST_FIELDS[number];
+type StatusKey = typeof STATUS_KEYS[number];
 
-  return {
-    title: t('meta_title'),
-    description: t('meta_description'),
-  };
-}
-
-const PERIODS = ['today', '7d', '30d', '365d'] as const;
-
-type Period = typeof PERIODS[number];
-type TrackedStatus = 'pending' | 'preparing' | 'completed' | 'cancelled';
-
-const PERIOD_START_OFFSETS = {
-  'today': 0,
-  '7d': 6,
-  '30d': 29,
-  '365d': 364,
-} as const;
-
-const TRACKED_STATUSES = [
+const STATUS_KEYS = [
   'pending',
+  'confirmed',
   'preparing',
+  'ready',
   'completed',
   'cancelled',
 ] as const;
@@ -62,30 +52,17 @@ const FINANCE_COST_FIELDS = [
   'other',
 ] as const;
 
-type FinanceCostKey = typeof FINANCE_COST_FIELDS[number];
+export async function generateMetadata(props: { params: { locale: string } }) {
+  const t = await getTranslations({
+    locale: props.params.locale,
+    namespace: 'Statistics',
+  });
 
-const getPeriodStart = (period: Period, now: Date) => {
-  const start = new Date(now);
-  start.setHours(0, 0, 0, 0);
-  start.setDate(start.getDate() - PERIOD_START_OFFSETS[period]);
-
-  return start;
-};
-
-const getSelectedPeriod = (period?: string): Period => {
-  if (PERIODS.includes(period as Period)) {
-    return period as Period;
-  }
-
-  return 'today';
-};
-
-const formatDateTime = (date: Date, locale: string) => {
-  return new Intl.DateTimeFormat(locale, {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(date);
-};
+  return {
+    title: t('meta_title'),
+    description: t('meta_description'),
+  };
+}
 
 const formatUsdCents = (amount: number, locale: string) => {
   return new Intl.NumberFormat(locale, {
@@ -102,6 +79,14 @@ const formatLocalCurrency = (
   return `${new Intl.NumberFormat(locale).format(amount)} ${localCurrencyLabel}`;
 };
 
+const formatDateInput = (date: Date) => {
+  const year = date.getFullYear();
+  const month = `${date.getMonth() + 1}`.padStart(2, '0');
+  const day = `${date.getDate()}`.padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+};
+
 const formatUsdInputValue = (amount: number | null) => {
   return amount === null ? '' : (amount / 100).toFixed(2);
 };
@@ -110,43 +95,60 @@ const getFinanceFieldSuffix = (key: FinanceCostKey) => {
   return `${key.charAt(0).toUpperCase()}${key.slice(1)}`;
 };
 
-const normalizeStatusForStats = (status: string): TrackedStatus | null => {
-  if (status === 'pending') {
-    return 'pending';
+const normalizeStatusForBreakdown = (status: string): StatusKey => {
+  if (status === 'validated') {
+    return 'confirmed';
   }
 
-  if (
-    status === 'confirmed'
-    || status === 'validated'
-    || status === 'preparing'
-    || status === 'ready'
-  ) {
-    return 'preparing';
-  }
-
-  if (status === 'completed' || status === 'served' || status === 'delivered') {
+  if (status === 'served' || status === 'delivered') {
     return 'completed';
   }
 
-  if (status === 'cancelled') {
-    return 'cancelled';
+  if (STATUS_KEYS.includes(status as StatusKey)) {
+    return status as StatusKey;
   }
 
-  return null;
+  return 'pending';
+};
+
+const getRangeLabelKey = (period: string) => {
+  return ORDER_PERIODS.includes(period as typeof ORDER_PERIODS[number])
+    ? `filter_${period}`
+    : 'filter_recent';
 };
 
 const StatisticsPage = async (props: {
   params: { locale: string };
-  searchParams?: { finance?: string; period?: string };
+  searchParams?: {
+    finance?: string;
+    from?: string;
+    period?: string;
+    to?: string;
+  };
 }) => {
   noStore();
 
   const { orgId } = await auth();
   const t = await getTranslations('Statistics');
   const now = new Date();
-  const selectedPeriod = getSelectedPeriod(props.searchParams?.period);
-  const longestPeriodStart = getPeriodStart('365d', now);
-  const selectedPeriodStart = getPeriodStart(selectedPeriod, now);
+  const selectedPeriod = normalizeOrderPeriod(props.searchParams?.period);
+  const defaultCustomRange = getDefaultCustomRange(now);
+  const selectedRange = getOrderRange(
+    {
+      from: props.searchParams?.from,
+      period: selectedPeriod,
+      to: props.searchParams?.to,
+    },
+    now,
+    ORDER_PAGE_RANGE_LIMIT_DAYS,
+  );
+  const customFromValue = selectedPeriod === 'custom'
+    ? selectedRange.from || defaultCustomRange.from
+    : defaultCustomRange.from;
+  const customToValue = selectedPeriod === 'custom'
+    ? selectedRange.to || defaultCustomRange.to
+    : defaultCustomRange.to;
+  const statisticsPath = getI18nPath('/dashboard/statistics', props.params.locale);
 
   if (!orgId) {
     return null;
@@ -173,78 +175,160 @@ const StatisticsPage = async (props: {
     .limit(1);
   const localCurrencyLabel = organization?.localCurrencyLabel ?? 'LL';
 
-  const orders = await db
-    .select({
-      id: orderSchema.id,
-      tableId: orderSchema.tableId,
-      tableNumber: restaurantTableSchema.tableNumber,
-      customerName: orderSchema.customerName,
-      status: orderSchema.status,
-      paymentMethod: orderSchema.paymentMethod,
-      totalUsdCents: orderSchema.totalUsdCents,
-      totalLbp: orderSchema.totalLbp,
-      createdAt: orderSchema.createdAt,
-    })
-    .from(orderSchema)
-    .leftJoin(
-      restaurantTableSchema,
-      eq(orderSchema.tableId, restaurantTableSchema.id),
-    )
-    .where(
-      and(
+  const rangeFilters = selectedRange.isValid && selectedRange.startDate
+    ? [
         eq(orderSchema.organizationId, orgId),
-        gte(orderSchema.createdAt, longestPeriodStart),
-      ),
-    )
-    .orderBy(desc(orderSchema.createdAt));
+        gte(orderSchema.createdAt, selectedRange.startDate),
+        ...(selectedRange.endDateExclusive
+          ? [lt(orderSchema.createdAt, selectedRange.endDateExclusive)]
+          : []),
+      ]
+    : [eq(orderSchema.organizationId, orgId), gte(orderSchema.createdAt, now)];
 
-  const getPeriodSummary = (period: Period) => {
-    const start = getPeriodStart(period, now);
-    const periodOrders = orders.filter(order => order.createdAt >= start);
-    const statusCounts = TRACKED_STATUSES.reduce(
-      (counts, status) => ({
-        ...counts,
-        [status]: 0,
-      }),
-      {} as Record<TrackedStatus, number>,
-    );
-    const usdOrders = periodOrders.filter(order => order.totalUsdCents !== null);
-    const lbpOrders = periodOrders.filter(order => order.totalLbp !== null);
-    const totalUsdCents = usdOrders.reduce(
-      (total, order) => total + (order.totalUsdCents ?? 0),
-      0,
-    );
-    const totalLbp = lbpOrders.reduce(
-      (total, order) => total + (order.totalLbp ?? 0),
-      0,
-    );
+  const orders = selectedRange.isValid && selectedRange.startDate
+    ? await db
+      .select({
+        id: orderSchema.id,
+        status: orderSchema.status,
+        totalUsdCents: orderSchema.totalUsdCents,
+        totalLbp: orderSchema.totalLbp,
+        createdAt: orderSchema.createdAt,
+      })
+      .from(orderSchema)
+      .where(and(...rangeFilters))
+      .orderBy(desc(orderSchema.createdAt))
+    : [];
 
-    for (const order of periodOrders) {
-      const status = normalizeStatusForStats(order.status);
+  const itemRows = selectedRange.isValid && selectedRange.startDate
+    ? await db
+      .select({
+        orderId: orderSchema.id,
+        itemName: menuItemSchema.name,
+        itemNameEn: menuItemSchema.nameEn,
+        itemNameAr: menuItemSchema.nameAr,
+        itemNameFr: menuItemSchema.nameFr,
+        quantity: orderItemSchema.quantity,
+        unitPriceUsdCents: orderItemSchema.unitPriceUsdCents,
+        unitPriceLbp: orderItemSchema.unitPriceLbp,
+      })
+      .from(orderItemSchema)
+      .innerJoin(orderSchema, eq(orderItemSchema.orderId, orderSchema.id))
+      .leftJoin(menuItemSchema, eq(orderItemSchema.menuItemId, menuItemSchema.id))
+      .where(and(...rangeFilters))
+    : [];
 
-      if (status) {
-        statusCounts[status] += 1;
-      }
-    }
+  const orderCount = orders.length;
+  const totalUsdCents = orders.reduce(
+    (total, order) => total + (order.totalUsdCents ?? 0),
+    0,
+  );
+  const totalLbp = orders.reduce(
+    (total, order) => total + (order.totalLbp ?? 0),
+    0,
+  );
+  const ordersWithUsd = orders.filter(order => order.totalUsdCents !== null);
+  const ordersWithLbp = orders.filter(order => order.totalLbp !== null);
+  const completedOrders = orders.filter(
+    order => normalizeStatusForBreakdown(order.status) === 'completed',
+  ).length;
+  const cancelledOrders = orders.filter(
+    order => normalizeStatusForBreakdown(order.status) === 'cancelled',
+  ).length;
+  const statusCounts = STATUS_KEYS.reduce(
+    (counts, status) => ({ ...counts, [status]: 0 }),
+    {} as Record<StatusKey, number>,
+  );
+  const hourCounts = Array.from({ length: 24 }, (_, hour) => ({
+    hour,
+    orderCount: 0,
+  }));
+  const dailySalesByDate = new Map<string, {
+    date: Date;
+    orderCount: number;
+    totalUsdCents: number;
+    totalLbp: number;
+  }>();
 
-    return {
-      period,
-      orderCount: periodOrders.length,
-      totalUsdCents: usdOrders.length > 0 ? totalUsdCents : null,
-      totalLbp: lbpOrders.length > 0 ? totalLbp : null,
-      averageUsdCents: usdOrders.length > 0
-        ? Math.round(totalUsdCents / usdOrders.length)
-        : null,
-      averageLbp: lbpOrders.length > 0
-        ? Math.round(totalLbp / lbpOrders.length)
-        : null,
-      statusCounts,
+  for (const order of orders) {
+    statusCounts[normalizeStatusForBreakdown(order.status)] += 1;
+    hourCounts[order.createdAt.getHours()]!.orderCount += 1;
+
+    const dateKey = formatDateInput(order.createdAt);
+    const dailySales = dailySalesByDate.get(dateKey) ?? {
+      date: order.createdAt,
+      orderCount: 0,
+      totalUsdCents: 0,
+      totalLbp: 0,
     };
+    dailySales.orderCount += 1;
+    dailySales.totalUsdCents += order.totalUsdCents ?? 0;
+    dailySales.totalLbp += order.totalLbp ?? 0;
+    dailySalesByDate.set(dateKey, dailySales);
+  }
+
+  const topItemsByName = new Map<string, {
+    name: string;
+    quantity: number;
+    totalUsdCents: number;
+    totalLbp: number;
+  }>();
+
+  for (const item of itemRows) {
+    const itemName = getLocalizedMenuText(
+      props.params.locale,
+      {
+        en: item.itemNameEn,
+        ar: item.itemNameAr,
+        fr: item.itemNameFr,
+        legacy: item.itemName,
+      },
+      t('deleted_menu_item'),
+    );
+    const currentItem = topItemsByName.get(itemName) ?? {
+      name: itemName,
+      quantity: 0,
+      totalUsdCents: 0,
+      totalLbp: 0,
+    };
+
+    currentItem.quantity += item.quantity;
+    currentItem.totalUsdCents += (item.unitPriceUsdCents ?? 0) * item.quantity;
+    currentItem.totalLbp += (item.unitPriceLbp ?? 0) * item.quantity;
+    topItemsByName.set(itemName, currentItem);
+  }
+
+  const topItems = Array.from(topItemsByName.values())
+    .sort((a, b) => b.quantity - a.quantity)
+    .slice(0, 10);
+  const dailySales = Array.from(dailySalesByDate.values())
+    .sort((a, b) => a.date.getTime() - b.date.getTime());
+  const maxHourlyOrders = Math.max(1, ...hourCounts.map(hour => hour.orderCount));
+  const maxDailyOrders = Math.max(1, ...dailySales.map(day => day.orderCount));
+  const hasUsdRevenue = ordersWithUsd.length > 0;
+  const hasLbpRevenue = ordersWithLbp.length > 0;
+
+  const formatOptionalUsd = (amount: number | null) => {
+    return amount === null ? t('not_available') : formatUsdCents(amount, props.params.locale);
   };
 
-  const summaries = PERIODS.map(getPeriodSummary);
-  const monthlySummary = summaries.find(summary => summary.period === '30d')
-    ?? getPeriodSummary('30d');
+  const formatOptionalLbp = (amount: number | null) => {
+    return amount === null
+      ? t('not_available')
+      : formatLocalCurrency(amount, props.params.locale, localCurrencyLabel);
+  };
+
+  const renderMoneyLines = (usdCents: number | null, lbp: number | null) => (
+    <div className="grid gap-1">
+      {usdCents !== null && <span>{formatUsdCents(usdCents, props.params.locale)}</span>}
+      {lbp !== null && (
+        <span>{formatLocalCurrency(lbp, props.params.locale, localCurrencyLabel)}</span>
+      )}
+      {usdCents === null && lbp === null && (
+        <span className="text-muted-foreground">{t('not_available')}</span>
+      )}
+    </div>
+  );
+
   const financeCosts: Record<
     FinanceCostKey,
     { local: number | null; usdCents: number | null }
@@ -278,28 +362,12 @@ const StatisticsPage = async (props: {
     (total, key) => total + (financeCosts[key].local ?? 0),
     0,
   );
-  const estimatedUsdMargin = monthlySummary.totalUsdCents === null
-    && totalFinanceUsdCents === 0
-    ? null
-    : (monthlySummary.totalUsdCents ?? 0) - totalFinanceUsdCents;
-  const estimatedLocalMargin = monthlySummary.totalLbp === null
-    && totalFinanceLocal === 0
-    ? null
-    : (monthlySummary.totalLbp ?? 0) - totalFinanceLocal;
-
-  const historyOrders = orders.filter(
-    order => order.createdAt >= selectedPeriodStart,
-  );
-
-  const formatOptionalUsd = (amount: number | null) => {
-    return amount === null ? t('not_available') : formatUsdCents(amount, props.params.locale);
-  };
-
-  const formatOptionalLbp = (amount: number | null) => {
-    return amount === null
-      ? t('not_available')
-      : formatLocalCurrency(amount, props.params.locale, localCurrencyLabel);
-  };
+  const estimatedUsdMargin = hasUsdRevenue || totalFinanceUsdCents > 0
+    ? totalUsdCents - totalFinanceUsdCents
+    : null;
+  const estimatedLocalMargin = hasLbpRevenue || totalFinanceLocal > 0
+    ? totalLbp - totalFinanceLocal
+    : null;
 
   return (
     <>
@@ -312,60 +380,230 @@ const StatisticsPage = async (props: {
         title={t('overview_section_title')}
         description={t('overview_section_description')}
       >
-        <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
-          {summaries.map(summary => (
-            <div key={summary.period} className="rounded-md border bg-background p-4">
-              <div>
-                <div className="text-sm font-medium text-muted-foreground">
-                  {t(`period_${summary.period}`)}
-                </div>
-                <div className="mt-1 text-3xl font-semibold">
-                  {summary.orderCount}
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  {t('orders_label')}
-                </div>
-              </div>
+        <div className="mb-5 grid gap-3">
+          <div className="flex flex-wrap gap-2">
+            {ORDER_PERIODS.map(period => (
+              <Button
+                key={period}
+                asChild
+                variant={period === selectedPeriod ? 'default' : 'outline'}
+                size="sm"
+              >
+                <Link href={`${statisticsPath}?period=${period}`}>
+                  {t(getRangeLabelKey(period))}
+                </Link>
+              </Button>
+            ))}
+          </div>
 
-              <div className="mt-4 grid gap-2 text-sm">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-muted-foreground">{t('total_usd_label')}</span>
-                  <span className="font-medium">{formatOptionalUsd(summary.totalUsdCents)}</span>
-                </div>
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-muted-foreground">
-                    {t('total_local_label', { currency: localCurrencyLabel })}
-                  </span>
-                  <span className="font-medium">{formatOptionalLbp(summary.totalLbp)}</span>
-                </div>
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-muted-foreground">{t('average_usd_label')}</span>
-                  <span className="font-medium">{formatOptionalUsd(summary.averageUsdCents)}</span>
-                </div>
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-muted-foreground">
-                    {t('average_local_label', { currency: localCurrencyLabel })}
-                  </span>
-                  <span className="font-medium">{formatOptionalLbp(summary.averageLbp)}</span>
-                </div>
-              </div>
+          <form className="grid gap-3 rounded-md border bg-background p-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
+            <input type="hidden" name="period" value="custom" />
+            <div className="space-y-2">
+              <Label htmlFor="stats-from">{t('custom_from_label')}</Label>
+              <Input
+                id="stats-from"
+                name="from"
+                type="date"
+                defaultValue={customFromValue}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="stats-to">{t('custom_to_label')}</Label>
+              <Input
+                id="stats-to"
+                name="to"
+                type="date"
+                defaultValue={customToValue}
+              />
+            </div>
+            <Button type="submit" variant="outline">
+              {t('custom_apply_button')}
+            </Button>
+          </form>
 
-              <div className="mt-4 grid grid-cols-2 gap-2 border-t pt-4 text-sm">
-                {TRACKED_STATUSES.map(status => (
-                  <div key={status} className="rounded-md bg-muted/40 p-2">
-                    <div className="text-xs text-muted-foreground">
-                      {t(`status_count_${status}`)}
-                    </div>
-                    <div className="mt-1 text-lg font-semibold">
-                      {summary.statusCounts[status]}
-                    </div>
-                  </div>
-                ))}
+          {!selectedRange.isValid && (
+            <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm font-medium text-destructive">
+              {t('custom_range_invalid')}
+            </div>
+          )}
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+          {[
+            {
+              label: t('summary_total_revenue'),
+              value: renderMoneyLines(
+                hasUsdRevenue ? totalUsdCents : null,
+                hasLbpRevenue ? totalLbp : null,
+              ),
+            },
+            {
+              label: t('summary_order_count'),
+              value: orderCount,
+            },
+            {
+              label: t('summary_average_order'),
+              value: renderMoneyLines(
+                ordersWithUsd.length > 0
+                  ? Math.round(totalUsdCents / ordersWithUsd.length)
+                  : null,
+                ordersWithLbp.length > 0
+                  ? Math.round(totalLbp / ordersWithLbp.length)
+                  : null,
+              ),
+            },
+            {
+              label: t('summary_completed_orders'),
+              value: completedOrders,
+            },
+            {
+              label: t('summary_cancelled_orders'),
+              value: cancelledOrders,
+            },
+          ].map(card => (
+            <div key={card.label} className="wasl-panel p-4">
+              <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                {card.label}
+              </div>
+              <div className="mt-2 text-2xl font-semibold">
+                {card.value}
               </div>
             </div>
           ))}
         </div>
       </DashboardSection>
+
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_380px]">
+        <DashboardSection
+          title={t('top_items_section_title')}
+          description={t('top_items_section_description')}
+        >
+          {topItems.length > 0
+            ? (
+                <div className="grid gap-2">
+                  {topItems.map((item, index) => (
+                    <div
+                      key={item.name}
+                      className="grid gap-3 rounded-md border bg-background p-3 sm:grid-cols-[40px_1fr_auto] sm:items-center"
+                    >
+                      <div className="text-sm font-semibold text-muted-foreground">
+                        {index + 1}
+                      </div>
+                      <div>
+                        <div className="font-semibold">{item.name}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {t('top_item_quantity', { quantity: item.quantity })}
+                        </div>
+                      </div>
+                      <div className="text-sm font-semibold sm:text-right">
+                        {renderMoneyLines(
+                          item.totalUsdCents > 0 ? item.totalUsdCents : null,
+                          item.totalLbp > 0 ? item.totalLbp : null,
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )
+            : (
+                <div className="rounded-md border border-dashed bg-background p-6 text-sm text-muted-foreground">
+                  {t('empty_top_items')}
+                </div>
+              )}
+        </DashboardSection>
+
+        <DashboardSection
+          title={t('status_section_title')}
+          description={t('status_section_description')}
+        >
+          <div className="grid gap-2">
+            {STATUS_KEYS.map(status => (
+              <div key={status} className="flex items-center justify-between gap-3 rounded-md border bg-background px-3 py-2">
+                <span className="text-sm font-medium">{t(`status_${status}`)}</span>
+                <span className="text-lg font-semibold">{statusCounts[status]}</span>
+              </div>
+            ))}
+          </div>
+        </DashboardSection>
+      </div>
+
+      <div className="grid gap-5 xl:grid-cols-2">
+        <DashboardSection
+          title={t('rush_hours_section_title')}
+          description={t('rush_hours_section_description')}
+        >
+          <div className="grid gap-2">
+            {hourCounts.map(hour => (
+              <div key={hour.hour} className="grid grid-cols-[56px_1fr_44px] items-center gap-3 text-sm">
+                <div className="font-medium text-muted-foreground">
+                  {new Intl.DateTimeFormat(props.params.locale, {
+                    hour: 'numeric',
+                  }).format(new Date(2020, 0, 1, hour.hour))}
+                </div>
+                <div className="h-2 rounded-full bg-muted">
+                  <div
+                    className="h-2 rounded-full bg-primary"
+                    style={{
+                      width: `${Math.max(
+                        4,
+                        (hour.orderCount / maxHourlyOrders) * 100,
+                      )}%`,
+                    }}
+                  />
+                </div>
+                <div className="text-right font-semibold">{hour.orderCount}</div>
+              </div>
+            ))}
+          </div>
+        </DashboardSection>
+
+        <DashboardSection
+          title={t('daily_sales_section_title')}
+          description={t('daily_sales_section_description')}
+        >
+          {dailySales.length > 0
+            ? (
+                <div className="grid gap-3">
+                  {dailySales.map(day => (
+                    <div key={day.date.toISOString()} className="rounded-md border bg-background p-3">
+                      <div className="mb-2 flex items-center justify-between gap-3 text-sm">
+                        <span className="font-semibold">
+                          {new Intl.DateTimeFormat(props.params.locale, {
+                            dateStyle: 'medium',
+                          }).format(day.date)}
+                        </span>
+                        <span className="text-muted-foreground">
+                          {t('daily_order_count', { count: day.orderCount })}
+                        </span>
+                      </div>
+                      <div className="h-2 rounded-full bg-muted">
+                        <div
+                          className="h-2 rounded-full bg-primary"
+                          style={{
+                            width: `${Math.max(
+                              4,
+                              (day.orderCount / maxDailyOrders) * 100,
+                            )}%`,
+                          }}
+                        />
+                      </div>
+                      <div className="mt-2 text-sm font-semibold">
+                        {renderMoneyLines(
+                          hasUsdRevenue ? day.totalUsdCents : null,
+                          hasLbpRevenue ? day.totalLbp : null,
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )
+            : (
+                <div className="rounded-md border border-dashed bg-background p-6 text-sm text-muted-foreground">
+                  {t('empty_analytics')}
+                </div>
+              )}
+        </DashboardSection>
+      </div>
 
       <DashboardSection
         title={t('finance_section_title')}
@@ -373,22 +611,24 @@ const StatisticsPage = async (props: {
       >
         <div id="finance" className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px]">
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="rounded-md border bg-background p-4">
+            <div className="wasl-panel p-4">
               <div className="text-sm font-medium text-muted-foreground">
                 {t('finance_revenue_title')}
               </div>
               <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                {t('finance_revenue_help')}
+                {t('finance_revenue_help', {
+                  period: t(getRangeLabelKey(selectedPeriod)),
+                })}
               </p>
               <div className="mt-4 grid gap-3 text-sm">
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-muted-foreground">{t('orders_label')}</span>
-                  <span className="font-semibold">{monthlySummary.orderCount}</span>
+                  <span className="font-semibold">{orderCount}</span>
                 </div>
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-muted-foreground">{t('total_usd_label')}</span>
                   <span className="font-semibold">
-                    {formatOptionalUsd(monthlySummary.totalUsdCents)}
+                    {formatOptionalUsd(hasUsdRevenue ? totalUsdCents : null)}
                   </span>
                 </div>
                 <div className="flex items-center justify-between gap-3">
@@ -396,13 +636,13 @@ const StatisticsPage = async (props: {
                     {t('total_local_label', { currency: localCurrencyLabel })}
                   </span>
                   <span className="font-semibold">
-                    {formatOptionalLbp(monthlySummary.totalLbp)}
+                    {formatOptionalLbp(hasLbpRevenue ? totalLbp : null)}
                   </span>
                 </div>
               </div>
             </div>
 
-            <div className="rounded-md border bg-background p-4">
+            <div className="wasl-panel p-4">
               <div className="text-sm font-medium text-muted-foreground">
                 {t('finance_margin_title')}
               </div>
@@ -460,12 +700,12 @@ const StatisticsPage = async (props: {
 
           <form
             action={updateFinanceSnapshotAction}
-            className="rounded-md border bg-background p-4"
+            className="wasl-panel p-4"
           >
             <input
               type="hidden"
               name="returnPath"
-              value={getI18nPath('/dashboard/statistics', props.params.locale)}
+              value={statisticsPath}
             />
             <div>
               <h3 className="font-semibold">{t('finance_costs_form_title')}</h3>
@@ -527,116 +767,6 @@ const StatisticsPage = async (props: {
             </FormSubmitButton>
           </form>
         </div>
-      </DashboardSection>
-
-      <DashboardSection
-        title={t('history_section_title')}
-        description={t('history_section_description')}
-      >
-        <div className="mb-5 flex flex-wrap gap-2">
-          {PERIODS.map(period => (
-            <Button
-              key={period}
-              asChild
-              variant={period === selectedPeriod ? 'default' : 'outline'}
-              size="sm"
-            >
-              <Link
-                href={getI18nPath(
-                  `/dashboard/statistics?period=${period}`,
-                  props.params.locale,
-                )}
-              >
-                {t(`filter_${period}`)}
-              </Link>
-            </Button>
-          ))}
-        </div>
-
-        {historyOrders.length > 0
-          ? (
-              <div className="space-y-3">
-                {historyOrders.map((order) => {
-                  const hasUsdTotal = order.totalUsdCents !== null;
-                  const hasLbpTotal = order.totalLbp !== null;
-
-                  return (
-                    <article
-                      key={order.id}
-                      className={cn(
-                        'rounded-md border bg-background p-4',
-                        order.status === 'pending' && 'border-yellow-300 bg-yellow-50',
-                      )}
-                    >
-                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                        <div>
-                          <div className="text-base font-semibold">
-                            {t('order_title', { orderId: order.id })}
-                          </div>
-                          <div className="mt-1 text-sm text-muted-foreground">
-                            {order.customerName
-                              ? t('customer_line', { customerName: order.customerName })
-                              : t('no_customer_name')}
-                          </div>
-                          <div className="mt-1 text-sm text-muted-foreground">
-                            {order.tableId === null
-                              ? t('general_menu_label')
-                              : order.tableNumber
-                                ? t('table_line', { tableNumber: order.tableNumber })
-                                : t('deleted_table')}
-                          </div>
-                        </div>
-
-                        <div className="flex flex-wrap gap-2 text-sm">
-                          <span className="rounded-md border bg-background px-2 py-1 font-medium">
-                            {t(`status_${order.status}`)}
-                          </span>
-                          <span className="rounded-md border bg-background px-2 py-1">
-                            {formatDateTime(order.createdAt, props.params.locale)}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="mt-4 grid gap-2 text-sm sm:grid-cols-3">
-                        <div>
-                          <div className="text-muted-foreground">{t('payment_label')}</div>
-                          <div className="font-medium">{order.paymentMethod}</div>
-                        </div>
-                        {hasUsdTotal && (
-                          <div>
-                            <div className="text-muted-foreground">{t('total_usd_label')}</div>
-                            <div className="font-medium">
-                              {formatUsdCents(order.totalUsdCents ?? 0, props.params.locale)}
-                            </div>
-                          </div>
-                        )}
-                        {hasLbpTotal && (
-                          <div>
-                            <div className="text-muted-foreground">
-                              {t('total_local_label', {
-                                currency: localCurrencyLabel,
-                              })}
-                            </div>
-                            <div className="font-medium">
-                              {formatLocalCurrency(
-                                order.totalLbp ?? 0,
-                                props.params.locale,
-                                localCurrencyLabel,
-                              )}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </article>
-                  );
-                })}
-              </div>
-            )
-          : (
-              <div className="rounded-md border border-dashed bg-background p-6 text-sm text-muted-foreground">
-                {t('empty_history')}
-              </div>
-            )}
       </DashboardSection>
     </>
   );
