@@ -19,6 +19,7 @@ import {
 } from '@/utils/RestaurantTheme';
 
 import { PublicMenuSplash } from '../../PublicMenuSplash';
+import { PublicRestaurantInfo } from '../../PublicRestaurantInfo';
 import { PublicMenuCart } from './PublicMenuCart';
 
 export const dynamic = 'force-dynamic';
@@ -154,6 +155,7 @@ const PublicTableMenuPage = async (props: PublicMenuPageProps) => {
   const [organization] = await db
     .select({
       restaurantDisplayName: organizationSchema.restaurantDisplayName,
+      restaurantAddress: organizationSchema.restaurantAddress,
       restaurantLogoUrl: organizationSchema.restaurantLogoUrl,
       welcomeScreenEnabled: organizationSchema.welcomeScreenEnabled,
       welcomeImageAvifUrl: organizationSchema.welcomeImageAvifUrl,
@@ -362,6 +364,7 @@ const PublicTableMenuPage = async (props: PublicMenuPageProps) => {
   const localCurrencyLabel = organization?.localCurrencyLabel ?? 'LL';
   const orderingEnabled = organization.orderingMode === 'table_ordering'
     || organization.orderingMode === 'both';
+  const restaurantName = organization.restaurantDisplayName || t('title');
 
   return (
     <main
@@ -392,11 +395,9 @@ const PublicTableMenuPage = async (props: PublicMenuPageProps) => {
               />
             )}
             <div className="min-w-0">
-              {organization?.restaurantDisplayName && (
-                <p className="truncate text-sm font-semibold">
-                  {organization.restaurantDisplayName}
-                </p>
-              )}
+              <p className="truncate text-sm font-semibold">
+                {restaurantName}
+              </p>
               <p className="truncate text-xs text-muted-foreground">
                 {t('table_label', { tableNumber: restaurantTable.tableNumber })}
               </p>
@@ -427,10 +428,21 @@ const PublicTableMenuPage = async (props: PublicMenuPageProps) => {
 
       <div
         className={cn(
-          'mx-auto flex w-full flex-col gap-5 px-4 py-4',
+          'mx-auto flex w-full flex-col gap-4 px-4 py-4',
           templateClassNames.shell,
         )}
       >
+        <PublicRestaurantInfo
+          address={organization.restaurantAddress ?? null}
+          infoLabel={t('restaurant_info_label')}
+          mapsLabel={t('maps_link_label')}
+          phone={organization.restaurantWhatsappNumber ?? null}
+          phoneLabel={t('phone_label')}
+          restaurantName={restaurantName}
+          whatsappLabel={t('whatsapp_contact_button')}
+          whatsappUrl={whatsappUrl}
+        />
+
         {categoriesWithItems.length > 0
           ? (
               <PublicMenuCart

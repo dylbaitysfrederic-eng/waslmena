@@ -18,6 +18,7 @@ import {
 } from '@/utils/RestaurantTheme';
 
 import { PublicMenuSplash } from '../PublicMenuSplash';
+import { PublicRestaurantInfo } from '../PublicRestaurantInfo';
 import { PublicMenuCart } from '../table/[tableId]/PublicMenuCart';
 
 export const dynamic = 'force-dynamic';
@@ -102,6 +103,7 @@ const PublicGeneralMenuPage = async (props: PublicGeneralMenuPageProps) => {
   const [organization] = await db
     .select({
       restaurantDisplayName: organizationSchema.restaurantDisplayName,
+      restaurantAddress: organizationSchema.restaurantAddress,
       restaurantLogoUrl: organizationSchema.restaurantLogoUrl,
       welcomeScreenEnabled: organizationSchema.welcomeScreenEnabled,
       welcomeImageAvifUrl: organizationSchema.welcomeImageAvifUrl,
@@ -309,6 +311,7 @@ const PublicGeneralMenuPage = async (props: PublicGeneralMenuPageProps) => {
   const localCurrencyLabel = organization.localCurrencyLabel ?? 'LL';
   const orderingEnabled = organization.orderingMode === 'counter_pickup'
     || organization.orderingMode === 'both';
+  const restaurantName = organization.restaurantDisplayName || t('title');
 
   return (
     <main
@@ -340,7 +343,7 @@ const PublicGeneralMenuPage = async (props: PublicGeneralMenuPageProps) => {
             )}
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold">
-                {organization.restaurantDisplayName || t('title')}
+                {restaurantName}
               </p>
             </div>
           </div>
@@ -369,10 +372,21 @@ const PublicGeneralMenuPage = async (props: PublicGeneralMenuPageProps) => {
 
       <div
         className={cn(
-          'mx-auto flex w-full flex-col gap-5 px-4 py-4',
+          'mx-auto flex w-full flex-col gap-4 px-4 py-4',
           templateClassNames.shell,
         )}
       >
+        <PublicRestaurantInfo
+          address={organization.restaurantAddress ?? null}
+          infoLabel={t('restaurant_info_label')}
+          mapsLabel={t('maps_link_label')}
+          phone={organization.restaurantWhatsappNumber ?? null}
+          phoneLabel={t('phone_label')}
+          restaurantName={restaurantName}
+          whatsappLabel={t('whatsapp_contact_button')}
+          whatsappUrl={whatsappUrl}
+        />
+
         {categoriesWithItems.length > 0
           ? (
               <PublicMenuCart
