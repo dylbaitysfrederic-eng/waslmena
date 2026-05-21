@@ -63,7 +63,7 @@ const TEMPLATE_CLASS_NAMES = {
   fast_food: {
     category: 'text-2xl font-black uppercase',
     list: 'grid gap-3',
-    item: 'rounded-lg border-2 bg-white shadow-sm',
+    item: 'rounded-md border-2 bg-white shadow-sm',
     itemName: 'text-lg font-black uppercase',
     price: 'text-base font-black',
     button: 'rounded-full px-4',
@@ -71,7 +71,7 @@ const TEMPLATE_CLASS_NAMES = {
   cafe: {
     category: 'font-serif text-2xl font-semibold',
     list: 'grid gap-3',
-    item: 'rounded-lg border bg-white/90 shadow-sm',
+    item: 'rounded-md border bg-white/90 shadow-sm',
     itemName: 'font-serif text-lg font-semibold',
     price: 'font-semibold text-stone-800',
     button: 'rounded-full px-4',
@@ -79,7 +79,7 @@ const TEMPLATE_CLASS_NAMES = {
   casual_restaurant: {
     category: 'text-xl font-semibold',
     list: 'grid gap-3',
-    item: 'rounded-lg border bg-card shadow-sm',
+    item: 'rounded-md border bg-card shadow-sm',
     itemName: 'text-base font-semibold leading-6',
     price: 'text-sm font-bold',
     button: 'rounded-full px-4',
@@ -87,7 +87,7 @@ const TEMPLATE_CLASS_NAMES = {
   table_service: {
     category: 'text-xl font-semibold',
     list: 'grid gap-3',
-    item: 'rounded-lg border bg-white shadow-sm',
+    item: 'rounded-md border bg-white shadow-sm',
     itemName: 'font-semibold leading-6',
     price: 'text-sm font-semibold text-slate-800',
     button: 'rounded-full px-4',
@@ -95,7 +95,7 @@ const TEMPLATE_CLASS_NAMES = {
   shisha_lounge: {
     category: 'text-xl font-semibold text-amber-200',
     list: 'grid gap-3',
-    item: 'rounded-lg border border-zinc-700 bg-zinc-900 text-zinc-50 shadow-sm shadow-black/20',
+    item: 'rounded-md border border-zinc-700 bg-zinc-900 text-zinc-50 shadow-sm shadow-black/20',
     itemName: 'font-semibold leading-6 text-zinc-50',
     price: 'text-sm font-semibold text-amber-100',
     button: 'rounded-full px-4',
@@ -712,7 +712,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
       {cart.length > 0 && (
         <button
           type="button"
-          className="fixed inset-x-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-40 rounded-2xl border bg-background px-4 py-3 text-left shadow-xl sm:hidden"
+          className="fixed inset-x-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-40 rounded-lg border bg-background px-4 py-3 text-left shadow-lg sm:hidden"
           style={primaryButtonStyle}
           onClick={() => setIsCartOpen(true)}
         >
@@ -758,7 +758,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
             onClick={() => setIsCartOpen(false)}
           />
           <section
-            className="relative mx-auto max-h-[88vh] max-w-2xl overflow-y-auto rounded-2xl border bg-background p-4 shadow-2xl"
+            className="relative mx-auto max-h-[88vh] max-w-2xl overflow-y-auto rounded-lg border bg-background p-4 shadow-lg"
           >
             <div className="mb-3 flex items-center justify-between gap-3">
               <div>

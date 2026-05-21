@@ -7,7 +7,7 @@ type AdvancedSettingsBlockProps = {
 };
 
 export const AdvancedSettingsBlock = (props: AdvancedSettingsBlockProps) => (
-  <details className="group rounded-md border bg-card p-4 shadow-sm sm:p-5">
+  <details className="wasl-card group p-4 sm:p-5">
     <summary className="flex cursor-pointer list-none items-start justify-between gap-4">
       <span className="grid gap-1">
         <span className="text-sm font-semibold">{props.title}</span>
@@ -22,7 +22,7 @@ export const AdvancedSettingsBlock = (props: AdvancedSettingsBlockProps) => (
         v
       </span>
     </summary>
-    <div className="mt-5 border-t bg-background/40 pt-5">
+    <div className="mt-5 border-t pt-5">
       {props.children}
     </div>
   </details>

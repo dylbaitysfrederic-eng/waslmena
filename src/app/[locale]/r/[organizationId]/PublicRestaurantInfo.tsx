@@ -24,7 +24,7 @@ export const PublicRestaurantInfo = (props: PublicRestaurantInfoProps) => {
   }
 
   return (
-    <details className="group rounded-md border bg-card/80 px-4 py-3 text-sm shadow-sm">
+    <details className="wasl-card group px-4 py-3 text-sm">
       <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-left">
         <span className="min-w-0">
           <span className="block truncate font-semibold">
@@ -52,7 +52,7 @@ export const PublicRestaurantInfo = (props: PublicRestaurantInfoProps) => {
             href={getMapsUrl(props.restaurantName, props.address)}
             target="_blank"
             rel="noreferrer"
-            className="rounded-md border bg-background px-3 py-2 font-medium text-foreground"
+            className="rounded-md border bg-background px-3 py-2 font-semibold text-foreground"
           >
             {props.mapsLabel}
           </a>
@@ -60,7 +60,7 @@ export const PublicRestaurantInfo = (props: PublicRestaurantInfoProps) => {
         {props.phone && (
           <a
             href={`tel:${props.phone.replace(/[^\d+]/g, '')}`}
-            className="rounded-md border bg-background px-3 py-2 font-medium text-foreground"
+            className="rounded-md border bg-background px-3 py-2 font-semibold text-foreground"
           >
             {props.phoneLabel}
             {': '}
@@ -72,7 +72,7 @@ export const PublicRestaurantInfo = (props: PublicRestaurantInfoProps) => {
             href={props.whatsappUrl}
             target="_blank"
             rel="noreferrer"
-            className="rounded-md border bg-background px-3 py-2 font-medium text-foreground"
+            className="rounded-md border bg-background px-3 py-2 font-semibold text-foreground"
           >
             {props.whatsappLabel}
           </a>

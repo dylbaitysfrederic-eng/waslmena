@@ -151,12 +151,12 @@ export const QRCodeCard = (props: QRCodeCardProps) => {
 
   const frameClassName = {
     classic: 'rounded-md border-4',
-    modern: 'rounded-xl border-4 shadow-md',
+    modern: 'rounded-md border-4 shadow-sm',
     minimal: 'rounded-md border',
   }[props.styleTemplate] ?? 'rounded-md border-4';
 
   return (
-    <div className="flex w-full max-w-52 flex-col items-center gap-3 rounded-lg border bg-background p-3 shadow-sm">
+    <div className="flex w-full max-w-52 flex-col items-center gap-3 rounded-md border bg-background p-3 shadow-sm">
       <div
         className={`${frameClassName} grid w-full place-items-center gap-2 p-4 text-center`}
         style={{

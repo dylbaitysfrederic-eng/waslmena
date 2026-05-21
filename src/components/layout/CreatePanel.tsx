@@ -7,11 +7,11 @@ type CreatePanelProps = {
 };
 
 export const CreatePanel = (props: CreatePanelProps) => (
-  <details className="rounded-md border p-4">
-    <summary className="cursor-pointer font-medium">
+  <details className="wasl-panel p-4">
+    <summary className="cursor-pointer text-sm font-semibold">
       {props.title}
     </summary>
-    <p className="mt-2 text-xs text-muted-foreground">
+    <p className="mt-2 text-xs leading-5 text-muted-foreground">
       {props.description}
     </p>
     {props.children}

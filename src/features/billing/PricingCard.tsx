@@ -13,13 +13,13 @@ export const PricingCard = (props: {
   const t = useTranslations('PricingPlan');
 
   return (
-    <div className="rounded-xl border border-border px-6 py-8 text-center">
+    <div className="wasl-card px-5 py-6 text-center">
       <div className="text-lg font-semibold">
         {t(`${props.planId}_plan_name`)}
       </div>
 
       <div className="mt-3 flex items-center justify-center">
-        <div className="text-5xl font-bold">
+        <div className="text-4xl font-semibold">
           {`$${props.price}`}
         </div>
 
@@ -34,7 +34,7 @@ export const PricingCard = (props: {
 
       {props.button}
 
-      <ul className="mt-8 space-y-3">{props.children}</ul>
+      <ul className="mt-6 space-y-3">{props.children}</ul>
     </div>
   );
 };

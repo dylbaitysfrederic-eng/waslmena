@@ -7,9 +7,9 @@ type SettingsSectionProps = {
 };
 
 export const SettingsSection = (props: SettingsSectionProps) => (
-  <section className="rounded-md border bg-background p-5">
+  <section className="wasl-panel p-4 sm:p-5">
     <div className="mb-4">
-      <h4 className="font-semibold">{props.title}</h4>
+      <h4 className="text-sm font-semibold sm:text-base">{props.title}</h4>
       <p className="mt-1 text-sm text-muted-foreground">
         {props.description}
       </p>

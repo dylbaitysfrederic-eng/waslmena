@@ -10,9 +10,9 @@ type ManagementSectionProps = {
 };
 
 export const ManagementSection = (props: ManagementSectionProps) => (
-  <section className={cn('rounded-md bg-background p-5', props.className)}>
+  <section className={cn('wasl-panel p-4 sm:p-5', props.className)}>
     <div className="mb-4">
-      <h3 className="font-semibold">{props.title}</h3>
+      <h3 className="text-base font-semibold">{props.title}</h3>
       {props.description && (
         <p className="mt-1 text-sm text-muted-foreground">
           {props.description}

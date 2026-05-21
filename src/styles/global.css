@@ -70,6 +70,32 @@
   * {
     @apply border-border;
   }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+}
+
+@layer components {
+  .wasl-card {
+    @apply rounded-md border bg-card shadow-sm;
+  }
+
+  .wasl-panel {
+    @apply rounded-md border bg-background shadow-sm;
+  }
+
+  .wasl-section-title {
+    @apply text-2xl font-semibold tracking-normal text-foreground sm:text-3xl;
+  }
+
+  .wasl-section-description {
+    @apply mt-3 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base;
+  }
+
+  .wasl-eyebrow {
+    @apply text-xs font-semibold uppercase tracking-wide text-emerald-700;
+  }
 }
 
 @layer components {

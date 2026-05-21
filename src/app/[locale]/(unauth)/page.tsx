@@ -299,12 +299,12 @@ const IndexPage = async (props: {
       </header>
 
       <section className="border-b bg-zinc-50">
-        <div className="mx-auto grid max-w-screen-xl gap-10 px-4 py-10 md:grid-cols-[minmax(0,0.95fr)_minmax(360px,1.05fr)] md:items-center md:py-16 lg:py-20">
+        <div className="mx-auto grid max-w-screen-xl gap-8 px-4 py-10 md:grid-cols-[minmax(0,0.95fr)_minmax(360px,1.05fr)] md:items-center md:py-14 lg:py-16">
           <div className="max-w-2xl">
             <p className="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase text-emerald-800">
               {t('hero_eyebrow')}
             </p>
-            <h1 className="mt-5 text-4xl font-semibold leading-tight tracking-normal text-zinc-950 sm:text-5xl lg:text-6xl">
+            <h1 className="mt-5 text-4xl font-semibold leading-tight tracking-normal text-zinc-950 sm:text-5xl lg:text-5xl">
               {t('hero_title')}
             </h1>
             <p className="mt-5 max-w-xl text-base leading-7 text-zinc-600 sm:text-lg">
@@ -334,10 +334,10 @@ const IndexPage = async (props: {
           </div>
 
           <div className="mx-auto grid w-full max-w-xl gap-4">
-            <div className="rounded-2xl border bg-white p-3 shadow-sm">
+            <div className="rounded-md border bg-white p-3 shadow-sm">
               <div className="grid gap-3 sm:grid-cols-[180px_1fr]">
-                <div className="rounded-2xl border bg-zinc-950 p-2 shadow-sm">
-                  <div className="rounded-xl bg-white p-3 text-zinc-950">
+                <div className="rounded-md border bg-zinc-950 p-2 shadow-sm">
+                  <div className="rounded-md bg-white p-3 text-zinc-950">
                     <div className="flex items-center justify-between gap-3">
                       <div>
                         <div className="text-xs font-semibold uppercase text-emerald-700">
@@ -375,7 +375,7 @@ const IndexPage = async (props: {
                 </div>
 
                 <div className="grid content-between gap-3">
-                  <div className="rounded-xl border bg-zinc-950 p-4 text-white">
+                  <div className="rounded-md border bg-zinc-950 p-4 text-white">
                     <div className="flex items-center justify-between gap-3">
                       <div>
                         <div className="text-sm font-semibold">{t('preview_title')}</div>
@@ -425,7 +425,7 @@ const IndexPage = async (props: {
               </div>
             </div>
 
-            <div className="rounded-xl border bg-white px-4 py-3 text-sm text-zinc-600 shadow-sm">
+            <div className="rounded-md border bg-white px-4 py-3 text-sm text-zinc-600 shadow-sm">
               {t('hero_stability_note')}
             </div>
           </div>
@@ -448,7 +448,7 @@ const IndexPage = async (props: {
 
           <div className="mt-7 grid gap-3 md:grid-cols-3">
             {QUICK_FLOW_STEPS.map(({ key, icon: Icon }, index) => (
-              <div key={key} className="rounded-xl border bg-card p-5">
+              <div key={key} className="rounded-md border bg-card p-5">
                 <div className="flex items-start gap-4">
                   <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700">
                     <Icon className="size-5" aria-hidden="true" />
@@ -487,7 +487,7 @@ const IndexPage = async (props: {
 
           <div className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {WHY_WASL_FEATURES.map(({ key, icon: Icon }) => (
-              <div key={key} className="rounded-xl border bg-white p-5">
+              <div key={key} className="rounded-md border bg-white p-5">
                 <div className="flex size-10 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700">
                   <Icon className="size-5" aria-hidden="true" />
                 </div>
@@ -519,7 +519,7 @@ const IndexPage = async (props: {
 
           <div className="mt-7 grid gap-4 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
             <div className="grid gap-4 sm:grid-cols-2">
-              <div className="rounded-xl border bg-zinc-950 p-4 text-white">
+              <div className="rounded-md border bg-zinc-950 p-4 text-white">
                 <div className="flex min-h-72 flex-col justify-between rounded-lg border border-white/15 bg-[linear-gradient(160deg,#064e3b,#111827_62%)] p-4">
                   <div>
                     <div className="size-12 rounded-md border border-white/20 bg-white/10" />
@@ -537,9 +537,9 @@ const IndexPage = async (props: {
                 </p>
               </div>
 
-              <div className="rounded-xl border bg-white p-4">
-                <div className="rounded-2xl border bg-zinc-950 p-2">
-                  <div className="rounded-xl bg-white p-3 text-zinc-950">
+              <div className="rounded-md border bg-white p-4">
+                <div className="rounded-md border bg-zinc-950 p-2">
+                  <div className="rounded-md bg-white p-3 text-zinc-950">
                     <div className="flex items-center justify-between">
                       <div>
                         <div className="text-xs font-semibold uppercase text-emerald-700">
@@ -578,7 +578,7 @@ const IndexPage = async (props: {
             </div>
 
             <div className="grid gap-4">
-              <div className="rounded-xl border bg-zinc-950 p-4 text-white">
+              <div className="rounded-md border bg-zinc-950 p-4 text-white">
                 <div className="flex items-center justify-between gap-3 border-b border-zinc-800 pb-3">
                   <div>
                     <h3 className="text-lg font-semibold">
@@ -626,7 +626,7 @@ const IndexPage = async (props: {
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
-                <div className="rounded-xl border bg-white p-4">
+                <div className="rounded-md border bg-white p-4">
                   <h3 className="text-lg font-semibold">
                     {t('product_preview_cart_flow_title')}
                   </h3>
@@ -648,7 +648,7 @@ const IndexPage = async (props: {
                   </div>
                 </div>
 
-                <div className="rounded-xl border bg-white p-4">
+                <div className="rounded-md border bg-white p-4">
                   <h3 className="text-lg font-semibold">
                     {t('product_preview_ticket_title')}
                   </h3>
@@ -697,7 +697,7 @@ const IndexPage = async (props: {
 
           <div className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {HOSPITALITY_USE_CASES.map(({ key, icon: Icon }) => (
-              <div key={key} className="rounded-xl border bg-white p-5">
+              <div key={key} className="rounded-md border bg-white p-5">
                 <div className="flex items-start gap-4">
                   <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700">
                     <Icon className="size-5" aria-hidden="true" />
@@ -715,13 +715,13 @@ const IndexPage = async (props: {
             ))}
           </div>
 
-          <div className="mt-5 rounded-xl border bg-white px-4 py-3 text-sm text-zinc-600">
+          <div className="mt-5 rounded-md border bg-white px-4 py-3 text-sm text-zinc-600">
             {t('use_cases_trust_note')}
           </div>
         </div>
       </section>
 
-      <section className="border-b py-14">
+      <section className="border-b py-12">
         <div className="mx-auto max-w-screen-xl px-4">
           <div className="max-w-2xl">
             <h2 className="text-3xl font-semibold tracking-normal">{t('features_title')}</h2>
@@ -740,7 +740,7 @@ const IndexPage = async (props: {
         </div>
       </section>
 
-      <section className="border-b bg-muted py-14">
+      <section className="border-b bg-muted py-12">
         <div className="mx-auto max-w-screen-xl px-4">
           <h2 className="text-3xl font-semibold tracking-normal">{t('how_title')}</h2>
           <div className="mt-8 grid gap-4 md:grid-cols-4">
@@ -759,7 +759,7 @@ const IndexPage = async (props: {
         </div>
       </section>
 
-      <section className="border-b py-14">
+      <section className="border-b py-12">
         <div className="mx-auto grid max-w-screen-xl gap-8 px-4 lg:grid-cols-[360px_1fr]">
           <div>
             <h2 className="text-3xl font-semibold tracking-normal">{t('mena_title')}</h2>
@@ -778,7 +778,7 @@ const IndexPage = async (props: {
         </div>
       </section>
 
-      <section className="border-b bg-zinc-950 py-14 text-white">
+      <section className="border-b bg-zinc-950 py-12 text-white">
         <div className="mx-auto max-w-screen-xl px-4">
           <div className="max-w-2xl">
             <h2 className="text-3xl font-semibold tracking-normal">
@@ -816,9 +816,9 @@ const IndexPage = async (props: {
         </div>
       </section>
 
-      <section className="border-b bg-zinc-50 py-14">
+      <section className="border-b bg-zinc-50 py-12">
         <div className="mx-auto max-w-screen-xl px-4">
-          <div className="rounded-xl border bg-white p-5 sm:p-6">
+          <div className="rounded-md border bg-white p-5 sm:p-6">
             <div className="grid gap-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-start">
               <div className="max-w-xl">
                 <p className="text-sm font-semibold uppercase text-emerald-700">
@@ -856,7 +856,7 @@ const IndexPage = async (props: {
 
               <div className="grid gap-3 md:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
                 {PRICING_TIERS.map(tier => (
-                  <div key={tier} className="rounded-xl border bg-zinc-50 p-4">
+                  <div key={tier} className="rounded-md border bg-zinc-50 p-4">
                     <div className="text-sm font-semibold text-emerald-700">
                       {t(`pricing_${tier}_label`)}
                     </div>
@@ -874,7 +874,7 @@ const IndexPage = async (props: {
               </div>
             </div>
 
-            <div className="mt-6 rounded-xl border bg-background px-4 py-3 text-sm text-muted-foreground">
+            <div className="mt-6 rounded-md border bg-background px-4 py-3 text-sm text-muted-foreground">
               <span className="font-semibold text-foreground">
                 {t('pricing_contact_title')}
               </span>
@@ -889,7 +889,7 @@ const IndexPage = async (props: {
         </div>
       </section>
 
-      <section id="contact" className="scroll-mt-6 border-b py-14">
+      <section id="contact" className="scroll-mt-6 border-b py-12">
         <div className="mx-auto max-w-screen-xl px-4">
           <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(360px,520px)] lg:items-start">
             <div>
@@ -1016,7 +1016,7 @@ const IndexPage = async (props: {
         </div>
       </section>
 
-      <section className="border-b py-14">
+      <section className="border-b py-12">
         <div className="mx-auto max-w-screen-xl px-4">
           <h2 className="text-3xl font-semibold tracking-normal">{t('faq_title')}</h2>
           <div className="mt-8 grid gap-3 md:grid-cols-2">
@@ -1034,7 +1034,7 @@ const IndexPage = async (props: {
         </div>
       </section>
 
-      <section className="py-14">
+      <section className="py-12">
         <div className="mx-auto max-w-screen-xl px-4 text-center">
           <h2 className="text-3xl font-semibold tracking-normal">{t('cta_title')}</h2>
           <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">{t('cta_description')}</p>

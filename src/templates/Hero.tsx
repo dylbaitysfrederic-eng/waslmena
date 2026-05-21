@@ -10,7 +10,7 @@ export const Hero = () => {
   const t = useTranslations('Hero');
 
   return (
-    <Section className="py-36">
+    <Section className="py-16">
       <CenteredHero
         banner={(
           <a
@@ -26,7 +26,7 @@ export const Hero = () => {
         )}
         title={t.rich('title', {
           important: chunks => (
-            <span className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
+            <span className="text-emerald-700">
               {chunks}
             </span>
           ),
@@ -38,7 +38,7 @@ export const Hero = () => {
               className={buttonVariants({ variant: 'outline', size: 'lg' })}
               href="/admin/settings"
             >
-              <GitHubLogoIcon className="mr-2 size-5" />
+              <GitHubLogoIcon className="mr-2 size-4" />
               {t('secondary_button')}
             </a>
 
@@ -47,7 +47,7 @@ export const Hero = () => {
               href="/dashboard"
             >
               {t('primary_button')}
-              <ArrowRightIcon className="ml-1 size-5" />
+              <ArrowRightIcon className="ml-1 size-4" />
             </a>
           </>
         )}

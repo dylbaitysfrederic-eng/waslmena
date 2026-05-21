@@ -80,7 +80,7 @@ export const QrCustomizationFields = ({
   const hasLowContrast = contrastRatio < 4.5;
   const frameClassName = {
     classic: 'rounded-md border-4',
-    modern: 'rounded-xl border-4 shadow-lg',
+    modern: 'rounded-md border-4 shadow-sm',
     minimal: 'rounded-md border',
   }[styleTemplate] ?? 'rounded-md border-4';
 
