@@ -145,11 +145,13 @@ const formatDateTime = (date: Date, locale: string) => {
   }).format(date);
 };
 
+const getElapsedMinutes = (date: Date, now: Date) => Math.max(
+  0,
+  Math.floor((now.getTime() - date.getTime()) / 60_000),
+);
+
 const formatElapsedTime = (date: Date, now: Date, t: Awaited<ReturnType<typeof getTranslations>>) => {
-  const elapsedMinutes = Math.max(
-    0,
-    Math.floor((now.getTime() - date.getTime()) / 60_000),
-  );
+  const elapsedMinutes = getElapsedMinutes(date, now);
 
   if (elapsedMinutes < 1) {
     return t('elapsed_now');
@@ -164,8 +166,25 @@ const formatElapsedTime = (date: Date, now: Date, t: Awaited<ReturnType<typeof g
   return t('elapsed_hours', { count: elapsedHours });
 };
 
+const getUrgencyStyle = (elapsedMinutes: number, status: string) => {
+  if (status === 'completed' || status === 'cancelled') {
+    return 'bg-background text-muted-foreground';
+  }
+
+  if (elapsedMinutes >= 30) {
+    return 'border-rose-300 bg-rose-50 text-rose-900';
+  }
+
+  if (elapsedMinutes >= 15) {
+    return 'border-amber-300 bg-amber-50 text-amber-950';
+  }
+
+  return 'bg-background text-muted-foreground';
+};
+
 const RECEIPT_DIVIDER = '--------------------------------';
 const ORDERS_PAGE_SIZE = 50;
+const ACTIVE_ORDER_STATUSES = ['pending', 'confirmed', 'preparing', 'ready'] as const;
 
 const getFinalStatusCompletedAt = (status: string, updatedAt: Date) => {
   return status === 'completed' || status === 'cancelled' ? updatedAt : null;
@@ -363,10 +382,42 @@ const OrdersPage = async (props: {
     ordersByStatus.set(status, currentOrders);
   }
   const pendingOrders = ordersByStatus.get('pending') ?? [];
+  const activeOrderCounts = {
+    pending: pendingOrders.length,
+    confirmed: ordersByStatus.get('confirmed')?.length ?? 0,
+    preparing: ordersByStatus.get('preparing')?.length ?? 0,
+    ready: ordersByStatus.get('ready')?.length ?? 0,
+  };
+  const totalActiveOrders = ACTIVE_ORDER_STATUSES.reduce(
+    (total, status) => total + activeOrderCounts[status],
+    0,
+  );
   const latestPendingOrderId = pendingOrders.reduce<number | null>(
     (latestId, order) => Math.max(latestId ?? 0, order.id),
     null,
   );
+  const serviceCounters = [
+    {
+      label: t('service_counter_active'),
+      value: totalActiveOrders,
+      className: 'border-slate-300 bg-slate-50 text-slate-950',
+    },
+    {
+      label: t('status_pending'),
+      value: activeOrderCounts.pending,
+      className: ORDER_STATUS_STYLES.pending.badge,
+    },
+    {
+      label: t('status_preparing'),
+      value: activeOrderCounts.preparing,
+      className: ORDER_STATUS_STYLES.preparing.badge,
+    },
+    {
+      label: t('status_ready'),
+      value: activeOrderCounts.ready,
+      className: ORDER_STATUS_STYLES.ready.badge,
+    },
+  ];
   const renderFilterExportTools = () => (
     <>
       <div className="rounded-md border bg-background/95 p-4 shadow-sm">
@@ -496,12 +547,34 @@ const OrdersPage = async (props: {
           <p className="mt-2 text-sm text-muted-foreground">
             {t('refresh_helper')}
           </p>
+          <p className="mt-1 text-xs font-medium text-muted-foreground">
+            {t('service_newest_first')}
+          </p>
         </div>
         <Button asChild className="shrink-0">
           <Link href={getOrdersHref(selectedPeriod)}>
             {t('refresh_button')}
           </Link>
         </Button>
+      </div>
+
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        {serviceCounters.map(counter => (
+          <div
+            key={counter.label}
+            className={cn(
+              'rounded-md border px-3 py-2 shadow-sm',
+              counter.className,
+            )}
+          >
+            <div className="text-xl font-semibold leading-none">
+              {counter.value}
+            </div>
+            <div className="mt-1 text-xs font-medium">
+              {counter.label}
+            </div>
+          </div>
+        ))}
       </div>
 
       <PendingOrderNotifier
@@ -616,6 +689,17 @@ const OrdersPage = async (props: {
                                         && item.unitPriceLbp !== null;
                                       const canEdit = order.status !== 'completed'
                                         && order.status !== 'cancelled';
+                                      const isActiveOrder = ACTIVE_ORDER_STATUSES.includes(
+                                        order.status as (typeof ACTIVE_ORDER_STATUSES)[number],
+                                      );
+                                      const elapsedMinutes = getElapsedMinutes(
+                                        order.createdAt,
+                                        now,
+                                      );
+                                      const urgencyStyle = getUrgencyStyle(
+                                        elapsedMinutes,
+                                        order.status,
+                                      );
                                       const copyTicketText = [
                                         restaurantDisplayName,
                                         ...(restaurantAddress
@@ -722,6 +806,7 @@ const OrdersPage = async (props: {
                                           }
                                           className={cn(
                                             'rounded-md border bg-background p-3 sm:p-4',
+                                            isActiveOrder && 'border-l-4',
                                             orderStatusStyle.card,
                                           )}
                                         >
@@ -739,9 +824,26 @@ const OrdersPage = async (props: {
                                                 >
                                                   {t(`status_${order.status}`)}
                                                 </span>
-                                                <span className="rounded-md bg-background px-2 py-1 text-xs font-semibold text-muted-foreground">
+                                                <span
+                                                  className={cn(
+                                                    'rounded-md border px-2 py-1 text-xs font-semibold',
+                                                    urgencyStyle,
+                                                  )}
+                                                >
                                                   {formatElapsedTime(order.createdAt, now, t)}
                                                 </span>
+                                                {isActiveOrder && elapsedMinutes >= 15 && (
+                                                  <span
+                                                    className={cn(
+                                                      'rounded-md border px-2 py-1 text-xs font-semibold',
+                                                      urgencyStyle,
+                                                    )}
+                                                  >
+                                                    {elapsedMinutes >= 30
+                                                      ? t('urgency_high')
+                                                      : t('urgency_medium')}
+                                                  </span>
+                                                )}
                                               </div>
                                               <div className="mt-1 text-sm text-muted-foreground">
                                                 <span className="font-medium text-foreground">

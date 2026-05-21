@@ -66,11 +66,13 @@ export const PendingOrderNotifier = ({
   const [hasNewOrders, setHasNewOrders] = useState(false);
   const [newOrderCount, setNewOrderCount] = useState(0);
   const [hydrated, setHydrated] = useState(false);
+  const [deviceSoundEnabled, setDeviceSoundEnabled] = useState(soundEnabled);
 
   const storageKeys = useMemo(() => ({
     count: getStorageKey(organizationId, 'last-pending-count'),
     latestId: getStorageKey(organizationId, 'latest-pending-id'),
     interacted: getStorageKey(organizationId, 'notification-interacted'),
+    sound: getStorageKey(organizationId, 'device-sound-enabled'),
   }), [organizationId]);
 
   useEffect(() => {
@@ -79,7 +81,15 @@ export const PendingOrderNotifier = ({
     if ('Notification' in window) {
       setPermission(Notification.permission);
     }
-  }, []);
+
+    const storedSoundPreference = window.localStorage.getItem(storageKeys.sound);
+
+    if (storedSoundPreference !== null) {
+      setDeviceSoundEnabled(storedSoundPreference === 'true');
+    }
+  }, [storageKeys.sound]);
+
+  const effectiveSoundEnabled = deviceSoundEnabled;
 
   useEffect(() => {
     if (!hydrated) {
@@ -125,7 +135,7 @@ export const PendingOrderNotifier = ({
         });
       }
 
-      if (soundEnabled) {
+      if (effectiveSoundEnabled) {
         playNotificationSound();
       }
 
@@ -146,9 +156,9 @@ export const PendingOrderNotifier = ({
     );
   }, [
     hydrated,
+    effectiveSoundEnabled,
     latestPendingOrderId,
     pendingCount,
-    soundEnabled,
     storageKeys,
     t,
     visualEnabled,
@@ -166,7 +176,7 @@ export const PendingOrderNotifier = ({
   const testNotification = () => {
     window.localStorage.setItem(storageKeys.interacted, 'true');
 
-    if (soundEnabled) {
+    if (effectiveSoundEnabled) {
       playNotificationSound();
     }
 
@@ -177,6 +187,17 @@ export const PendingOrderNotifier = ({
         t('pending_notification_browser_title'),
         t('pending_notification_browser_body', { count: 1 }),
       );
+    }
+  };
+
+  const toggleDeviceSound = () => {
+    const nextValue = !deviceSoundEnabled;
+
+    setDeviceSoundEnabled(nextValue);
+    window.localStorage.setItem(storageKeys.sound, String(nextValue));
+
+    if (nextValue) {
+      playNotificationSound();
     }
   };
 
@@ -206,7 +227,7 @@ export const PendingOrderNotifier = ({
             {t('pending_notification_settings_title')}
           </div>
           <p className="max-w-2xl text-xs leading-5 text-muted-foreground">
-            {soundEnabled
+            {effectiveSoundEnabled
               ? t('pending_notification_sound_helper')
               : t('pending_notification_visual_helper')}
           </p>
@@ -217,6 +238,17 @@ export const PendingOrderNotifier = ({
           )}
         </div>
         <div className="flex flex-wrap gap-2">
+          <Button
+            type="button"
+            size="sm"
+            variant={effectiveSoundEnabled ? 'secondary' : 'outline'}
+            aria-pressed={effectiveSoundEnabled}
+            onClick={toggleDeviceSound}
+          >
+            {effectiveSoundEnabled
+              ? t('pending_notification_sound_on_button')
+              : t('pending_notification_sound_off_button')}
+          </Button>
           {visualEnabled && 'Notification' in globalThis && permission === 'default' && (
             <Button type="button" size="sm" variant="outline" onClick={requestPermission}>
               {t('pending_notification_permission_button')}
