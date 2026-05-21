@@ -10,6 +10,8 @@ import { organizationSchema } from '@/models/Schema';
 import { RESTAURANT_THEME_MODES } from '@/utils/RestaurantTheme';
 import { saveWelcomeScreenImageFile } from '@/utils/WelcomeScreenImageUpload';
 
+const WELCOME_BUTTON_POSITIONS = ['center', 'lower_center', 'bottom_center'] as const;
+
 const normalizeOptionalText = (value: FormDataEntryValue | null) => {
   const textValue = typeof value === 'string' ? value.trim() : '';
 
@@ -73,6 +75,16 @@ const normalizeThemeMode = (value: FormDataEntryValue | null) => {
     : 'day';
 };
 
+const normalizeWelcomeButtonPosition = (value: FormDataEntryValue | null) => {
+  const textValue = value?.toString() ?? 'lower_center';
+
+  return WELCOME_BUTTON_POSITIONS.includes(
+    textValue as (typeof WELCOME_BUTTON_POSITIONS)[number],
+  )
+    ? textValue
+    : 'lower_center';
+};
+
 const getReturnPath = (formData: FormData) => {
   const returnPath = normalizeOptionalText(formData.get('returnPath'));
 
@@ -131,6 +143,12 @@ export const updateRestaurantBrandingAction = async (formData: FormData) => {
   );
   const welcomeButtonColor = normalizeOptionalText(
     formData.get('welcomeButtonColor'),
+  );
+  const welcomeButtonPosition = normalizeWelcomeButtonPosition(
+    formData.get('welcomeButtonPosition'),
+  );
+  const welcomeUseImageAccentForMenu = (
+    formData.get('welcomeUseImageAccentForMenu') === 'on'
   );
 
   if (
@@ -205,6 +223,10 @@ export const updateRestaurantBrandingAction = async (formData: FormData) => {
     }
   }
 
+  if (welcomeUseImageAccentForMenu && welcomeGeneratedAccentColor) {
+    nextRestaurantAccentColor = welcomeGeneratedAccentColor;
+  }
+
   await db
     .insert(organizationSchema)
     .values({
@@ -222,6 +244,8 @@ export const updateRestaurantBrandingAction = async (formData: FormData) => {
       welcomeImageAvifUrl,
       welcomeButtonLabel,
       welcomeButtonColor: nextWelcomeButtonColor,
+      welcomeButtonPosition,
+      welcomeUseImageAccentForMenu,
       welcomeGeneratedAccentColor,
       orderVisualNotificationsEnabled,
       orderSoundNotificationsEnabled,
@@ -244,6 +268,8 @@ export const updateRestaurantBrandingAction = async (formData: FormData) => {
         welcomeImageAvifUrl,
         welcomeButtonLabel,
         welcomeButtonColor: nextWelcomeButtonColor,
+        welcomeButtonPosition,
+        welcomeUseImageAccentForMenu,
         welcomeGeneratedAccentColor,
         orderVisualNotificationsEnabled,
         orderSoundNotificationsEnabled,

@@ -160,6 +160,7 @@ const PublicTableMenuPage = async (props: PublicMenuPageProps) => {
       welcomeImageUrl: organizationSchema.welcomeImageUrl,
       welcomeButtonLabel: organizationSchema.welcomeButtonLabel,
       welcomeButtonColor: organizationSchema.welcomeButtonColor,
+      welcomeButtonPosition: organizationSchema.welcomeButtonPosition,
       restaurantPrimaryColor: organizationSchema.restaurantPrimaryColor,
       restaurantAccentColor: organizationSchema.restaurantAccentColor,
       showMenuItemImages: organizationSchema.showMenuItemImages,
@@ -217,7 +218,8 @@ const PublicTableMenuPage = async (props: PublicMenuPageProps) => {
             ?? organization.restaurantPrimaryColor
             ?? null
           }
-          buttonLabel={organization.welcomeButtonLabel || t('open_menu_button')}
+          buttonLabel={organization.welcomeButtonLabel || 'Open Menu'}
+          buttonPosition={organization.welcomeButtonPosition ?? 'lower_center'}
           imageAvifUrl={organization.welcomeImageAvifUrl ?? null}
           imageUrl={organization.welcomeImageUrl}
           logoUrl={organization.restaurantLogoUrl ?? null}

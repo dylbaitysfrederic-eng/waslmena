@@ -23,6 +23,8 @@ import {
   hasAnyMenuText,
   normalizeMenuText,
 } from '@/utils/MenuTranslations';
+import { RESTAURANT_THEME_MODES } from '@/utils/RestaurantTheme';
+import { saveWelcomeScreenImageFile } from '@/utils/WelcomeScreenImageUpload';
 
 import {
   assertAdmin,
@@ -135,6 +137,8 @@ const MENU_TEMPLATES: Record<MenuTemplateType, MenuTemplateCategory[]> = {
   ],
 };
 
+const WELCOME_BUTTON_POSITIONS = ['center', 'lower_center', 'bottom_center'] as const;
+
 const insertMenuTemplateCategories = async (
   organizationId: string,
   templateType: MenuTemplateType,
@@ -190,6 +194,32 @@ const normalizeEnumValue = <T extends readonly string[]>(
   }
 
   return allowedValues.includes(textValue) ? textValue : fallback;
+};
+
+const normalizeNullableHexColor = (value: FormDataEntryValue | null) => {
+  const color = normalizeOptionalText(value)?.toLowerCase();
+
+  return color && /^#[0-9a-f]{6}$/.test(color) ? color : null;
+};
+
+const normalizeWelcomeButtonPosition = (value: FormDataEntryValue | null) => {
+  return normalizeEnumValue(value, WELCOME_BUTTON_POSITIONS, 'lower_center');
+};
+
+const isValidAddress = (value: string | null) => {
+  return value === null || value.length <= 240;
+};
+
+const isValidCurrencyCode = (value: string | null) => {
+  return value === null || /^[A-Z]{3}$/.test(value);
+};
+
+const isValidCurrencyLabel = (value: string | null) => {
+  return value === null || value.length <= 12;
+};
+
+const isValidWelcomeButtonLabel = (value: string | null) => {
+  return value === null || value.length <= 32;
 };
 
 const normalizeOptionalInteger = (value: FormDataEntryValue | null) => {
@@ -1166,6 +1196,145 @@ export const updateAdminTemplatesAction = async (formData: FormData) => {
     '/dashboard/tables',
     `/r/${organizationId}/menu`,
   );
+};
+
+export const updateAdminIdentityAction = async (formData: FormData) => {
+  await assertAdmin();
+
+  const organizationId = getOrganizationId(formData);
+
+  if (!organizationId) {
+    return;
+  }
+
+  const restaurantDisplayName = normalizeOptionalText(formData.get('restaurantDisplayName'));
+  const restaurantLogoUrl = normalizeOptionalText(formData.get('restaurantLogoUrl'));
+  const restaurantAddress = normalizeOptionalText(formData.get('restaurantAddress'));
+  const restaurantWhatsappNumber = normalizeOptionalText(formData.get('restaurantWhatsappNumber'));
+  const restaurantPrimaryColor = normalizeNullableHexColor(formData.get('restaurantPrimaryColor'));
+  const restaurantAccentColor = normalizeNullableHexColor(formData.get('restaurantAccentColor'));
+  const welcomeButtonColor = normalizeNullableHexColor(formData.get('welcomeButtonColor'));
+  const welcomeButtonLabel = normalizeOptionalText(formData.get('welcomeButtonLabel'));
+  const localCurrencyCode = normalizeOptionalText(formData.get('localCurrencyCode'))?.toUpperCase() ?? null;
+  const localCurrencyLabel = normalizeOptionalText(formData.get('localCurrencyLabel'));
+
+  if (
+    !isValidPublicUrl(restaurantLogoUrl)
+    || !isValidWhatsappNumberOrUrl(restaurantWhatsappNumber)
+    || !isValidAddress(restaurantAddress)
+    || !isValidCurrencyCode(localCurrencyCode)
+    || !isValidCurrencyLabel(localCurrencyLabel)
+    || !isValidWelcomeButtonLabel(welcomeButtonLabel)
+  ) {
+    redirect(`/admin/identity/${organizationId}?error=invalid_identity`);
+  }
+
+  const [existingOrganization] = await db
+    .select({
+      restaurantAccentColor: organizationSchema.restaurantAccentColor,
+      welcomeButtonColor: organizationSchema.welcomeButtonColor,
+      welcomeGeneratedAccentColor: organizationSchema.welcomeGeneratedAccentColor,
+      welcomeImageAvifUrl: organizationSchema.welcomeImageAvifUrl,
+      welcomeImageUrl: organizationSchema.welcomeImageUrl,
+    })
+    .from(organizationSchema)
+    .where(eq(organizationSchema.id, organizationId))
+    .limit(1);
+  const welcomeImageFile = formData.get('welcomeImageFile') as File | null;
+  const removeWelcomeImage = formData.get('removeWelcomeImage') === 'on';
+  const welcomeUseImageAccentForMenu = formData.get('welcomeUseImageAccentForMenu') === 'on';
+  let welcomeImageUrl = existingOrganization?.welcomeImageUrl ?? null;
+  let welcomeImageAvifUrl = existingOrganization?.welcomeImageAvifUrl ?? null;
+  let welcomeGeneratedAccentColor = existingOrganization?.welcomeGeneratedAccentColor ?? null;
+  let nextWelcomeButtonColor = welcomeButtonColor
+    ?? existingOrganization?.welcomeButtonColor
+    ?? null;
+  let nextRestaurantAccentColor = restaurantAccentColor;
+  let welcomeScreenEnabled = formData.get('welcomeScreenEnabled') === 'on';
+
+  if (removeWelcomeImage) {
+    welcomeImageUrl = null;
+    welcomeImageAvifUrl = null;
+    welcomeGeneratedAccentColor = null;
+    nextWelcomeButtonColor = welcomeButtonColor;
+    welcomeScreenEnabled = false;
+  }
+
+  if (
+    !removeWelcomeImage
+    && welcomeImageFile
+    && welcomeImageFile.size > 0
+    && typeof welcomeImageFile.arrayBuffer === 'function'
+  ) {
+    try {
+      const upload = await saveWelcomeScreenImageFile(organizationId, welcomeImageFile);
+      welcomeImageUrl = upload.imageUrl;
+      welcomeImageAvifUrl = upload.avifUrl;
+      welcomeGeneratedAccentColor = upload.accentColor;
+      nextWelcomeButtonColor = existingOrganization?.welcomeButtonColor
+        ? (welcomeButtonColor ?? existingOrganization.welcomeButtonColor)
+        : upload.accentColor;
+
+      if (
+        !existingOrganization?.restaurantAccentColor
+        && (!restaurantAccentColor || restaurantAccentColor === '#111827')
+      ) {
+        nextRestaurantAccentColor = upload.accentColor;
+      }
+    } catch {
+      redirect(`/admin/identity/${organizationId}?error=invalid_welcome_image`);
+    }
+  }
+
+  if (welcomeUseImageAccentForMenu && welcomeGeneratedAccentColor) {
+    nextRestaurantAccentColor = welcomeGeneratedAccentColor;
+  }
+
+  const values = {
+    restaurantDisplayName,
+    restaurantAddress,
+    restaurantLogoUrl,
+    restaurantPrimaryColor,
+    restaurantAccentColor: nextRestaurantAccentColor,
+    restaurantThemeMode: normalizeEnumValue(
+      formData.get('restaurantThemeMode'),
+      RESTAURANT_THEME_MODES,
+      'day',
+    ),
+    restaurantWhatsappNumber,
+    enableWhatsappContact: formData.get('enableWhatsappContact') === 'on',
+    localCurrencyCode,
+    localCurrencyLabel,
+    welcomeScreenEnabled,
+    welcomeImageUrl,
+    welcomeImageAvifUrl,
+    welcomeButtonLabel,
+    welcomeButtonColor: nextWelcomeButtonColor,
+    welcomeButtonPosition: normalizeWelcomeButtonPosition(
+      formData.get('welcomeButtonPosition'),
+    ),
+    welcomeUseImageAccentForMenu,
+    welcomeGeneratedAccentColor,
+  };
+
+  await db
+    .insert(organizationSchema)
+    .values({
+      id: organizationId,
+      ...values,
+    })
+    .onConflictDoUpdate({
+      target: organizationSchema.id,
+      set: values,
+    });
+
+  revalidateAdminPaths(
+    '/admin/identity',
+    `/admin/identity/${organizationId}`,
+    '/dashboard/branding',
+    `/r/${organizationId}/menu`,
+  );
+  redirect(`/admin/identity/${organizationId}?saved=1`);
 };
 
 export const updateAdminMenuAppearanceAction = async (formData: FormData) => {

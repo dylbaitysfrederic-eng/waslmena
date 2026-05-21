@@ -8,11 +8,18 @@ import { LocaleSwitcher } from '@/components/LocaleSwitcher';
 type PublicMenuSplashProps = {
   buttonColor: string | null;
   buttonLabel: string;
+  buttonPosition: string;
   imageAvifUrl: string | null;
   imageUrl: string;
   logoUrl: string | null;
   menuHref: string;
   restaurantName: string;
+};
+
+const BUTTON_POSITION_CLASS_NAMES: Record<string, string> = {
+  center: 'justify-center pb-0',
+  lower_center: 'justify-end pb-[18dvh]',
+  bottom_center: 'justify-end pb-8',
 };
 
 const getReadableTextColor = (hexColor: string | null) => {
@@ -31,6 +38,7 @@ const getReadableTextColor = (hexColor: string | null) => {
 export const PublicMenuSplash = ({
   buttonColor,
   buttonLabel,
+  buttonPosition,
   imageAvifUrl,
   imageUrl,
   logoUrl,
@@ -39,13 +47,14 @@ export const PublicMenuSplash = ({
 }: PublicMenuSplashProps) => {
   const router = useRouter();
   const buttonTextColor = getReadableTextColor(buttonColor);
+  const buttonPositionClassName = BUTTON_POSITION_CLASS_NAMES[buttonPosition]
+    ?? BUTTON_POSITION_CLASS_NAMES.lower_center;
 
   return (
-    <main className="min-h-screen bg-black text-white">
-      <div className="relative mx-auto flex min-h-screen w-full max-w-md items-center justify-center overflow-hidden">
+    <main className="fixed inset-0 h-dvh overflow-hidden overscroll-none bg-black text-white">
+      <div className="relative mx-auto flex size-full max-w-md items-center justify-center overflow-hidden">
         <picture className="absolute inset-0">
           {imageAvifUrl && <source srcSet={imageAvifUrl} type="image/avif" />}
-          { }
           <img
             src={imageUrl}
             alt=""
@@ -56,7 +65,7 @@ export const PublicMenuSplash = ({
           />
         </picture>
         <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/10 to-black/55" />
-        <div className="relative z-10 flex min-h-screen w-full flex-col items-center justify-between px-5 py-8 text-center">
+        <div className="relative z-10 flex size-full flex-col px-5 py-6 text-center">
           <div className="flex w-full items-start justify-between gap-3">
             {logoUrl
               ? (
@@ -78,16 +87,18 @@ export const PublicMenuSplash = ({
             </div>
           </div>
 
-          <Link
-            href={menuHref}
-            prefetch={false}
-            className="mb-10 inline-flex min-h-12 min-w-44 items-center justify-center rounded-md bg-white px-6 py-3 text-base font-bold text-black shadow-lg"
-            style={buttonColor
-              ? { backgroundColor: buttonColor, color: buttonTextColor }
-              : undefined}
-          >
-            {buttonLabel}
-          </Link>
+          <div className={`flex flex-1 items-center ${buttonPositionClassName}`}>
+            <Link
+              href={menuHref}
+              prefetch={false}
+              className="inline-flex min-h-12 min-w-44 items-center justify-center rounded-md bg-white px-6 py-3 text-base font-bold text-black shadow-lg"
+              style={buttonColor
+                ? { backgroundColor: buttonColor, color: buttonTextColor }
+                : undefined}
+            >
+              {buttonLabel}
+            </Link>
+          </div>
         </div>
       </div>
     </main>

@@ -37,6 +37,8 @@ export const organizationSchema = pgTable(
     welcomeImageAvifUrl: text('welcome_image_avif_url'),
     welcomeButtonLabel: text('welcome_button_label'),
     welcomeButtonColor: text('welcome_button_color'),
+    welcomeButtonPosition: text('welcome_button_position').default('lower_center').notNull(),
+    welcomeUseImageAccentForMenu: boolean('welcome_use_image_accent_for_menu').default(false).notNull(),
     welcomeGeneratedAccentColor: text('welcome_generated_accent_color'),
     restaurantPrimaryColor: text('restaurant_primary_color'),
     restaurantAccentColor: text('restaurant_accent_color'),

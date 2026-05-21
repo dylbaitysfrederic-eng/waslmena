@@ -54,6 +54,8 @@ const RestaurantBrandingPage = async (props: {
       welcomeImageUrl: organizationSchema.welcomeImageUrl,
       welcomeButtonLabel: organizationSchema.welcomeButtonLabel,
       welcomeButtonColor: organizationSchema.welcomeButtonColor,
+      welcomeButtonPosition: organizationSchema.welcomeButtonPosition,
+      welcomeUseImageAccentForMenu: organizationSchema.welcomeUseImageAccentForMenu,
       welcomeGeneratedAccentColor: organizationSchema.welcomeGeneratedAccentColor,
       restaurantPrimaryColor: organizationSchema.restaurantPrimaryColor,
       restaurantAccentColor: organizationSchema.restaurantAccentColor,
@@ -311,9 +313,28 @@ const RestaurantBrandingPage = async (props: {
                   id="welcomeButtonLabel"
                   name="welcomeButtonLabel"
                   defaultValue={organization?.welcomeButtonLabel ?? ''}
-                  placeholder={t('welcome_button_placeholder')}
+                  placeholder="Open Menu"
                   maxLength={32}
                 />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="welcomeButtonPosition">
+                  {t('welcome_button_position_label')}
+                </Label>
+                <select
+                  id="welcomeButtonPosition"
+                  name="welcomeButtonPosition"
+                  defaultValue={organization?.welcomeButtonPosition ?? 'lower_center'}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                >
+                  <option value="center">{t('welcome_button_position_center')}</option>
+                  <option value="lower_center">{t('welcome_button_position_lower_center')}</option>
+                  <option value="bottom_center">{t('welcome_button_position_bottom_center')}</option>
+                </select>
+                <p className="text-sm text-muted-foreground">
+                  {t('welcome_button_position_help')}
+                </p>
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
@@ -358,6 +379,14 @@ const RestaurantBrandingPage = async (props: {
                   </div>
                 </div>
               </div>
+
+              <SwitchField
+                id="welcomeUseImageAccentForMenu"
+                name="welcomeUseImageAccentForMenu"
+                label={t('welcome_use_accent_label')}
+                description={t('welcome_use_accent_help')}
+                defaultChecked={organization?.welcomeUseImageAccentForMenu ?? false}
+              />
             </div>
           </div>
 

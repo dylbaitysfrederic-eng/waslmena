@@ -29,6 +29,11 @@ const adminCards = [
     description: 'Suspend or restore restaurant client access.',
   },
   {
+    href: '/admin/identity',
+    title: 'Identity & branding',
+    description: 'Manage restaurant names, colors, contact details, and welcome screens.',
+  },
+  {
     href: '/admin/templates',
     title: 'QR & Tables',
     description: 'Configure each restaurant’s QR behavior, ordering flow, and table setup.',
