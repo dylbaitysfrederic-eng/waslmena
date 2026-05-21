@@ -1,5 +1,6 @@
 import { eq } from 'drizzle-orm';
 import {
+  Building2,
   CheckCircle2,
   Clock3,
   Facebook,
@@ -10,6 +11,7 @@ import {
   QrCode,
   Smartphone,
   Utensils,
+  Waves,
   Wifi,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -83,6 +85,33 @@ const WHY_WASL_FEATURES = [
   {
     key: 'welcome_branding',
     icon: CheckCircle2,
+  },
+] as const;
+
+const HOSPITALITY_USE_CASES = [
+  {
+    key: 'restaurants',
+    icon: Utensils,
+  },
+  {
+    key: 'cafes',
+    icon: Smartphone,
+  },
+  {
+    key: 'bakeries',
+    icon: CheckCircle2,
+  },
+  {
+    key: 'lounges',
+    icon: Building2,
+  },
+  {
+    key: 'beach_clubs',
+    icon: Waves,
+  },
+  {
+    key: 'fast_casual',
+    icon: Printer,
   },
 ] as const;
 
@@ -638,6 +667,46 @@ const IndexPage = async (props: {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="border-b bg-zinc-50 py-12">
+        <div className="mx-auto max-w-screen-xl px-4">
+          <div className="max-w-2xl">
+            <p className="text-sm font-semibold uppercase text-emerald-700">
+              {t('use_cases_eyebrow')}
+            </p>
+            <h2 className="mt-2 text-3xl font-semibold tracking-normal text-zinc-950">
+              {t('use_cases_title')}
+            </h2>
+            <p className="mt-3 text-sm leading-6 text-muted-foreground sm:text-base">
+              {t('use_cases_description')}
+            </p>
+          </div>
+
+          <div className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {HOSPITALITY_USE_CASES.map(({ key, icon: Icon }) => (
+              <div key={key} className="rounded-xl border bg-white p-5">
+                <div className="flex items-start gap-4">
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700">
+                    <Icon className="size-5" aria-hidden="true" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold">
+                      {t(`use_cases_${key}_title`)}
+                    </h3>
+                    <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                      {t(`use_cases_${key}_description`)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-5 rounded-xl border bg-white px-4 py-3 text-sm text-zinc-600">
+            {t('use_cases_trust_note')}
           </div>
         </div>
       </section>
