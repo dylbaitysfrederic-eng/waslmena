@@ -90,6 +90,13 @@ export const GET = async (
           imageUrl: menuItemSchema.imageUrl,
           priceUsdCents: menuItemSchema.priceUsdCents,
           priceLbp: menuItemSchema.priceLbp,
+          originalPriceUsdCents: menuItemSchema.originalPriceUsdCents,
+          originalPriceLbp: menuItemSchema.originalPriceLbp,
+          isPopular: menuItemSchema.isPopular,
+          isNew: menuItemSchema.isNew,
+          isSpicy: menuItemSchema.isSpicy,
+          isFeatured: menuItemSchema.isFeatured,
+          isPromo: menuItemSchema.isPromo,
           isAvailable: menuItemSchema.isAvailable,
           createdAt: menuItemSchema.createdAt,
           updatedAt: menuItemSchema.updatedAt,
@@ -106,7 +113,13 @@ export const GET = async (
       categories,
       items: items.map(item => ({
         ...item,
-        badges: [],
+        badges: [
+          ...(item.isPopular ? ['popular'] : []),
+          ...(item.isNew ? ['new'] : []),
+          ...(item.isSpicy ? ['spicy'] : []),
+          ...(item.isFeatured ? ['featured'] : []),
+          ...(item.isPromo ? ['promo'] : []),
+        ],
       })),
     });
   }

@@ -194,6 +194,13 @@ export const menuItemSchema = pgTable('menu_item', {
   imageUrl: text('image_url'),
   priceUsdCents: integer('price_usd_cents'),
   priceLbp: integer('price_lbp'),
+  originalPriceUsdCents: integer('original_price_usd_cents'),
+  originalPriceLbp: integer('original_price_lbp'),
+  isPopular: boolean('is_popular').default(false).notNull(),
+  isNew: boolean('is_new').default(false).notNull(),
+  isSpicy: boolean('is_spicy').default(false).notNull(),
+  isFeatured: boolean('is_featured').default(false).notNull(),
+  isPromo: boolean('is_promo').default(false).notNull(),
   isAvailable: boolean('is_available').default(true).notNull(),
   createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { mode: 'date' })

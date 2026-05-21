@@ -246,6 +246,25 @@ const normalizeOptionalInteger = (value: FormDataEntryValue | null) => {
   return parsedValue;
 };
 
+const getAdminMenuItemMerchandisingValues = (formData: FormData) => ({
+  isPopular: formData.get('isPopular') === 'on',
+  isNew: formData.get('isNew') === 'on',
+  isSpicy: formData.get('isSpicy') === 'on',
+  isFeatured: formData.get('isFeatured') === 'on',
+  isPromo: formData.get('isPromo') === 'on',
+});
+
+const getValidOriginalPrice = (
+  originalPrice: number | null,
+  salePrice: number | null,
+) => {
+  if (originalPrice === null || salePrice === null || originalPrice < salePrice) {
+    return null;
+  }
+
+  return originalPrice;
+};
+
 const normalizeOptionalDate = (value: FormDataEntryValue | null) => {
   const textValue = normalizeOptionalText(value);
 
@@ -1703,6 +1722,13 @@ export const createAdminMenuItemAction = async (formData: FormData) => {
 
   const priceUsdCents = normalizeOptionalInteger(formData.get('priceUsdCents'));
   const priceLbp = normalizeOptionalInteger(formData.get('priceLbp'));
+  const originalPriceUsdCents = normalizeOptionalInteger(
+    formData.get('originalPriceUsdCents'),
+  );
+  const originalPriceLbp = normalizeOptionalInteger(
+    formData.get('originalPriceLbp'),
+  );
+  const merchandisingValues = getAdminMenuItemMerchandisingValues(formData);
 
   if (
     !organizationId
@@ -1754,6 +1780,12 @@ export const createAdminMenuItemAction = async (formData: FormData) => {
     imageUrl,
     priceUsdCents,
     priceLbp,
+    originalPriceUsdCents: getValidOriginalPrice(
+      originalPriceUsdCents,
+      priceUsdCents,
+    ),
+    originalPriceLbp: getValidOriginalPrice(originalPriceLbp, priceLbp),
+    ...merchandisingValues,
     isAvailable: formData.get('isAvailable') === 'on',
   });
 
@@ -1775,6 +1807,13 @@ export const updateAdminMenuItemAction = async (formData: FormData) => {
 
   const priceUsdCents = normalizeOptionalInteger(formData.get('priceUsdCents'));
   const priceLbp = normalizeOptionalInteger(formData.get('priceLbp'));
+  const originalPriceUsdCents = normalizeOptionalInteger(
+    formData.get('originalPriceUsdCents'),
+  );
+  const originalPriceLbp = normalizeOptionalInteger(
+    formData.get('originalPriceLbp'),
+  );
+  const merchandisingValues = getAdminMenuItemMerchandisingValues(formData);
 
   if (
     !organizationId
@@ -1843,6 +1882,12 @@ export const updateAdminMenuItemAction = async (formData: FormData) => {
       imageUrl,
       priceUsdCents,
       priceLbp,
+      originalPriceUsdCents: getValidOriginalPrice(
+        originalPriceUsdCents,
+        priceUsdCents,
+      ),
+      originalPriceLbp: getValidOriginalPrice(originalPriceLbp, priceLbp),
+      ...merchandisingValues,
       isAvailable: formData.get('isAvailable') === 'on',
     })
     .where(

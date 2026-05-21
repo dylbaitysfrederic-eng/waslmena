@@ -268,6 +268,13 @@ const PublicTableMenuPage = async (props: PublicMenuPageProps) => {
       imageUrl: menuItemSchema.imageUrl,
       priceUsdCents: menuItemSchema.priceUsdCents,
       priceLbp: menuItemSchema.priceLbp,
+      originalPriceUsdCents: menuItemSchema.originalPriceUsdCents,
+      originalPriceLbp: menuItemSchema.originalPriceLbp,
+      isPopular: menuItemSchema.isPopular,
+      isNew: menuItemSchema.isNew,
+      isSpicy: menuItemSchema.isSpicy,
+      isFeatured: menuItemSchema.isFeatured,
+      isPromo: menuItemSchema.isPromo,
       isAvailable: menuItemSchema.isAvailable,
     })
     .from(menuItemSchema)
@@ -310,33 +317,50 @@ const PublicTableMenuPage = async (props: PublicMenuPageProps) => {
 
   const mapMenuItems = (categoryId: number) => (
     itemsByCategory.get(categoryId) ?? []
-  ).map(item => ({
-    id: item.id,
-    name: getLocalizedMenuText(
-      props.params.locale,
-      {
-        en: item.nameEn,
-        ar: item.nameAr,
-        fr: item.nameFr,
-        legacy: item.name,
-      },
-      item.name,
-    ),
-    description: getLocalizedMenuText(
-      props.params.locale,
-      {
-        en: item.descriptionEn,
-        ar: item.descriptionAr,
-        fr: item.descriptionFr,
-        legacy: item.description,
-      },
-      '',
-    ) || null,
-    imageUrl: item.imageUrl,
-    priceUsdCents: item.priceUsdCents,
-    priceLbp: item.priceLbp,
-    isAvailable: item.isAvailable !== false,
-  }));
+  )
+    .map(item => ({
+      id: item.id,
+      name: getLocalizedMenuText(
+        props.params.locale,
+        {
+          en: item.nameEn,
+          ar: item.nameAr,
+          fr: item.nameFr,
+          legacy: item.name,
+        },
+        item.name,
+      ),
+      description: getLocalizedMenuText(
+        props.params.locale,
+        {
+          en: item.descriptionEn,
+          ar: item.descriptionAr,
+          fr: item.descriptionFr,
+          legacy: item.description,
+        },
+        '',
+      ) || null,
+      imageUrl: item.imageUrl,
+      priceUsdCents: item.priceUsdCents,
+      priceLbp: item.priceLbp,
+      oldPriceUsdCents: item.originalPriceUsdCents,
+      oldPriceLbp: item.originalPriceLbp,
+      badges: [
+        ...(item.isPopular ? ['popular' as const] : []),
+        ...(item.isNew ? ['new' as const] : []),
+        ...(item.isSpicy ? ['spicy' as const] : []),
+        ...(item.isPromo ? ['promo' as const] : []),
+      ],
+      isFeatured: item.isFeatured,
+      isAvailable: item.isAvailable !== false,
+    }))
+    .sort((firstItem, secondItem) => {
+      if (firstItem.isFeatured !== secondItem.isFeatured) {
+        return firstItem.isFeatured ? -1 : 1;
+      }
+
+      return firstItem.name.localeCompare(secondItem.name, props.params.locale);
+    });
 
   const categoriesWithItems = localizedCategories
     .filter(category => category.parentCategoryId === null)

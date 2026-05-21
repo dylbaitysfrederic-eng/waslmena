@@ -81,6 +81,15 @@ const VALID_FORM_ERRORS = [
   'invalid_image_type',
   'image_too_large',
   'category_in_use',
+  'original_price_below_price',
+] as const;
+
+const MERCHANDISING_BADGES = [
+  { key: 'isPopular', labelKey: 'badge_popular_label' },
+  { key: 'isNew', labelKey: 'badge_new_label' },
+  { key: 'isSpicy', labelKey: 'badge_spicy_label' },
+  { key: 'isFeatured', labelKey: 'badge_featured_label' },
+  { key: 'isPromo', labelKey: 'badge_promo_label' },
 ] as const;
 
 type MenuCategoryOption = {
@@ -281,6 +290,123 @@ const ParentCategorySelect = (props: {
   );
 };
 
+const MenuItemMerchandisingFields = (props: {
+  baseId: string;
+  localCurrencyLabel: string;
+  t: (key: string, values?: Record<string, string>) => string;
+  values?: {
+    originalPriceUsdCents: number | null;
+    originalPriceLbp: number | null;
+    isPopular: boolean;
+    isNew: boolean;
+    isSpicy: boolean;
+    isFeatured: boolean;
+    isPromo: boolean;
+  };
+}) => (
+  <div className="rounded-md border bg-muted/20 p-3">
+    <div>
+      <div className="text-sm font-semibold">{props.t('merchandising_title')}</div>
+      <p className="mt-1 text-xs text-muted-foreground">
+        {props.t('merchandising_help')}
+      </p>
+    </div>
+    <div className="mt-3 grid gap-3 sm:grid-cols-2">
+      <div className="space-y-2">
+        <Label htmlFor={`${props.baseId}-original-usd`}>
+          {props.t('original_price_usd_cents_label')}
+        </Label>
+        <Input
+          id={`${props.baseId}-original-usd`}
+          name="originalPriceUsdCents"
+          type="number"
+          min={0}
+          step={1}
+          defaultValue={props.values?.originalPriceUsdCents ?? ''}
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor={`${props.baseId}-original-local`}>
+          {props.t('original_price_local_label', {
+            currency: props.localCurrencyLabel,
+          })}
+        </Label>
+        <Input
+          id={`${props.baseId}-original-local`}
+          name="originalPriceLbp"
+          type="number"
+          min={0}
+          step={1}
+          defaultValue={props.values?.originalPriceLbp ?? ''}
+        />
+      </div>
+    </div>
+    <p className="mt-2 text-xs text-muted-foreground">
+      {props.t('original_price_help')}
+    </p>
+    <div className="mt-3 grid gap-2 sm:grid-cols-2">
+      {MERCHANDISING_BADGES.map(badge => (
+        <SwitchField
+          key={badge.key}
+          id={`${props.baseId}-${badge.key}`}
+          name={badge.key}
+          label={props.t(badge.labelKey)}
+          defaultChecked={props.values?.[badge.key] ?? false}
+        />
+      ))}
+    </div>
+  </div>
+);
+
+const MenuItemBadgeList = (props: {
+  item: {
+    isPopular: boolean;
+    isNew: boolean;
+    isSpicy: boolean;
+    isFeatured: boolean;
+    isPromo: boolean;
+  };
+  t: (key: string) => string;
+}) => {
+  const activeBadges = MERCHANDISING_BADGES.filter(
+    badge => props.item[badge.key],
+  );
+
+  if (activeBadges.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="mt-2 flex flex-wrap gap-1">
+      {activeBadges.map(badge => (
+        <span
+          key={badge.key}
+          className="rounded-full border bg-muted/40 px-2 py-0.5 text-[11px] font-semibold text-muted-foreground"
+        >
+          {props.t(badge.labelKey)}
+        </span>
+      ))}
+    </div>
+  );
+};
+
+const MenuItemPriceLine = (props: {
+  currentPrice: number;
+  originalPrice: number | null;
+  formatPrice: (amount: number) => string;
+}) => (
+  <div className="grid gap-0.5">
+    {props.originalPrice !== null && props.originalPrice > props.currentPrice
+      ? (
+          <span className="text-xs text-muted-foreground line-through">
+            {props.formatPrice(props.originalPrice)}
+          </span>
+        )
+      : null}
+    <span>{props.formatPrice(props.currentPrice)}</span>
+  </div>
+);
+
 const MenuItemsPage = async (props: {
   params: { locale: string };
   searchParams: { error?: string };
@@ -345,6 +471,13 @@ const MenuItemsPage = async (props: {
       imageUrl: menuItemSchema.imageUrl,
       priceUsdCents: menuItemSchema.priceUsdCents,
       priceLbp: menuItemSchema.priceLbp,
+      originalPriceUsdCents: menuItemSchema.originalPriceUsdCents,
+      originalPriceLbp: menuItemSchema.originalPriceLbp,
+      isPopular: menuItemSchema.isPopular,
+      isNew: menuItemSchema.isNew,
+      isSpicy: menuItemSchema.isSpicy,
+      isFeatured: menuItemSchema.isFeatured,
+      isPromo: menuItemSchema.isPromo,
       isAvailable: menuItemSchema.isAvailable,
       categoryName: menuCategorySchema.name,
       categoryNameEn: menuCategorySchema.nameEn,
@@ -566,6 +699,12 @@ const MenuItemsPage = async (props: {
                       <p className="text-sm text-muted-foreground">
                         {t('price_requirement', { currency: localCurrencyLabel })}
                       </p>
+
+                      <MenuItemMerchandisingFields
+                        baseId="item-create-merchandising"
+                        localCurrencyLabel={localCurrencyLabel}
+                        t={t}
+                      />
 
                       <SwitchField
                         id="isAvailable"
@@ -802,6 +941,7 @@ const MenuItemsPage = async (props: {
                                         {item.imageUrl}
                                       </div>
                                     )}
+                                    <MenuItemBadgeList item={item} t={t} />
                                   </div>
                                 </div>
                                 <details className="rounded-md border p-3">
@@ -898,6 +1038,20 @@ const MenuItemsPage = async (props: {
                                         defaultValue={item.priceLbp ?? ''}
                                       />
                                     </div>
+                                    <MenuItemMerchandisingFields
+                                      baseId={`item-${item.id}-merchandising`}
+                                      localCurrencyLabel={localCurrencyLabel}
+                                      t={t}
+                                      values={{
+                                        originalPriceUsdCents: item.originalPriceUsdCents,
+                                        originalPriceLbp: item.originalPriceLbp,
+                                        isPopular: item.isPopular,
+                                        isNew: item.isNew,
+                                        isSpicy: item.isSpicy,
+                                        isFeatured: item.isFeatured,
+                                        isPromo: item.isPromo,
+                                      }}
+                                    />
                                     <SwitchField
                                       id={`item-available-${item.id}`}
                                       name="isAvailable"
@@ -930,12 +1084,23 @@ const MenuItemsPage = async (props: {
                             <TableCell>
                               <div className="space-y-1">
                                 {item.priceUsdCents !== null && (
-                                  <div>{formatUsdCents(item.priceUsdCents)}</div>
+                                  <MenuItemPriceLine
+                                    currentPrice={item.priceUsdCents}
+                                    originalPrice={item.originalPriceUsdCents}
+                                    formatPrice={formatUsdCents}
+                                  />
                                 )}
                                 {item.priceLbp !== null && (
-                                  <div>
-                                    {formatLocalCurrency(item.priceLbp, localCurrencyLabel)}
-                                  </div>
+                                  <MenuItemPriceLine
+                                    currentPrice={item.priceLbp}
+                                    originalPrice={item.originalPriceLbp}
+                                    formatPrice={
+                                      amount => formatLocalCurrency(
+                                        amount,
+                                        localCurrencyLabel,
+                                      )
+                                    }
+                                  />
                                 )}
                               </div>
                             </TableCell>

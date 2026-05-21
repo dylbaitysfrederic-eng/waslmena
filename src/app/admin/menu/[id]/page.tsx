@@ -49,6 +49,13 @@ export const revalidate = 0;
 
 const selectClassName = 'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring';
 const textareaClassName = 'min-h-20 rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring';
+const MERCHANDISING_BADGES = [
+  { key: 'isPopular', label: 'Popular' },
+  { key: 'isNew', label: 'New' },
+  { key: 'isSpicy', label: 'Spicy' },
+  { key: 'isFeatured', label: 'Featured' },
+  { key: 'isPromo', label: 'Promo' },
+] as const;
 
 type MenuCategoryRow = typeof menuCategorySchema.$inferSelect;
 
@@ -230,6 +237,114 @@ const CategoryParentSelect = (props: {
     </div>
   );
 };
+
+const AdminMenuItemMerchandisingFields = (props: {
+  baseId: string;
+  localCurrencyLabel: string;
+  values?: {
+    originalPriceUsdCents: number | null;
+    originalPriceLbp: number | null;
+    isPopular: boolean;
+    isNew: boolean;
+    isSpicy: boolean;
+    isFeatured: boolean;
+    isPromo: boolean;
+  };
+}) => (
+  <div className="rounded-md border bg-muted/20 p-3">
+    <div className="text-sm font-semibold">Merchandising</div>
+    <p className="mt-1 text-xs text-muted-foreground">
+      Optional public badges and crossed-out original pricing.
+    </p>
+    <div className="mt-3 grid gap-3 sm:grid-cols-2">
+      <div className="space-y-2">
+        <Label htmlFor={`${props.baseId}-original-usd`}>
+          Original USD cents
+        </Label>
+        <Input
+          id={`${props.baseId}-original-usd`}
+          name="originalPriceUsdCents"
+          type="number"
+          min={0}
+          defaultValue={props.values?.originalPriceUsdCents ?? ''}
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor={`${props.baseId}-original-local`}>
+          Original
+          {' '}
+          {props.localCurrencyLabel}
+        </Label>
+        <Input
+          id={`${props.baseId}-original-local`}
+          name="originalPriceLbp"
+          type="number"
+          min={0}
+          defaultValue={props.values?.originalPriceLbp ?? ''}
+        />
+      </div>
+    </div>
+    <div className="mt-3 grid gap-2 sm:grid-cols-2">
+      {MERCHANDISING_BADGES.map(badge => (
+        <SwitchField
+          key={badge.key}
+          id={`${props.baseId}-${badge.key}`}
+          name={badge.key}
+          label={badge.label}
+          defaultChecked={props.values?.[badge.key] ?? false}
+        />
+      ))}
+    </div>
+  </div>
+);
+
+const AdminMenuItemBadgeList = (props: {
+  item: {
+    isPopular: boolean;
+    isNew: boolean;
+    isSpicy: boolean;
+    isFeatured: boolean;
+    isPromo: boolean;
+  };
+}) => {
+  const activeBadges = MERCHANDISING_BADGES.filter(
+    badge => props.item[badge.key],
+  );
+
+  if (activeBadges.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="mt-2 flex flex-wrap gap-1">
+      {activeBadges.map(badge => (
+        <span
+          key={badge.key}
+          className="rounded-full border bg-muted/40 px-2 py-0.5 text-[11px] font-semibold text-muted-foreground"
+        >
+          {badge.label}
+        </span>
+      ))}
+    </div>
+  );
+};
+
+const AdminMenuItemPriceLine = (props: {
+  currentPrice: number;
+  originalPrice: number | null;
+  formatPrice: (amount: number) => string | null;
+}) => (
+  <div className="grid gap-0.5">
+    {props.originalPrice !== null && props.originalPrice > props.currentPrice
+      ? (
+          <span className="text-xs text-muted-foreground line-through">
+            {props.formatPrice(props.originalPrice)}
+          </span>
+        )
+      : null}
+    <span>{props.formatPrice(props.currentPrice)}</span>
+  </div>
+);
 
 const AdminMenuDetailPage = async (props: {
   params: { id: string };
@@ -539,6 +654,10 @@ const AdminMenuDetailPage = async (props: {
                           />
                         </div>
                       </div>
+                      <AdminMenuItemMerchandisingFields
+                        baseId={`item-create-${organizationId}-merchandising`}
+                        localCurrencyLabel={localCurrencyLabel}
+                      />
                       <SwitchField
                         id="item-available-create"
                         name="isAvailable"
@@ -738,6 +857,7 @@ const AdminMenuDetailPage = async (props: {
                                         {item.imageUrl}
                                       </div>
                                     )}
+                                    <AdminMenuItemBadgeList item={item} />
                                   </div>
                                 </div>
                                 <details className="rounded-md border p-3">
@@ -817,6 +937,19 @@ const AdminMenuDetailPage = async (props: {
                                         />
                                       </div>
                                     </div>
+                                    <AdminMenuItemMerchandisingFields
+                                      baseId={`item-${item.id}-merchandising`}
+                                      localCurrencyLabel={localCurrencyLabel}
+                                      values={{
+                                        originalPriceUsdCents: item.originalPriceUsdCents,
+                                        originalPriceLbp: item.originalPriceLbp,
+                                        isPopular: item.isPopular,
+                                        isNew: item.isNew,
+                                        isSpicy: item.isSpicy,
+                                        isFeatured: item.isFeatured,
+                                        isPromo: item.isPromo,
+                                      }}
+                                    />
                                     <SwitchField
                                       id={`item-available-${item.id}`}
                                       name="isAvailable"
@@ -837,12 +970,23 @@ const AdminMenuDetailPage = async (props: {
                             <TableCell>
                               <div className="grid gap-1 text-sm">
                                 {formatUsdDisplay(item.priceUsdCents) && (
-                                  <div>{formatUsdDisplay(item.priceUsdCents)}</div>
+                                  <AdminMenuItemPriceLine
+                                    currentPrice={item.priceUsdCents!}
+                                    originalPrice={item.originalPriceUsdCents}
+                                    formatPrice={formatUsdDisplay}
+                                  />
                                 )}
                                 {formatLocalCurrency(item.priceLbp, localCurrencyLabel) && (
-                                  <div>
-                                    {formatLocalCurrency(item.priceLbp, localCurrencyLabel)}
-                                  </div>
+                                  <AdminMenuItemPriceLine
+                                    currentPrice={item.priceLbp!}
+                                    originalPrice={item.originalPriceLbp}
+                                    formatPrice={
+                                      amount => formatLocalCurrency(
+                                        amount,
+                                        localCurrencyLabel,
+                                      )
+                                    }
+                                  />
                                 )}
                               </div>
                             </TableCell>

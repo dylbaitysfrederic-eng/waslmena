@@ -166,6 +166,36 @@ const parseOptionalPrice = (value: FormDataEntryValue | null) => {
   };
 };
 
+const getMenuItemMerchandisingValues = (formData: FormData) => ({
+  isPopular: formData.get('isPopular') === 'on',
+  isNew: formData.get('isNew') === 'on',
+  isSpicy: formData.get('isSpicy') === 'on',
+  isFeatured: formData.get('isFeatured') === 'on',
+  isPromo: formData.get('isPromo') === 'on',
+});
+
+const validateOriginalPrice = (
+  originalPrice: ReturnType<typeof parseOptionalPrice>,
+  salePrice: ReturnType<typeof parseOptionalPrice>,
+  returnPath: string,
+) => {
+  if (originalPrice.isInvalid) {
+    redirectWithError(returnPath, 'invalid_price');
+  }
+
+  if (originalPrice.isNegative) {
+    redirectWithError(returnPath, 'negative_price');
+  }
+
+  if (
+    originalPrice.value !== null
+    && salePrice.value !== null
+    && originalPrice.value < salePrice.value
+  ) {
+    redirectWithError(returnPath, 'original_price_below_price');
+  }
+};
+
 export const createMenuItemAction = async (formData: FormData) => {
   const returnPath = getReturnPath(formData);
   const organizationId = await getActiveRestaurantOrganizationId();
@@ -187,7 +217,12 @@ export const createMenuItemAction = async (formData: FormData) => {
 
   const priceUsdCents = parseOptionalPrice(formData.get('priceUsdCents'));
   const priceLbp = parseOptionalPrice(formData.get('priceLbp'));
+  const originalPriceUsdCents = parseOptionalPrice(
+    formData.get('originalPriceUsdCents'),
+  );
+  const originalPriceLbp = parseOptionalPrice(formData.get('originalPriceLbp'));
   const isAvailable = formData.get('isAvailable') === 'on';
+  const merchandisingValues = getMenuItemMerchandisingValues(formData);
 
   if (!organizationId) {
     return;
@@ -226,6 +261,9 @@ export const createMenuItemAction = async (formData: FormData) => {
   ) {
     redirectWithError(returnPath, 'negative_price');
   }
+
+  validateOriginalPrice(originalPriceUsdCents, priceUsdCents, returnPath);
+  validateOriginalPrice(originalPriceLbp, priceLbp, returnPath);
 
   if (priceUsdCents.value === null && priceLbp.value === null) {
     redirectWithError(returnPath, 'missing_price');
@@ -267,6 +305,9 @@ export const createMenuItemAction = async (formData: FormData) => {
     imageUrl: imageUrl || null,
     priceUsdCents: priceUsdCents.value,
     priceLbp: priceLbp.value,
+    originalPriceUsdCents: originalPriceUsdCents.value,
+    originalPriceLbp: originalPriceLbp.value,
+    ...merchandisingValues,
     isAvailable,
   });
 
@@ -300,7 +341,12 @@ export const updateMenuItemAction = async (formData: FormData) => {
 
   const priceUsdCents = parseOptionalPrice(formData.get('priceUsdCents'));
   const priceLbp = parseOptionalPrice(formData.get('priceLbp'));
+  const originalPriceUsdCents = parseOptionalPrice(
+    formData.get('originalPriceUsdCents'),
+  );
+  const originalPriceLbp = parseOptionalPrice(formData.get('originalPriceLbp'));
   const isAvailable = formData.get('isAvailable') === 'on';
+  const merchandisingValues = getMenuItemMerchandisingValues(formData);
 
   if (!organizationId) {
     return;
@@ -325,6 +371,9 @@ export const updateMenuItemAction = async (formData: FormData) => {
   if (priceUsdCents.isNegative || priceLbp.isNegative) {
     redirectWithError(returnPath, 'negative_price');
   }
+
+  validateOriginalPrice(originalPriceUsdCents, priceUsdCents, returnPath);
+  validateOriginalPrice(originalPriceLbp, priceLbp, returnPath);
 
   if (priceUsdCents.value === null && priceLbp.value === null) {
     redirectWithError(returnPath, 'missing_price');
@@ -395,6 +444,9 @@ export const updateMenuItemAction = async (formData: FormData) => {
       imageUrl: imageUrl || null,
       priceUsdCents: priceUsdCents.value,
       priceLbp: priceLbp.value,
+      originalPriceUsdCents: originalPriceUsdCents.value,
+      originalPriceLbp: originalPriceLbp.value,
+      ...merchandisingValues,
       isAvailable,
     })
     .where(
