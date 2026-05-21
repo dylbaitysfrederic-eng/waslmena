@@ -214,165 +214,135 @@ const IndexPage = async (props: {
         </div>
       </header>
 
-      <section className="border-b bg-[#111827] text-white">
-        <div className="mx-auto grid max-w-screen-lg gap-8 px-4 py-14 md:grid-cols-[minmax(0,1.2fr)_minmax(320px,400px)] md:items-start md:py-20">
+      <section className="border-b bg-zinc-50">
+        <div className="mx-auto grid max-w-screen-xl gap-10 px-4 py-10 md:grid-cols-[minmax(0,0.95fr)_minmax(360px,1.05fr)] md:items-center md:py-16 lg:py-20">
           <div className="max-w-2xl">
-            <p className="mb-4 text-sm font-semibold uppercase tracking-wide text-emerald-300">
+            <p className="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase text-emerald-800">
               {t('hero_eyebrow')}
             </p>
-            <h1 className="text-4xl font-semibold leading-tight tracking-normal sm:text-6xl">
+            <h1 className="mt-5 text-4xl font-semibold leading-tight tracking-normal text-zinc-950 sm:text-5xl lg:text-6xl">
               {t('hero_title')}
             </h1>
-            <p className="mt-5 max-w-2xl text-lg leading-8 text-zinc-200">
+            <p className="mt-5 max-w-xl text-base leading-7 text-zinc-600 sm:text-lg">
               {t('hero_description')}
             </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Button asChild size="lg" className="bg-emerald-500 text-zinc-950 hover:bg-emerald-400">
+            <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+              <Button asChild size="lg" className="bg-emerald-600 text-white hover:bg-emerald-700">
                 <a href="#contact">{t('hero_primary_cta')}</a>
               </Button>
-              <Button asChild size="lg" variant="outline" className="border-zinc-500 bg-transparent text-white hover:bg-zinc-900">
-                <a href="#contact">{t('hero_secondary_cta')}</a>
+              <Button asChild size="lg" variant="outline" className="border-zinc-300 bg-white">
+                <a href="#how-it-works">{t('hero_secondary_cta')}</a>
               </Button>
             </div>
-            <div className="mt-8 grid gap-3 text-sm text-zinc-300 sm:grid-cols-3">
-              <div className="rounded-md border border-zinc-700 bg-zinc-900/80 p-3">
-                {t('hero_signal_qr')}
-              </div>
-              <div className="rounded-md border border-zinc-700 bg-zinc-900/80 p-3">
-                {t('hero_signal_languages')}
-              </div>
-              <div className="rounded-md border border-zinc-700 bg-zinc-900/80 p-3">
-                {t('hero_signal_currency')}
-              </div>
+            <div className="mt-7 grid gap-2 text-sm text-zinc-700 sm:grid-cols-2">
+              {[
+                t('hero_signal_qr'),
+                t('hero_signal_languages'),
+                t('hero_signal_stable'),
+                t('hero_signal_lightweight'),
+              ].map(signal => (
+                <div key={signal} className="flex items-center gap-2">
+                  <CheckCircle2 className="size-4 shrink-0 text-emerald-600" />
+                  <span>{signal}</span>
+                </div>
+              ))}
             </div>
           </div>
 
-          <div className="grid gap-5">
-            <div className="overflow-hidden rounded-3xl border border-zinc-700 bg-zinc-900/95 shadow-2xl">
-              <div className="border-b border-zinc-700 bg-zinc-950/75 px-4 py-3">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <div className="text-xs font-semibold uppercase text-emerald-300">
-                      {t('customer_illustration_label')}
-                    </div>
-                    <div className="text-sm text-zinc-300">{t('customer_illustration_title')}</div>
-                  </div>
-                  <div className="flex items-center gap-2 rounded-md border border-emerald-400/40 px-2 py-1 text-xs font-semibold text-emerald-200">
-                    <QrCode className="size-4" />
-                    QR
-                  </div>
-                </div>
-              </div>
-              <div className="grid gap-4 p-4 sm:grid-cols-[160px_1fr]">
-                <div className="rounded-2xl border border-zinc-700 bg-white p-3 text-zinc-950">
-                  <div className="flex items-center justify-between">
-                    <Smartphone className="size-4 text-emerald-700" />
-                    <span className="text-xs font-semibold">Table 7</span>
-                  </div>
-                  <div className="mt-4 text-xs font-semibold uppercase text-emerald-700">
-                    {t('customer_menu_label')}
-                  </div>
-                  <div className="mt-1 text-lg font-semibold">{t('phone_category')}</div>
-                  <div className="mt-3 rounded-md border p-3">
-                    <div className="flex items-start gap-2">
-                      <Utensils className="mt-0.5 size-4 text-zinc-500" />
+          <div className="mx-auto grid w-full max-w-xl gap-4">
+            <div className="rounded-2xl border bg-white p-3 shadow-sm">
+              <div className="grid gap-3 sm:grid-cols-[180px_1fr]">
+                <div className="rounded-2xl border bg-zinc-950 p-2 shadow-sm">
+                  <div className="rounded-xl bg-white p-3 text-zinc-950">
+                    <div className="flex items-center justify-between gap-3">
                       <div>
-                        <div className="text-sm font-semibold">{t('phone_item')}</div>
-                        <div className="text-xs text-muted-foreground">{t('phone_item_note')}</div>
+                        <div className="text-xs font-semibold uppercase text-emerald-700">
+                          {t('customer_menu_label')}
+                        </div>
+                        <div className="text-lg font-semibold">{t('phone_category')}</div>
+                      </div>
+                      <span className="rounded-md bg-zinc-100 px-2 py-1 text-xs font-semibold">
+                        Table 7
+                      </span>
+                    </div>
+                    <div className="mt-4 rounded-md border p-3">
+                      <div className="flex items-start gap-2">
+                        <Utensils className="mt-0.5 size-4 text-zinc-500" />
+                        <div>
+                          <div className="text-sm font-semibold">{t('phone_item')}</div>
+                          <div className="text-xs text-muted-foreground">{t('phone_item_note')}</div>
+                        </div>
+                      </div>
+                      <div className="mt-3 flex items-end justify-between gap-3 text-sm">
+                        <div className="text-xs text-muted-foreground">
+                          USD
+                          <div className="font-semibold text-zinc-950">$8.00</div>
+                        </div>
+                        <div className="text-right text-xs text-muted-foreground">
+                          LBP
+                          <div className="font-semibold text-zinc-950">720,000 LBP / LL</div>
+                        </div>
                       </div>
                     </div>
-                    <div className="mt-3 flex items-end justify-between gap-3 text-sm">
-                      <div className="text-xs text-muted-foreground">
-                        USD
-                        <div className="font-semibold text-zinc-950">$8.00</div>
-                      </div>
-                      <div className="text-right text-xs text-muted-foreground">
-                        LBP
-                        <div className="font-semibold text-zinc-950">720,000 LBP / LL</div>
-                      </div>
+                    <div className="mt-3 rounded-md bg-emerald-600 px-3 py-2 text-center text-sm font-semibold text-white">
+                      {t('phone_add_button')}
                     </div>
-                  </div>
-                  <div className="mt-3 rounded-md bg-emerald-600 px-3 py-2 text-center text-sm font-semibold text-white">
-                    {t('phone_add_button')}
                   </div>
                 </div>
-                <div className="grid gap-3">
-                  <div className="rounded-2xl border border-zinc-700 bg-zinc-950 p-3">
-                    <div className="text-sm font-semibold">{t('customer_progress_title')}</div>
-                    <div className="mt-3 grid gap-2">
-                      <div className="flex items-center gap-2 rounded-md bg-zinc-900 px-3 py-2 text-sm text-zinc-200">
-                        <QrCode className="size-4 text-emerald-300" />
-                        <span>{t('customer_progress_scan')}</span>
+
+                <div className="grid content-between gap-3">
+                  <div className="rounded-xl border bg-zinc-950 p-4 text-white">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <div className="text-sm font-semibold">{t('preview_title')}</div>
+                        <div className="text-xs text-zinc-400">{t('preview_subtitle')}</div>
                       </div>
-                      <div className="flex items-center gap-2 rounded-md bg-zinc-900 px-3 py-2 text-sm text-zinc-200">
-                        <CheckCircle2 className="size-4 text-emerald-300" />
-                        <span>{t('customer_progress_browse')}</span>
-                      </div>
-                      <div className="flex items-center gap-2 rounded-md bg-zinc-900 px-3 py-2 text-sm text-zinc-200">
-                        <CheckCircle2 className="size-4 text-emerald-300" />
-                        <span>{t('customer_progress_order')}</span>
-                      </div>
-                      <div className="flex items-center gap-2 rounded-md bg-zinc-900 px-3 py-2 text-sm text-zinc-200">
-                        <Clock3 className="size-4 text-amber-200" />
-                        <span>{t('customer_progress_live')}</span>
-                      </div>
+                      <span className="rounded-md bg-amber-200 px-2 py-1 text-xs font-semibold text-amber-950">
+                        {t('preview_badge')}
+                      </span>
+                    </div>
+                    <div className="mt-4 grid gap-2">
+                      {OWNER_EXAMPLES.slice(0, 2).map(({ orderId, guest, table, itemKey, local }) => (
+                        <div key={orderId} className="rounded-md border border-zinc-800 bg-zinc-900 p-3">
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <div className="font-semibold">{orderId}</div>
+                              <div className="text-xs text-zinc-400">
+                                {guest}
+                                {' · '}
+                                {table}
+                              </div>
+                              <div className="mt-1 text-sm text-zinc-300">{t(itemKey)}</div>
+                            </div>
+                            <div className="text-right text-xs font-semibold text-zinc-200">
+                              {local}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                  <div className="rounded-2xl border border-zinc-700 bg-zinc-950 p-3">
-                    <div className="text-xs font-semibold uppercase text-zinc-400">
-                      {t('customer_total_label')}
+
+                  <div className="grid grid-cols-3 gap-2 text-center text-xs font-semibold text-zinc-700">
+                    <div className="rounded-md border bg-white p-3">
+                      <QrCode className="mx-auto mb-1 size-4 text-emerald-600" />
+                      {t('hero_visual_qr')}
                     </div>
-                    <div className="mt-2 flex items-end justify-between gap-3">
-                      <span className="text-2xl font-semibold">$12.00</span>
-                      <span className="text-sm font-semibold text-zinc-300">1,080,000 LBP / LL</span>
+                    <div className="rounded-md border bg-white p-3">
+                      <Smartphone className="mx-auto mb-1 size-4 text-emerald-600" />
+                      {t('hero_visual_no_app')}
+                    </div>
+                    <div className="rounded-md border bg-white p-3">
+                      <Clock3 className="mx-auto mb-1 size-4 text-emerald-600" />
+                      {t('hero_visual_tickets')}
                     </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="rounded-3xl border border-zinc-700 bg-zinc-900 p-4 shadow-2xl">
-              <div className="mb-4 flex items-center justify-between border-b border-zinc-700 pb-3">
-                <div>
-                  <div className="text-sm font-semibold">{t('preview_title')}</div>
-                  <div className="text-xs text-zinc-400">{t('preview_subtitle')}</div>
-                </div>
-                <span className="rounded-md bg-amber-200 px-2 py-1 text-xs font-semibold text-amber-950">
-                  {t('preview_badge')}
-                </span>
-              </div>
-              <div className="space-y-3">
-                {OWNER_EXAMPLES.map(({ orderId, guest, table, itemKey, local, usd }) => (
-                  <div key={orderId} className="rounded-md border border-zinc-700 bg-zinc-950 p-3">
-                    <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <div className="font-semibold">{orderId}</div>
-                        <div className="mt-1 text-sm text-zinc-400">
-                          {guest}
-                          {' · '}
-                          {table}
-                        </div>
-                        <div className="text-sm text-zinc-400">{t(itemKey)}</div>
-                      </div>
-                      <div className="text-right text-sm font-semibold">
-                        <div>{local}</div>
-                        <div className="text-xs text-zinc-400">{usd}</div>
-                      </div>
-                    </div>
-                    <div className="mt-3 grid grid-cols-3 gap-2 text-center text-xs">
-                      <span className="rounded-md bg-yellow-200 p-2 font-semibold text-yellow-950">
-                        {t('status_pending')}
-                      </span>
-                      <span className="rounded-md bg-zinc-800 p-2 text-zinc-300">
-                        {t('status_preparing')}
-                      </span>
-                      <span className="rounded-md bg-zinc-800 p-2 text-zinc-300">
-                        {t('status_ready')}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+            <div className="rounded-xl border bg-white px-4 py-3 text-sm text-zinc-600 shadow-sm">
+              {t('hero_stability_note')}
             </div>
           </div>
         </div>
