@@ -121,7 +121,7 @@ const AdminOverviewPage = async () => {
 
   return (
     <div className="grid gap-6" style={stackStyle}>
-      <section className="rounded-md bg-background p-5" style={panelStyle}>
+      <section className="rounded-md border bg-background p-5 shadow-sm" style={panelStyle}>
         <h2 className="text-xl font-semibold">
           Founder admin overview
         </h2>
@@ -187,7 +187,7 @@ const AdminOverviewPage = async () => {
         ))}
       </section>
 
-      <section className="rounded-md bg-background p-5" style={panelStyle}>
+      <section className="rounded-md border bg-background p-5 shadow-sm" style={panelStyle}>
         <h2 className="text-lg font-semibold">Recent client status</h2>
         <div className="mt-4 grid gap-2">
           {ids.slice(0, 6).map((organizationId) => {
@@ -217,8 +217,8 @@ const AdminOverviewPage = async () => {
           })}
 
           {ids.length === 0 && (
-            <div className="rounded-md border p-6 text-center text-sm text-muted-foreground">
-              No restaurant clients found yet.
+            <div className="rounded-md border border-dashed bg-muted/20 p-6 text-center text-sm text-muted-foreground">
+              No restaurant clients are onboarded yet.
             </div>
           )}
         </div>

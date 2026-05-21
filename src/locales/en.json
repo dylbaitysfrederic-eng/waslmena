@@ -319,7 +319,7 @@
     "general_menu_label": "General menu",
     "deleted_table": "Table unavailable",
     "payment_label": "Payment",
-    "empty_history": "No orders found for this period.",
+    "empty_history": "No service orders in this period.",
     "status_pending": "Pending",
     "status_confirmed": "Confirmed",
     "status_validated": "Validated",
@@ -703,7 +703,7 @@
     "ticket_total_usd": "Total USD",
     "ticket_total_lbp": "Local total",
     "ticket_total_local": "Total {currency}",
-    "empty_status_section": "No orders in this status.",
+    "empty_status_section": "No active orders here right now.",
     "order_title": "Order #{orderId}",
     "customer_label": "Customer: {customerName}",
     "no_customer_name": "No customer name",
@@ -738,7 +738,7 @@
     "pending_notification_browser_body": "{count, plural, =1 {1 new pending order arrived.} other {# new pending orders arrived.}}",
     "pending_notification_blocked": "Browser notifications are blocked in your browser settings.",
     "edit_locked_message": "Completed and cancelled orders cannot be edited. Reopen the order first if changes are needed.",
-    "empty_state": "No orders yet. Open a public table menu, submit a test cart, then refresh this page."
+    "empty_state": "No active orders right now. Keep this screen open during service and refresh when guests order."
   },
   "PilotChecklist": {
     "meta_title": "Pilot checklist",

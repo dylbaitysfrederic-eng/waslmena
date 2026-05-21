@@ -319,7 +319,7 @@
     "general_menu_label": "Menu général",
     "deleted_table": "Table indisponible",
     "payment_label": "Paiement",
-    "empty_history": "Aucune commande trouvée pour cette période.",
+    "empty_history": "Aucune commande de service sur cette période.",
     "status_pending": "En attente",
     "status_confirmed": "Confirmée",
     "status_validated": "Validée",
@@ -703,7 +703,7 @@
     "ticket_total_usd": "Total USD",
     "ticket_total_lbp": "Total local",
     "ticket_total_local": "Total {currency}",
-    "empty_status_section": "Aucune commande avec ce statut.",
+    "empty_status_section": "Aucune commande active ici pour le moment.",
     "order_title": "Commande n°{orderId}",
     "customer_label": "Client : {customerName}",
     "no_customer_name": "Nom client absent",
@@ -738,7 +738,7 @@
     "pending_notification_browser_body": "{count, plural, =1 {1 nouvelle commande en attente est arrivée.} other {# nouvelles commandes en attente sont arrivées.}}",
     "pending_notification_blocked": "Les notifications du navigateur sont bloquées dans vos paramètres.",
     "edit_locked_message": "Les commandes terminées et annulées ne peuvent pas être modifiées. Rouvrez d’abord la commande si des changements sont nécessaires.",
-    "empty_state": "Aucune commande pour le moment. Ouvrez un menu public de table, envoyez un panier de test, puis actualisez cette page."
+    "empty_state": "Aucune commande active pour le moment. Gardez cet écran ouvert pendant le service et actualisez quand les clients commandent."
   },
   "PilotChecklist": {
     "meta_title": "Checklist pilote",

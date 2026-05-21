@@ -28,7 +28,7 @@ export const OrderStatusGroups = ({
       <div className="flex flex-wrap justify-end gap-2">
         <Button
           type="button"
-          variant="outline"
+          variant="ghost"
           size="sm"
           onClick={() => setAllGroupsOpen(true)}
         >
@@ -36,14 +36,14 @@ export const OrderStatusGroups = ({
         </Button>
         <Button
           type="button"
-          variant="outline"
+          variant="ghost"
           size="sm"
           onClick={() => setAllGroupsOpen(false)}
         >
           {collapseAllLabel}
         </Button>
       </div>
-      <div className="space-y-8">{children}</div>
+      <div className="space-y-7">{children}</div>
     </div>
   );
 };

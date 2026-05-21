@@ -145,7 +145,7 @@ export const formatDate = (date: Date | null | undefined) => {
 
 export const formatDateTime = (date: Date | null) => {
   if (!date) {
-    return 'No orders yet';
+    return 'No service orders yet';
   }
 
   return new Intl.DateTimeFormat('en-US', {

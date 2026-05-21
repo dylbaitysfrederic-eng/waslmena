@@ -51,46 +51,46 @@ const NEXT_STATUS = {
 
 const ORDER_STATUS_STYLES = {
   pending: {
-    section: 'border-amber-300 bg-amber-50',
+    section: 'border-amber-300 bg-amber-50 shadow-sm',
     badge: 'border-amber-400 bg-amber-100 text-amber-950',
-    card: 'border-amber-400 bg-amber-50/90 shadow-sm',
+    card: 'border-amber-400 bg-amber-50/90 shadow-md',
     statusPanel: 'border-amber-400 bg-amber-100 text-amber-950',
   },
   confirmed: {
-    section: 'border-sky-300 bg-sky-50',
-    badge: 'border-sky-400 bg-sky-100 text-sky-950',
-    card: 'border-sky-300 bg-sky-50/90 shadow-sm',
-    statusPanel: 'border-sky-400 bg-sky-100 text-sky-950',
+    section: 'border-blue-300 bg-blue-50 shadow-sm',
+    badge: 'border-blue-400 bg-blue-100 text-blue-950',
+    card: 'border-blue-300 bg-blue-50/90 shadow-sm',
+    statusPanel: 'border-blue-400 bg-blue-100 text-blue-950',
   },
   preparing: {
-    section: 'border-purple-300 bg-purple-50',
-    badge: 'border-purple-400 bg-purple-100 text-purple-950',
-    card: 'border-purple-300 bg-purple-50/80 shadow-sm',
-    statusPanel: 'border-purple-400 bg-purple-100 text-purple-950',
+    section: 'border-fuchsia-300 bg-fuchsia-50 shadow-sm',
+    badge: 'border-fuchsia-400 bg-fuchsia-100 text-fuchsia-950',
+    card: 'border-fuchsia-300 bg-fuchsia-50/80 shadow-sm',
+    statusPanel: 'border-fuchsia-400 bg-fuchsia-100 text-fuchsia-950',
   },
   ready: {
-    section: 'border-green-400 bg-green-50',
+    section: 'border-emerald-400 bg-emerald-50 shadow-sm',
     badge: 'border-green-500 bg-green-100 text-green-950',
-    card: 'border-green-500 bg-green-50 shadow-sm',
+    card: 'border-emerald-500 bg-emerald-50 shadow-sm',
     statusPanel: 'border-green-500 bg-green-100 text-green-950',
   },
   completed: {
-    section: 'border-slate-200 bg-slate-50/60',
-    badge: 'border-slate-200 bg-slate-100 text-slate-600',
-    card: 'border-slate-200 bg-slate-50/40 opacity-85',
+    section: 'border-slate-200 bg-slate-50/35 text-slate-600',
+    badge: 'border-slate-200 bg-slate-50 text-slate-500',
+    card: 'border-slate-200 bg-slate-50/25 text-slate-600 opacity-75',
     statusPanel: 'border-slate-200 bg-slate-100 text-slate-600',
   },
   delivered: {
-    section: 'border-slate-200 bg-slate-50/60',
-    badge: 'border-slate-200 bg-slate-100 text-slate-600',
-    card: 'border-slate-200 bg-slate-50/40 opacity-85',
+    section: 'border-slate-200 bg-slate-50/35 text-slate-600',
+    badge: 'border-slate-200 bg-slate-50 text-slate-500',
+    card: 'border-slate-200 bg-slate-50/25 text-slate-600 opacity-75',
     statusPanel: 'border-slate-200 bg-slate-100 text-slate-600',
   },
   cancelled: {
-    section: 'border-red-200 bg-red-50/60',
-    badge: 'border-red-300 bg-red-100 text-red-800',
-    card: 'border-red-200 bg-red-50/35 opacity-85',
-    statusPanel: 'border-red-300 bg-red-100 text-red-800',
+    section: 'border-rose-100 bg-rose-50/25 text-rose-700',
+    badge: 'border-rose-200 bg-rose-50 text-rose-600',
+    card: 'border-rose-100 bg-rose-50/20 text-rose-800 opacity-75',
+    statusPanel: 'border-rose-200 bg-rose-50 text-rose-700',
   },
 } as const;
 
@@ -370,7 +370,7 @@ const OrdersPage = async (props: {
   );
   const renderFilterExportTools = () => (
     <>
-      <div className="rounded-md border bg-background p-4">
+      <div className="rounded-md border bg-background/95 p-4 shadow-sm">
         <div className="flex flex-wrap items-center gap-2 lg:grid lg:grid-cols-1">
           {ORDER_PERIODS.filter(period => period !== 'custom').map(period => (
             <Button
@@ -429,7 +429,7 @@ const OrdersPage = async (props: {
         )}
       </div>
 
-      <div className="rounded-md border bg-muted/20 p-4">
+      <div className="rounded-md border bg-muted/15 p-4">
         <div className="flex flex-wrap items-center gap-2 lg:grid lg:grid-cols-1">
           <span className="text-sm font-medium text-muted-foreground">
             {t('export_tools_label')}
@@ -487,8 +487,8 @@ const OrdersPage = async (props: {
     </>
   );
   const renderLiveServiceTools = () => (
-    <div className="mb-5 space-y-3">
-      <div className="flex flex-col gap-3 rounded-md border bg-background p-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="sticky top-0 z-20 mb-5 space-y-3 bg-card/95 pb-3 backdrop-blur supports-[backdrop-filter]:bg-card/80 lg:top-4">
+      <div className="flex flex-col gap-3 rounded-md border bg-background p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="text-lg font-semibold">{t('list_section_title')}</div>
           <div className="text-sm font-medium text-muted-foreground">
@@ -522,7 +522,7 @@ const OrdersPage = async (props: {
         description={t('title_bar_description')}
       />
 
-      <div className="rounded-md bg-card p-4 sm:p-5">
+      <div className="rounded-md border bg-card p-4 shadow-sm sm:p-5">
         <div className="grid gap-5 lg:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[320px_minmax(0,1fr)]">
           <aside className="hidden lg:sticky lg:top-4 lg:order-1 lg:block lg:self-start">
             <div className="space-y-4">
@@ -746,6 +746,10 @@ const OrdersPage = async (props: {
                                                 </span>
                                               </div>
                                               <div className="mt-1 text-sm text-muted-foreground">
+                                                <span className="font-medium text-foreground">
+                                                  {restaurantDisplayName}
+                                                </span>
+                                                {' · '}
                                                 {order.customerName && (
                                                   <>
                                                     <span className="font-medium text-foreground">
@@ -810,10 +814,10 @@ const OrdersPage = async (props: {
                                                 {items.map(item => (
                                                   <li
                                                     key={item.orderItemId}
-                                                    className="grid gap-2 rounded-md bg-muted px-3 py-2 sm:grid-cols-[1fr_auto]"
+                                                    className="grid gap-3 rounded-md bg-background/80 p-3 ring-1 ring-border sm:grid-cols-[minmax(0,1fr)_96px]"
                                                   >
                                                     <div>
-                                                      <div>
+                                                      <div className="font-semibold leading-5">
                                                         {item.itemName ?? t('deleted_menu_item')}
                                                       </div>
                                                       {item.customerNote && (
@@ -826,8 +830,8 @@ const OrdersPage = async (props: {
                                                         </div>
                                                       )}
                                                     </div>
-                                                    <span className="text-right font-medium">
-                                                      <div>
+                                                    <div className="text-left font-semibold sm:text-right">
+                                                      <div className="text-base">
                                                         {t('quantity_label', {
                                                           quantity: item.quantity,
                                                         })}
@@ -849,7 +853,7 @@ const OrdersPage = async (props: {
                                                           )}
                                                         </div>
                                                       )}
-                                                    </span>
+                                                    </div>
                                                   </li>
                                                 ))}
                                               </ul>
@@ -1175,24 +1179,24 @@ const OrdersPage = async (props: {
                                             </div>
 
                                             {order.customerNote && (
-                                              <div className="mt-2">
+                                              <div className="mt-3 rounded-sm border border-dashed p-2">
                                                 <div className="font-bold">
                                                   {t('ticket_order_note')}
                                                 </div>
-                                                <div>{order.customerNote}</div>
+                                                <div className="mt-1">{order.customerNote}</div>
                                               </div>
                                             )}
 
-                                            <div className="my-3" data-order-ticket-divider />
+                                            <div className="my-4" data-order-ticket-divider />
 
-                                            <div className="space-y-2">
+                                            <div className="space-y-3">
                                               {items.map(item => (
-                                                <div key={item.orderItemId}>
-                                                  <div className="flex justify-between gap-3">
+                                                <div key={item.orderItemId} className="border-b pb-2 last:border-b-0 last:pb-0">
+                                                  <div className="grid grid-cols-[1fr_auto] gap-3">
                                                     <span className="font-bold">
                                                       {item.itemName ?? t('deleted_menu_item')}
                                                     </span>
-                                                    <span>
+                                                    <span className="text-right text-base font-black">
                                                       {t('quantity_label', {
                                                         quantity: item.quantity,
                                                       })}
@@ -1228,10 +1232,10 @@ const OrdersPage = async (props: {
                                               ))}
                                             </div>
 
-                                            <div className="my-3" data-order-ticket-divider />
+                                            <div className="my-4" data-order-ticket-divider />
 
                                             {order.totalUsdCents !== null && (
-                                              <div className="flex justify-between gap-3 font-bold">
+                                              <div className="flex justify-between gap-3 text-base font-black">
                                                 <span>{t('ticket_total_usd')}</span>
                                                 <span>
                                                   {formatUsdCents(
@@ -1242,7 +1246,7 @@ const OrdersPage = async (props: {
                                               </div>
                                             )}
                                             {order.totalLbp !== null && (
-                                              <div className="flex justify-between gap-3 font-bold">
+                                              <div className="flex justify-between gap-3 text-base font-black">
                                                 <span>
                                                   {t('ticket_total_local', {
                                                     currency: localCurrencyLabel,

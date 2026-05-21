@@ -24,7 +24,7 @@ const AdminMenuPage = async () => {
     menuItemCountByOrganizationId,
   } = await getAdminOrganizations();
   return (
-    <section className="rounded-md bg-background p-5">
+    <section className="rounded-md border bg-background p-5 shadow-sm">
       <div className="mb-5 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div>
           <h2 className="text-xl font-semibold">Menu setup</h2>
@@ -36,8 +36,8 @@ const AdminMenuPage = async () => {
 
       {ids.length === 0
         ? (
-            <div className="rounded-md border p-8 text-center text-muted-foreground">
-              No restaurant clients found yet.
+            <div className="rounded-md border border-dashed bg-muted/20 p-8 text-center text-sm text-muted-foreground">
+              No restaurant clients are ready for menu setup yet.
             </div>
           )
         : (

@@ -319,7 +319,7 @@
     "general_menu_label": "القائمة العامة",
     "deleted_table": "الطاولة غير متاحة",
     "payment_label": "الدفع",
-    "empty_history": "لا توجد طلبات في هذه الفترة.",
+    "empty_history": "لا توجد طلبات خدمة في هذه الفترة.",
     "status_pending": "قيد الانتظار",
     "status_confirmed": "تم التأكيد",
     "status_validated": "تم التأكيد",
@@ -703,7 +703,7 @@
     "ticket_total_usd": "المجموع بالدولار",
     "ticket_total_lbp": "المجموع المحلي",
     "ticket_total_local": "مجموع {currency}",
-    "empty_status_section": "لا توجد طلبات بهذه الحالة.",
+    "empty_status_section": "لا توجد طلبات نشطة هنا الآن.",
     "order_title": "طلب رقم {orderId}",
     "customer_label": "الزبون: {customerName}",
     "no_customer_name": "لا يوجد اسم زبون",
@@ -738,7 +738,7 @@
     "pending_notification_browser_body": "{count, plural, =1 {وصل طلب جديد قيد الانتظار.} =2 {وصل طلبان جديدان قيد الانتظار.} few {وصلت # طلبات جديدة قيد الانتظار.} many {وصل # طلباً جديداً قيد الانتظار.} other {وصل # طلب جديد قيد الانتظار.}}",
     "pending_notification_blocked": "إشعارات المتصفح محظورة في إعداداتك.",
     "edit_locked_message": "لا يمكن تعديل الطلبات المكتملة أو الملغاة. أعد فتح الطلب أولاً إذا احتجت إلى تغييرات.",
-    "empty_state": "لا توجد طلبات بعد. افتح قائمة طاولة عامة، أرسل سلة اختبار، ثم حدّث هذه الصفحة."
+    "empty_state": "لا توجد طلبات نشطة الآن. أبقِ هذه الشاشة مفتوحة أثناء الخدمة وحدّثها عند وصول طلبات الزبائن."
   },
   "PilotChecklist": {
     "meta_title": "قائمة تجربة المطعم",
