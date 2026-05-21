@@ -1,4 +1,4 @@
-export const ORDER_PERIODS = ['today', 'week', 'month', 'custom'] as const;
+export const ORDER_PERIODS = ['recent', 'today', 'week', 'month', 'custom'] as const;
 
 export type OrderPeriod = (typeof ORDER_PERIODS)[number];
 
@@ -16,7 +16,7 @@ const MS_PER_DAY = 86_400_000;
 export const normalizeOrderPeriod = (period?: string): OrderPeriod => {
   return ORDER_PERIODS.includes(period as OrderPeriod)
     ? period as OrderPeriod
-    : 'today';
+    : 'recent';
 };
 
 const parseDateInput = (value?: string) => {
@@ -103,7 +103,9 @@ export const getOrderRange = (
     };
   }
 
-  const startDate = new Date(today);
+  const startDate = period === 'recent'
+    ? new Date(now.getTime() - (2 * MS_PER_DAY))
+    : new Date(today);
 
   if (period === 'week') {
     const day = startDate.getDay();
