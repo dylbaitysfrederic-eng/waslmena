@@ -17,9 +17,9 @@ type PublicMenuSplashProps = {
 };
 
 const BUTTON_POSITION_CLASS_NAMES: Record<string, string> = {
-  center: 'justify-center pb-0',
-  lower_center: 'justify-end pb-[18dvh]',
-  bottom_center: 'justify-end pb-8',
+  center: 'top-1/2 -translate-y-1/2',
+  lower_center: 'top-[70%] -translate-y-1/2',
+  bottom_center: 'bottom-[max(2rem,env(safe-area-inset-bottom))]',
 };
 
 const getReadableTextColor = (hexColor: string | null) => {
@@ -87,18 +87,16 @@ export const PublicMenuSplash = ({
             </div>
           </div>
 
-          <div className={`flex flex-1 items-center ${buttonPositionClassName}`}>
-            <Link
-              href={menuHref}
-              prefetch={false}
-              className="inline-flex min-h-12 min-w-44 items-center justify-center rounded-md bg-white px-6 py-3 text-base font-bold text-black shadow-lg"
-              style={buttonColor
-                ? { backgroundColor: buttonColor, color: buttonTextColor }
-                : undefined}
-            >
-              {buttonLabel}
-            </Link>
-          </div>
+          <Link
+            href={menuHref}
+            prefetch={false}
+            className={`absolute left-1/2 inline-flex min-h-12 min-w-44 -translate-x-1/2 items-center justify-center rounded-md bg-white px-6 py-3 text-base font-bold text-black shadow-lg ${buttonPositionClassName}`}
+            style={buttonColor
+              ? { backgroundColor: buttonColor, color: buttonTextColor }
+              : undefined}
+          >
+            {buttonLabel}
+          </Link>
         </div>
       </div>
     </main>
