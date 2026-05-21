@@ -4,10 +4,13 @@ import {
   Clock3,
   Facebook,
   Instagram,
+  Languages,
   MessageCircle,
+  Printer,
   QrCode,
   Smartphone,
   Utensils,
+  Wifi,
 } from 'lucide-react';
 import Link from 'next/link';
 import { getTranslations, unstable_setRequestLocale } from 'next-intl/server';
@@ -53,6 +56,33 @@ const QUICK_FLOW_STEPS = [
   {
     key: 'order_instantly',
     icon: Utensils,
+  },
+] as const;
+
+const WHY_WASL_FEATURES = [
+  {
+    key: 'stable_qr',
+    icon: QrCode,
+  },
+  {
+    key: 'languages',
+    icon: Languages,
+  },
+  {
+    key: 'weak_connections',
+    icon: Wifi,
+  },
+  {
+    key: 'ordering_modes',
+    icon: Smartphone,
+  },
+  {
+    key: 'kitchen_tickets',
+    icon: Printer,
+  },
+  {
+    key: 'welcome_branding',
+    icon: CheckCircle2,
   },
 ] as const;
 
@@ -396,6 +426,38 @@ const IndexPage = async (props: {
                     </p>
                   </div>
                 </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="border-b bg-zinc-50 py-12">
+        <div className="mx-auto max-w-screen-xl px-4">
+          <div className="max-w-2xl">
+            <p className="text-sm font-semibold uppercase text-emerald-700">
+              {t('why_wasl_eyebrow')}
+            </p>
+            <h2 className="mt-2 text-3xl font-semibold tracking-normal text-zinc-950">
+              {t('why_wasl_title')}
+            </h2>
+            <p className="mt-3 text-sm leading-6 text-muted-foreground sm:text-base">
+              {t('why_wasl_description')}
+            </p>
+          </div>
+
+          <div className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {WHY_WASL_FEATURES.map(({ key, icon: Icon }) => (
+              <div key={key} className="rounded-xl border bg-white p-5">
+                <div className="flex size-10 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700">
+                  <Icon className="size-5" aria-hidden="true" />
+                </div>
+                <h3 className="mt-4 text-lg font-semibold">
+                  {t(`why_wasl_${key}_title`)}
+                </h3>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  {t(`why_wasl_${key}_description`)}
+                </p>
               </div>
             ))}
           </div>
