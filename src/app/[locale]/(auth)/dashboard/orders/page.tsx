@@ -209,6 +209,12 @@ const OrdersPage = async (props: {
     '/dashboard/orders/export',
     props.params.locale,
   );
+  const getTicketHref = (orderId: number) => {
+    return getI18nPath(
+      `/dashboard/orders/${orderId}/ticket`,
+      props.params.locale,
+    );
+  };
   const customFromValue = selectedPeriod === 'custom'
     ? selectedRange.from || defaultCustomRange.from
     : defaultCustomRange.from;
@@ -254,9 +260,6 @@ const OrdersPage = async (props: {
       restaurantDisplayName: organizationSchema.restaurantDisplayName,
       restaurantAddress: organizationSchema.restaurantAddress,
       restaurantWhatsappNumber: organizationSchema.restaurantWhatsappNumber,
-      restaurantLogoUrl: organizationSchema.restaurantLogoUrl,
-      restaurantPrimaryColor: organizationSchema.restaurantPrimaryColor,
-      restaurantAccentColor: organizationSchema.restaurantAccentColor,
       localCurrencyLabel: organizationSchema.localCurrencyLabel,
       orderVisualNotificationsEnabled:
         organizationSchema.orderVisualNotificationsEnabled,
@@ -270,10 +273,6 @@ const OrdersPage = async (props: {
   const restaurantDisplayName = organization?.restaurantDisplayName ?? 'Restaurant';
   const restaurantAddress = organization?.restaurantAddress ?? null;
   const restaurantWhatsappNumber = organization?.restaurantWhatsappNumber ?? null;
-  const restaurantLogoUrl = organization?.restaurantLogoUrl ?? null;
-  const restaurantPrimaryColor = organization?.restaurantPrimaryColor ?? null;
-  const restaurantAccentColor = organization?.restaurantAccentColor
-    ?? restaurantPrimaryColor;
   const orderVisualNotificationsEnabled = (
     organization?.orderVisualNotificationsEnabled ?? true
   );
@@ -615,7 +614,6 @@ const OrdersPage = async (props: {
                                         item: (typeof items)[number],
                                       ) => item.unitPriceUsdCents !== null
                                         && item.unitPriceLbp !== null;
-                                      const ticketId = `order-ticket-${order.id}`;
                                       const canEdit = order.status !== 'completed'
                                         && order.status !== 'cancelled';
                                       const copyTicketText = [
@@ -862,8 +860,8 @@ const OrdersPage = async (props: {
                                             <div>
                                               <div className="mb-3 grid gap-2">
                                                 <PrintTicketButton
+                                                  href={getTicketHref(order.id)}
                                                   label={t('print_ticket_button')}
-                                                  ticketId={ticketId}
                                                 />
                                                 <CopyTicketButton
                                                   copiedLabel={t('copy_ticket_success')}
@@ -1104,167 +1102,6 @@ const OrdersPage = async (props: {
                                                 </div>
                                               )}
 
-                                          <div id={ticketId} className="hidden">
-                                            {restaurantLogoUrl && (
-                                            // eslint-disable-next-line @next/next/no-img-element
-                                              <img
-                                                src={restaurantLogoUrl}
-                                                alt=""
-                                                className="mx-auto mb-2 size-12 object-contain"
-                                              />
-                                            )}
-                                            <div
-                                              className="text-center text-lg font-bold uppercase"
-                                              style={restaurantPrimaryColor
-                                                ? { color: restaurantPrimaryColor }
-                                                : undefined}
-                                            >
-                                              {restaurantDisplayName}
-                                            </div>
-                                            {restaurantAddress && (
-                                              <div className="mt-1 text-center text-xs">
-                                                {restaurantAddress}
-                                              </div>
-                                            )}
-                                            {restaurantWhatsappNumber && (
-                                              <div className="mt-1 text-center text-xs">
-                                                {t('ticket_whatsapp', {
-                                                  whatsappNumber: restaurantWhatsappNumber,
-                                                })}
-                                              </div>
-                                            )}
-
-                                            <div
-                                              className="my-3"
-                                              data-order-ticket-divider
-                                              style={restaurantAccentColor
-                                                ? { borderColor: restaurantAccentColor }
-                                                : undefined}
-                                            />
-
-                                            <div className="space-y-1">
-                                              <div className="flex justify-between gap-3">
-                                                <span>
-                                                  {t('order_title', { orderId: order.id })}
-                                                </span>
-                                                <span>{t(`status_${order.status}`)}</span>
-                                              </div>
-                                              <div>
-                                                {t('ticket_sent_at')}
-                                                {': '}
-                                                {formatDateTime(order.createdAt, props.params.locale)}
-                                              </div>
-                                              {completedAt && (
-                                                <div>
-                                                  {t('ticket_completed_at')}
-                                                  {': '}
-                                                  {formatDateTime(completedAt, props.params.locale)}
-                                                </div>
-                                              )}
-                                              <div>
-                                                {orderSourceLabel}
-                                              </div>
-                                              <div>
-                                                {t('payment_method_label', {
-                                                  paymentMethod: order.paymentMethod,
-                                                })}
-                                              </div>
-                                              <div>
-                                                {order.customerName
-                                                  ? t('ticket_customer', {
-                                                    customerName: order.customerName,
-                                                  })
-                                                  : t('no_customer_name')}
-                                              </div>
-                                            </div>
-
-                                            {order.customerNote && (
-                                              <div className="mt-3 rounded-sm border border-dashed p-2">
-                                                <div className="font-bold">
-                                                  {t('ticket_order_note')}
-                                                </div>
-                                                <div className="mt-1">{order.customerNote}</div>
-                                              </div>
-                                            )}
-
-                                            <div className="my-4" data-order-ticket-divider />
-
-                                            <div className="space-y-3">
-                                              {items.map(item => (
-                                                <div key={item.orderItemId} className="border-b pb-2 last:border-b-0 last:pb-0">
-                                                  <div className="grid grid-cols-[1fr_auto] gap-3">
-                                                    <span className="font-bold">
-                                                      {item.itemName ?? t('deleted_menu_item')}
-                                                    </span>
-                                                    <span className="text-right text-base font-black">
-                                                      {t('quantity_label', {
-                                                        quantity: item.quantity,
-                                                      })}
-                                                    </span>
-                                                  </div>
-                                                  <div className="text-right text-xs">
-                                                    {item.unitPriceUsdCents !== null && (
-                                                      <div>
-                                                        {formatUsdCents(
-                                                          item.unitPriceUsdCents,
-                                                          props.params.locale,
-                                                        )}
-                                                      </div>
-                                                    )}
-                                                    {item.unitPriceLbp !== null && (
-                                                      <div>
-                                                        {formatLocalCurrency(
-                                                          item.unitPriceLbp,
-                                                          props.params.locale,
-                                                          localCurrencyLabel,
-                                                        )}
-                                                      </div>
-                                                    )}
-                                                  </div>
-                                                  {item.customerNote && (
-                                                    <div className="mt-1 text-xs">
-                                                      {t('ticket_item_note')}
-                                                      {': '}
-                                                      {item.customerNote}
-                                                    </div>
-                                                  )}
-                                                </div>
-                                              ))}
-                                            </div>
-
-                                            <div className="my-4" data-order-ticket-divider />
-
-                                            {order.totalUsdCents !== null && (
-                                              <div className="flex justify-between gap-3 text-base font-black">
-                                                <span>{t('ticket_total_usd')}</span>
-                                                <span>
-                                                  {formatUsdCents(
-                                                    order.totalUsdCents,
-                                                    props.params.locale,
-                                                  )}
-                                                </span>
-                                              </div>
-                                            )}
-                                            {order.totalLbp !== null && (
-                                              <div className="flex justify-between gap-3 text-base font-black">
-                                                <span>
-                                                  {t('ticket_total_local', {
-                                                    currency: localCurrencyLabel,
-                                                  })}
-                                                </span>
-                                                <span>
-                                                  {formatLocalCurrency(
-                                                    order.totalLbp,
-                                                    props.params.locale,
-                                                    localCurrencyLabel,
-                                                  )}
-                                                </span>
-                                              </div>
-                                            )}
-                                            {!hasStoredTotal && (
-                                              <div>{t('no_order_total')}</div>
-                                            )}
-                                          </div>
                                         </article>
                                       );
                                     })}
