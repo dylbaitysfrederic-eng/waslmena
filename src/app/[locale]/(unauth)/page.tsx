@@ -41,6 +41,21 @@ const HOW_IT_WORKS_KEYS = [
   'staff_manages',
 ] as const;
 
+const QUICK_FLOW_STEPS = [
+  {
+    key: 'scan_qr',
+    icon: QrCode,
+  },
+  {
+    key: 'browse_menu',
+    icon: Smartphone,
+  },
+  {
+    key: 'order_instantly',
+    icon: Utensils,
+  },
+] as const;
+
 const MENA_KEYS = [
   'unstable_internet',
   'bilingual_service',
@@ -348,6 +363,45 @@ const IndexPage = async (props: {
         </div>
       </section>
 
+      <section id="how-it-works" className="border-b bg-background py-12">
+        <div className="mx-auto max-w-screen-xl px-4">
+          <div className="max-w-2xl">
+            <p className="text-sm font-semibold uppercase text-emerald-700">
+              {t('quick_flow_eyebrow')}
+            </p>
+            <h2 className="mt-2 text-3xl font-semibold tracking-normal text-zinc-950">
+              {t('quick_flow_title')}
+            </h2>
+            <p className="mt-3 text-sm leading-6 text-muted-foreground sm:text-base">
+              {t('quick_flow_description')}
+            </p>
+          </div>
+
+          <div className="mt-7 grid gap-3 md:grid-cols-3">
+            {QUICK_FLOW_STEPS.map(({ key, icon: Icon }, index) => (
+              <div key={key} className="rounded-xl border bg-card p-5">
+                <div className="flex items-start gap-4">
+                  <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700">
+                    <Icon className="size-5" aria-hidden="true" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-semibold uppercase text-muted-foreground">
+                      {t('quick_flow_step_label', { number: index + 1 })}
+                    </div>
+                    <h3 className="mt-1 text-lg font-semibold">
+                      {t(`quick_flow_${key}_title`)}
+                    </h3>
+                    <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                      {t(`quick_flow_${key}_description`)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className="border-b py-14">
         <div className="mx-auto max-w-screen-xl px-4">
           <div className="max-w-2xl">
@@ -367,7 +421,7 @@ const IndexPage = async (props: {
         </div>
       </section>
 
-      <section id="how-it-works" className="border-b bg-muted py-14">
+      <section className="border-b bg-muted py-14">
         <div className="mx-auto max-w-screen-xl px-4">
           <h2 className="text-3xl font-semibold tracking-normal">{t('how_title')}</h2>
           <div className="mt-8 grid gap-4 md:grid-cols-4">
