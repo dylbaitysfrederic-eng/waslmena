@@ -115,6 +115,16 @@ const HOSPITALITY_USE_CASES = [
   },
 ] as const;
 
+const PRICING_TIERS = ['starter', 'pro', 'custom'] as const;
+
+const FINAL_TRUST_POINTS = [
+  'stable_qr',
+  'no_app',
+  'mena',
+  'languages',
+  'weak_connections',
+] as const;
+
 const MENA_KEYS = [
   'unstable_internet',
   'bilingual_service',
@@ -806,19 +816,74 @@ const IndexPage = async (props: {
         </div>
       </section>
 
-      <section className="border-b bg-muted py-14">
+      <section className="border-b bg-zinc-50 py-14">
         <div className="mx-auto max-w-screen-xl px-4">
-          <div className="rounded-md bg-background p-6">
-            <div className="grid gap-6 md:grid-cols-[1fr_280px] md:items-center">
-              <div>
-                <h2 className="text-3xl font-semibold tracking-normal">{t('pricing_title')}</h2>
-                <p className="mt-3 text-muted-foreground">{t('pricing_description')}</p>
+          <div className="rounded-xl border bg-white p-5 sm:p-6">
+            <div className="grid gap-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-start">
+              <div className="max-w-xl">
+                <p className="text-sm font-semibold uppercase text-emerald-700">
+                  {t('pricing_eyebrow')}
+                </p>
+                <h2 className="mt-2 text-3xl font-semibold tracking-normal text-zinc-950">
+                  {t('pricing_title')}
+                </h2>
+                <p className="mt-3 text-sm leading-6 text-muted-foreground sm:text-base">
+                  {t('pricing_description')}
+                </p>
+
+                <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                  <Button asChild size="lg" className="bg-emerald-600 text-white hover:bg-emerald-700">
+                    <a href="#contact">{t('pricing_primary_cta')}</a>
+                  </Button>
+                  {whatsappHref && (
+                    <Button asChild size="lg" variant="outline">
+                      <a href={whatsappHref} target="_blank" rel="noreferrer">
+                        {t('pricing_secondary_cta')}
+                      </a>
+                    </Button>
+                  )}
+                </div>
+
+                <div className="mt-6 grid gap-2 text-sm text-zinc-700 sm:grid-cols-2">
+                  {FINAL_TRUST_POINTS.map(key => (
+                    <div key={key} className="flex items-center gap-2">
+                      <CheckCircle2 className="size-4 shrink-0 text-emerald-600" />
+                      <span>{t(`pricing_trust_${key}`)}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div className="rounded-md border p-5">
-                <div className="text-sm font-semibold text-muted-foreground">{t('pricing_plan_label')}</div>
-                <div className="mt-2 text-3xl font-semibold">{t('pricing_plan_price')}</div>
-                <p className="mt-2 text-sm text-muted-foreground">{t('pricing_plan_note')}</p>
+
+              <div className="grid gap-3 md:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
+                {PRICING_TIERS.map(tier => (
+                  <div key={tier} className="rounded-xl border bg-zinc-50 p-4">
+                    <div className="text-sm font-semibold text-emerald-700">
+                      {t(`pricing_${tier}_label`)}
+                    </div>
+                    <h3 className="mt-2 text-xl font-semibold">
+                      {t(`pricing_${tier}_title`)}
+                    </h3>
+                    <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                      {t(`pricing_${tier}_description`)}
+                    </p>
+                    <div className="mt-4 rounded-md bg-white px-3 py-2 text-sm font-semibold text-zinc-700">
+                      {t(`pricing_${tier}_note`)}
+                    </div>
+                  </div>
+                ))}
               </div>
+            </div>
+
+            <div className="mt-6 rounded-xl border bg-background px-4 py-3 text-sm text-muted-foreground">
+              <span className="font-semibold text-foreground">
+                {t('pricing_contact_title')}
+              </span>
+              {' '}
+              <a href={`mailto:${contactEmail}`} className="font-semibold text-foreground underline-offset-4 hover:underline">
+                {contactEmail}
+              </a>
+              {' · '}
+              {t('pricing_contact_note')}
             </div>
           </div>
         </div>
