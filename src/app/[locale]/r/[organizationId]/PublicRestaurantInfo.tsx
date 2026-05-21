@@ -2,13 +2,22 @@ import { cn } from '@/utils/Helpers';
 
 type PublicRestaurantInfoProps = {
   address: string | null;
+  googleMapsUrl: string | null;
   infoLabel: string;
+  instagramLabel: string;
+  instagramUrl: string | null;
   mapsLabel: string;
+  openingHours: string | null;
+  openingHoursLabel: string;
   phone: string | null;
   phoneLabel: string;
   restaurantName: string;
   whatsappLabel: string;
   whatsappUrl: string | null;
+  wifiLabel: string;
+  wifiName: string | null;
+  wifiPassword: string | null;
+  wifiPasswordLabel: string;
 };
 
 const getMapsUrl = (restaurantName: string, address: string) => {
@@ -17,7 +26,17 @@ const getMapsUrl = (restaurantName: string, address: string) => {
 };
 
 export const PublicRestaurantInfo = (props: PublicRestaurantInfoProps) => {
-  const hasInfo = Boolean(props.address || props.phone || props.whatsappUrl);
+  const mapsUrl = props.googleMapsUrl
+    ?? (props.address ? getMapsUrl(props.restaurantName, props.address) : null);
+  const hasInfo = Boolean(
+    props.address
+    || props.openingHours
+    || props.phone
+    || props.whatsappUrl
+    || props.instagramUrl
+    || mapsUrl
+    || props.wifiName,
+  );
 
   if (!hasInfo) {
     return null;
@@ -47,13 +66,20 @@ export const PublicRestaurantInfo = (props: PublicRestaurantInfoProps) => {
       </summary>
 
       <div className="mt-3 grid gap-2 border-t pt-3 text-xs text-muted-foreground">
+        {props.openingHours && (
+          <div className="rounded-md border bg-background px-3 py-2 font-semibold text-foreground">
+            {props.openingHoursLabel}
+            {': '}
+            <span className="font-medium">{props.openingHours}</span>
+          </div>
+        )}
         {props.address && (
-          <a
-            href={getMapsUrl(props.restaurantName, props.address)}
-            target="_blank"
-            rel="noreferrer"
-            className="rounded-md border bg-background px-3 py-2 font-semibold text-foreground"
-          >
+          <div className="rounded-md border bg-background px-3 py-2 font-semibold text-foreground">
+            {props.address}
+          </div>
+        )}
+        {mapsUrl && (
+          <a href={mapsUrl} target="_blank" rel="noreferrer" className="rounded-md border bg-background px-3 py-2 font-semibold text-foreground">
             {props.mapsLabel}
           </a>
         )}
@@ -76,6 +102,30 @@ export const PublicRestaurantInfo = (props: PublicRestaurantInfoProps) => {
           >
             {props.whatsappLabel}
           </a>
+        )}
+        {props.instagramUrl && (
+          <a
+            href={props.instagramUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="rounded-md border bg-background px-3 py-2 font-semibold text-foreground"
+          >
+            {props.instagramLabel}
+          </a>
+        )}
+        {props.wifiName && (
+          <div className="rounded-md border bg-background px-3 py-2 font-semibold text-foreground">
+            {props.wifiLabel}
+            {': '}
+            <span className="font-medium">{props.wifiName}</span>
+            {props.wifiPassword && (
+              <span className="mt-1 block text-muted-foreground">
+                {props.wifiPasswordLabel}
+                {': '}
+                {props.wifiPassword}
+              </span>
+            )}
+          </div>
         )}
       </div>
     </details>

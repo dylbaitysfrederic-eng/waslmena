@@ -108,6 +108,16 @@ const AdminIdentityDetailPage = async (props: {
                 placeholder="Street, area, city"
               />
             </div>
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="restaurantOpeningHours">Opening hours</Label>
+              <Input
+                id="restaurantOpeningHours"
+                name="restaurantOpeningHours"
+                defaultValue={organization?.restaurantOpeningHours ?? ''}
+                maxLength={160}
+                placeholder="Mon-Sun 12:00-23:00"
+              />
+            </div>
           </div>
         </SettingsSection>
 
@@ -132,6 +142,45 @@ const AdminIdentityDetailPage = async (props: {
               description="Display the WhatsApp contact action where enabled."
               defaultChecked={organization?.enableWhatsappContact ?? true}
             />
+            <div className="space-y-2">
+              <Label htmlFor="restaurantInstagramUrl">Instagram</Label>
+              <Input
+                id="restaurantInstagramUrl"
+                name="restaurantInstagramUrl"
+                defaultValue={organization?.restaurantInstagramUrl ?? ''}
+                placeholder="@restaurant or https://instagram.com/restaurant"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="restaurantGoogleMapsUrl">Google Maps URL</Label>
+              <Input
+                id="restaurantGoogleMapsUrl"
+                name="restaurantGoogleMapsUrl"
+                type="url"
+                defaultValue={organization?.restaurantGoogleMapsUrl ?? ''}
+                placeholder="https://maps.google.com/..."
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="restaurantWifiName">Wi-Fi name</Label>
+              <Input
+                id="restaurantWifiName"
+                name="restaurantWifiName"
+                defaultValue={organization?.restaurantWifiName ?? ''}
+                maxLength={80}
+                placeholder="Guest Wi-Fi"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="restaurantWifiPassword">Wi-Fi password</Label>
+              <Input
+                id="restaurantWifiPassword"
+                name="restaurantWifiPassword"
+                defaultValue={organization?.restaurantWifiPassword ?? ''}
+                maxLength={80}
+                placeholder="Optional"
+              />
+            </div>
             <div className="space-y-2">
               <Label htmlFor="localCurrencyCode">Currency code</Label>
               <Input

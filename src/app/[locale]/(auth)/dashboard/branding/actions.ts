@@ -61,6 +61,50 @@ const isValidAddress = (value: string | null) => {
   return value === null || value.length <= 240;
 };
 
+const isValidShortPublicText = (value: string | null) => {
+  return value === null || value.length <= 160;
+};
+
+const isValidPublicDetail = (value: string | null) => {
+  return value === null || value.length <= 80;
+};
+
+const normalizeInstagramUrl = (value: FormDataEntryValue | null) => {
+  const textValue = normalizeOptionalText(value);
+
+  if (textValue === null) {
+    return null;
+  }
+
+  if (textValue.startsWith('@')) {
+    return `https://www.instagram.com/${textValue.slice(1)}`;
+  }
+
+  if (!textValue.includes('://') && !textValue.includes('/')) {
+    return `https://www.instagram.com/${textValue}`;
+  }
+
+  return textValue;
+};
+
+const isValidInstagramUrl = (value: string | null) => {
+  if (value === null) {
+    return true;
+  }
+
+  if (!isValidUrl(value)) {
+    return false;
+  }
+
+  try {
+    const url = new URL(value);
+    return url.hostname === 'instagram.com'
+      || url.hostname === 'www.instagram.com';
+  } catch {
+    return false;
+  }
+};
+
 const isValidWelcomeButtonLabel = (value: string | null) => {
   return value === null || value.length <= 32;
 };
@@ -112,6 +156,21 @@ export const updateRestaurantBrandingAction = async (formData: FormData) => {
   const restaurantAddress = normalizeOptionalText(
     formData.get('restaurantAddress'),
   );
+  const restaurantOpeningHours = normalizeOptionalText(
+    formData.get('restaurantOpeningHours'),
+  );
+  const restaurantInstagramUrl = normalizeInstagramUrl(
+    formData.get('restaurantInstagramUrl'),
+  );
+  const restaurantWifiName = normalizeOptionalText(
+    formData.get('restaurantWifiName'),
+  );
+  const restaurantWifiPassword = normalizeOptionalText(
+    formData.get('restaurantWifiPassword'),
+  );
+  const restaurantGoogleMapsUrl = normalizeOptionalText(
+    formData.get('restaurantGoogleMapsUrl'),
+  );
   const restaurantPrimaryColor = normalizeOptionalText(
     formData.get('restaurantPrimaryColor'),
   );
@@ -158,6 +217,11 @@ export const updateRestaurantBrandingAction = async (formData: FormData) => {
     || !isValidHexColor(welcomeButtonColor)
     || !isValidWhatsappNumber(restaurantWhatsappNumber)
     || !isValidAddress(restaurantAddress)
+    || !isValidShortPublicText(restaurantOpeningHours)
+    || !isValidInstagramUrl(restaurantInstagramUrl)
+    || !isValidPublicDetail(restaurantWifiName)
+    || !isValidPublicDetail(restaurantWifiPassword)
+    || !isValidUrl(restaurantGoogleMapsUrl)
     || !isValidCurrencyCode(localCurrencyCode)
     || !isValidCurrencyLabel(localCurrencyLabel)
     || !isValidWelcomeButtonLabel(welcomeButtonLabel)
@@ -234,6 +298,11 @@ export const updateRestaurantBrandingAction = async (formData: FormData) => {
       restaurantDisplayName,
       restaurantLogoUrl,
       restaurantAddress,
+      restaurantOpeningHours,
+      restaurantInstagramUrl,
+      restaurantWifiName,
+      restaurantWifiPassword,
+      restaurantGoogleMapsUrl,
       restaurantPrimaryColor,
       restaurantAccentColor: nextRestaurantAccentColor,
       restaurantThemeMode,
@@ -258,6 +327,11 @@ export const updateRestaurantBrandingAction = async (formData: FormData) => {
         restaurantDisplayName,
         restaurantLogoUrl,
         restaurantAddress,
+        restaurantOpeningHours,
+        restaurantInstagramUrl,
+        restaurantWifiName,
+        restaurantWifiPassword,
+        restaurantGoogleMapsUrl,
         restaurantPrimaryColor,
         restaurantAccentColor: nextRestaurantAccentColor,
         restaurantThemeMode,

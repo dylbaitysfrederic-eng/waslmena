@@ -218,6 +218,13 @@
       "when": 1779324600000,
       "tag": "0030_welcome_screen_controls",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1779325600000,
+      "tag": "0031_restaurant_public_details",
+      "breakpoints": true
     }
   ]
 }

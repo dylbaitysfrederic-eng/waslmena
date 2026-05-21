@@ -104,6 +104,11 @@ const PublicGeneralMenuPage = async (props: PublicGeneralMenuPageProps) => {
     .select({
       restaurantDisplayName: organizationSchema.restaurantDisplayName,
       restaurantAddress: organizationSchema.restaurantAddress,
+      restaurantOpeningHours: organizationSchema.restaurantOpeningHours,
+      restaurantInstagramUrl: organizationSchema.restaurantInstagramUrl,
+      restaurantWifiName: organizationSchema.restaurantWifiName,
+      restaurantWifiPassword: organizationSchema.restaurantWifiPassword,
+      restaurantGoogleMapsUrl: organizationSchema.restaurantGoogleMapsUrl,
       restaurantLogoUrl: organizationSchema.restaurantLogoUrl,
       welcomeScreenEnabled: organizationSchema.welcomeScreenEnabled,
       welcomeImageAvifUrl: organizationSchema.welcomeImageAvifUrl,
@@ -378,13 +383,22 @@ const PublicGeneralMenuPage = async (props: PublicGeneralMenuPageProps) => {
       >
         <PublicRestaurantInfo
           address={organization.restaurantAddress ?? null}
+          googleMapsUrl={organization.restaurantGoogleMapsUrl ?? null}
           infoLabel={t('restaurant_info_label')}
+          instagramLabel={t('instagram_label')}
+          instagramUrl={organization.restaurantInstagramUrl ?? null}
           mapsLabel={t('maps_link_label')}
+          openingHours={organization.restaurantOpeningHours ?? null}
+          openingHoursLabel={t('opening_hours_label')}
           phone={organization.restaurantWhatsappNumber ?? null}
           phoneLabel={t('phone_label')}
           restaurantName={restaurantName}
           whatsappLabel={t('whatsapp_contact_button')}
           whatsappUrl={whatsappUrl}
+          wifiLabel={t('wifi_label')}
+          wifiName={organization.restaurantWifiName ?? null}
+          wifiPassword={organization.restaurantWifiPassword ?? null}
+          wifiPasswordLabel={t('wifi_password_label')}
         />
 
         {categoriesWithItems.length > 0

@@ -48,6 +48,11 @@ const RestaurantBrandingPage = async (props: {
     .select({
       restaurantDisplayName: organizationSchema.restaurantDisplayName,
       restaurantAddress: organizationSchema.restaurantAddress,
+      restaurantOpeningHours: organizationSchema.restaurantOpeningHours,
+      restaurantInstagramUrl: organizationSchema.restaurantInstagramUrl,
+      restaurantWifiName: organizationSchema.restaurantWifiName,
+      restaurantWifiPassword: organizationSchema.restaurantWifiPassword,
+      restaurantGoogleMapsUrl: organizationSchema.restaurantGoogleMapsUrl,
       restaurantLogoUrl: organizationSchema.restaurantLogoUrl,
       welcomeScreenEnabled: organizationSchema.welcomeScreenEnabled,
       welcomeImageAvifUrl: organizationSchema.welcomeImageAvifUrl,
@@ -142,6 +147,82 @@ const RestaurantBrandingPage = async (props: {
             <p className="text-sm text-muted-foreground">
               {t('address_help')}
             </p>
+          </div>
+
+          <div className="grid gap-4 rounded-md border bg-muted/30 p-4 sm:grid-cols-2">
+            <div className="space-y-2 sm:col-span-2">
+              <div className="font-semibold">
+                {t('public_details_title')}
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {t('public_details_description')}
+              </p>
+            </div>
+
+            <div className="space-y-2 sm:col-span-2">
+              <Label htmlFor="restaurantOpeningHours">
+                {t('opening_hours_label')}
+              </Label>
+              <Input
+                id="restaurantOpeningHours"
+                name="restaurantOpeningHours"
+                defaultValue={organization?.restaurantOpeningHours ?? ''}
+                placeholder={t('opening_hours_placeholder')}
+                maxLength={160}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="restaurantInstagramUrl">
+                {t('instagram_label')}
+              </Label>
+              <Input
+                id="restaurantInstagramUrl"
+                name="restaurantInstagramUrl"
+                defaultValue={organization?.restaurantInstagramUrl ?? ''}
+                placeholder={t('instagram_placeholder')}
+                maxLength={120}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="restaurantGoogleMapsUrl">
+                {t('google_maps_label')}
+              </Label>
+              <Input
+                id="restaurantGoogleMapsUrl"
+                name="restaurantGoogleMapsUrl"
+                type="url"
+                defaultValue={organization?.restaurantGoogleMapsUrl ?? ''}
+                placeholder={t('google_maps_placeholder')}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="restaurantWifiName">
+                {t('wifi_name_label')}
+              </Label>
+              <Input
+                id="restaurantWifiName"
+                name="restaurantWifiName"
+                defaultValue={organization?.restaurantWifiName ?? ''}
+                placeholder={t('wifi_name_placeholder')}
+                maxLength={80}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="restaurantWifiPassword">
+                {t('wifi_password_label')}
+              </Label>
+              <Input
+                id="restaurantWifiPassword"
+                name="restaurantWifiPassword"
+                defaultValue={organization?.restaurantWifiPassword ?? ''}
+                placeholder={t('wifi_password_placeholder')}
+                maxLength={80}
+              />
+            </div>
           </div>
 
           <div className="space-y-2">
