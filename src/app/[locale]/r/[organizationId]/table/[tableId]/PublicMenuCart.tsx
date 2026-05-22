@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useMemo, useRef, useState, useTransition } from 'react';
+import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
 
 import { MenuItemImagePreview } from '@/components/MenuItemImagePreview';
 import { Button } from '@/components/ui/button';
@@ -204,6 +204,12 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
   const submitLockRef = useRef(false);
   const idempotencyRef = useRef<string | null>(null);
   const [isSubmitLocked, setIsSubmitLocked] = useState(false);
+  const [pendingAttempt, setPendingAttempt] = useState<{
+    idempotencyKey: string;
+    createdAt: number;
+    status: 'pending' | 'failed' | 'confirmed';
+    payload: { items: { menuItemId: number; quantity: number; customerNote?: string | null }[]; customerName: string; customerNote?: string | null; tableId?: number | null };
+  } | null>(null);
   const [successOrderId, setSuccessOrderId] = useState<number | null>(null);
   const [hasOrderError, setHasOrderError] = useState(false);
   const [customerName, setCustomerName] = useState('');
@@ -239,6 +245,149 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
       }
     : undefined;
   const templateClassNames = TEMPLATE_CLASS_NAMES[props.templateStyle];
+
+  const CART_KEY = `wasl:cart:${props.organizationId}:${props.tableId ?? 'none'}`;
+  const PENDING_KEY = `wasl:pending:${props.organizationId}:${props.tableId ?? 'none'}`;
+  const CART_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+
+  const loadCartFromStorage = () => {
+    try {
+      const raw = localStorage.getItem(CART_KEY);
+
+      if (!raw) {
+        return;
+      }
+
+      const parsed = JSON.parse(raw as string) as { createdAt: number; expiresAt: number; customerName?: string; orderNote?: string; items?: { id: number; quantity: number; customerNote?: string }[] };
+
+      if (parsed.expiresAt && Date.now() > parsed.expiresAt) {
+        localStorage.removeItem(CART_KEY);
+        return;
+      }
+
+      if (parsed.items) {
+        const itemsMap: Record<number, CartItem> = {};
+
+        for (const it of parsed.items) {
+          itemsMap[it.id] = {
+            id: it.id,
+            name: '',
+            description: null,
+            imageUrl: null,
+            priceUsdCents: null,
+            priceLbp: null,
+            quantity: it.quantity,
+            customerNote: it.customerNote ?? '',
+            isAvailable: true,
+          } as CartItem;
+        }
+
+        setCartItems(itemsMap);
+      }
+
+      if (parsed.customerName) {
+        setCustomerName(parsed.customerName);
+      }
+
+      if (parsed.orderNote) {
+        setOrderNote(parsed.orderNote);
+      }
+    } catch {
+      // ignore corrupted storage
+    }
+  };
+
+  const saveCartToStorage = (items: Record<number, CartItem>, name: string, note: string) => {
+    try {
+      const payload = {
+        createdAt: Date.now(),
+        expiresAt: Date.now() + CART_TTL_MS,
+        customerName: name ?? '',
+        orderNote: note ?? '',
+        items: Object.values(items).map(i => ({ id: i.id, quantity: i.quantity, customerNote: i.customerNote })),
+      };
+
+      localStorage.setItem(CART_KEY, JSON.stringify(payload));
+    } catch {
+      // ignore storage errors
+    }
+  };
+
+  const clearCartStorage = () => {
+    try {
+      localStorage.removeItem(CART_KEY);
+    } catch {
+      // ignore
+    }
+  };
+
+  const loadPendingFromStorage = () => {
+    try {
+      const raw = localStorage.getItem(PENDING_KEY);
+
+      if (!raw) {
+        return null;
+      }
+
+      const p = JSON.parse(raw as string) as typeof pendingAttempt;
+
+      // basic shape check
+      if (p && p.idempotencyKey && p.payload) {
+        setPendingAttempt(p as any);
+        idempotencyRef.current = p.idempotencyKey;
+        return p as any;
+      }
+    } catch {
+      // ignore
+    }
+
+    return null;
+  };
+
+  const savePendingToStorage = (p: NonNullable<typeof pendingAttempt>) => {
+    try {
+      localStorage.setItem(PENDING_KEY, JSON.stringify(p));
+    } catch {
+      // ignore
+    }
+  };
+
+  const clearPendingStorage = () => {
+    try {
+      localStorage.removeItem(PENDING_KEY);
+    } catch {
+      // ignore
+    }
+  };
+
+  // restore on mount
+  useEffect(() => {
+    loadCartFromStorage();
+    loadPendingFromStorage();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // persist cart whenever it changes
+
+  useEffect(() => {
+    saveCartToStorage(cartItems, customerName, orderNote);
+  }, [cartItems, customerName, orderNote]);
+
+  // connectivity awareness
+  const [isOnline, setIsOnline] = useState<boolean>(() => typeof navigator !== 'undefined' ? navigator.onLine : true);
+
+  useEffect(() => {
+    const onOnline = () => setIsOnline(true);
+    const onOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', onOnline);
+    window.addEventListener('offline', onOffline);
+
+    return () => {
+      window.removeEventListener('online', onOnline);
+      window.removeEventListener('offline', onOffline);
+    };
+  }, []);
 
   const addItem = (item: MenuItem) => {
     if (item.isAvailable === false || isOrderSubmitting) {
@@ -338,6 +487,26 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
       );
     }
 
+    // create pending attempt snapshot and persist it before submitting
+    const pending = {
+      idempotencyKey: idempotencyRef.current!,
+      createdAt: Date.now(),
+      status: 'pending' as const,
+      payload: {
+        items: cart.map(item => ({ menuItemId: item.id, quantity: item.quantity, customerNote: item.customerNote })),
+        customerName: trimmedCustomerName,
+        customerNote: orderNote,
+        tableId: props.tableId,
+      },
+    };
+
+    setPendingAttempt(pending as any);
+    try {
+      savePendingToStorage(pending as any);
+    } catch {
+      // ignore
+    }
+
     submitLockRef.current = true;
     setIsSubmitLocked(true);
 
@@ -361,15 +530,35 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
           setCustomerName('');
           setOrderNote('');
           setSuccessOrderId(result.orderId);
-          // reset idempotency key after successful confirmed order
+          // mark pending as confirmed, clear storage, then reset idempotency
+          setPendingAttempt({ ...pending, status: 'confirmed' } as any);
+          try {
+            savePendingToStorage({ ...pending, status: 'confirmed' } as any);
+          } catch {
+            // ignore
+          }
+          clearPendingStorage();
+          clearCartStorage();
           idempotencyRef.current = null;
           setIsCartOpen(false);
           return;
         }
 
         setHasOrderError(true);
+        setPendingAttempt({ ...pending, status: 'failed' } as any);
+        try {
+          savePendingToStorage({ ...pending, status: 'failed' } as any);
+        } catch {
+          // ignore
+        }
       } catch {
         setHasOrderError(true);
+        setPendingAttempt({ ...pending, status: 'failed' } as any);
+        try {
+          savePendingToStorage({ ...pending, status: 'failed' } as any);
+        } catch {
+          // ignore
+        }
       } finally {
         submitLockRef.current = false;
         setIsSubmitLocked(false);
@@ -640,6 +829,50 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
       <p className="mt-3 text-xs font-medium text-muted-foreground">
         {t('submit_order_connection_helper')}
       </p>
+
+      {/* lightweight connectivity & pending-order UX */}
+      {!isOnline && (
+        <div className="mt-3 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm font-medium text-amber-950">
+          {t('connection_lost')}
+        </div>
+      )}
+
+      {pendingAttempt && (
+        <div className="mt-3 rounded-md border border-sky-300 bg-sky-50 p-3 text-sm font-medium text-sky-950">
+          {pendingAttempt.status === 'pending' && (
+            <div>
+              {t('order_pending_title')}
+              <div className="text-xs text-muted-foreground">{t('order_pending_helper')}</div>
+            </div>
+          )}
+          {pendingAttempt.status === 'failed' && (
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                {t('order_failed_title')}
+                <div className="text-xs text-muted-foreground">{t('order_failed_helper')}</div>
+              </div>
+              <div>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    // manual retry only
+                    if (submitLockRef.current || isOrderSubmitting) {
+                      return;
+                    }
+
+                    // restore idempotency and payload
+                    idempotencyRef.current = pendingAttempt.idempotencyKey;
+                    setHasOrderError(false);
+                    submitOrder();
+                  }}
+                >
+                  {t('retry_submission')}
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {hasOrderError && (
         <div className="mt-3 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm font-medium text-destructive">
