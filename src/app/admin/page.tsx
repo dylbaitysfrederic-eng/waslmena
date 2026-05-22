@@ -44,6 +44,11 @@ const adminCards = [
     description: 'Create multilingual starter categories and menu items during onboarding.',
   },
   {
+    href: '/admin/exports',
+    title: 'Exports & Backups',
+    description: 'Generate menu, QR, settings, and bounded order exports for restaurants.',
+  },
+  {
     href: '/admin/usage',
     title: 'Usage overview',
     description: 'Review high-level tables, menu items, orders, and activity.',

@@ -14,6 +14,7 @@ const adminNavigation = [
   { href: '/admin/identity', label: 'Identity' },
   { href: '/admin/templates', label: 'QR & Tables' },
   { href: '/admin/menu', label: 'Menu setup' },
+  { href: '/admin/exports', label: 'Exports' },
   { href: '/admin/usage', label: 'Usage' },
   { href: '/admin/settings', label: 'Settings' },
 ];
