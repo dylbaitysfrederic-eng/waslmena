@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useMemo, useState, useTransition } from 'react';
+import { useMemo, useRef, useState, useTransition } from 'react';
 
 import { MenuItemImagePreview } from '@/components/MenuItemImagePreview';
 import { Button } from '@/components/ui/button';
@@ -201,6 +201,8 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
   const t = useTranslations('PublicMenu');
   const [cartItems, setCartItems] = useState<Record<number, CartItem>>({});
   const [isSubmitting, startTransition] = useTransition();
+  const submitLockRef = useRef(false);
+  const [isSubmitLocked, setIsSubmitLocked] = useState(false);
   const [successOrderId, setSuccessOrderId] = useState<number | null>(null);
   const [hasOrderError, setHasOrderError] = useState(false);
   const [customerName, setCustomerName] = useState('');
@@ -226,6 +228,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
     (total, item) => total + (item.priceLbp ?? 0) * item.quantity,
     0,
   );
+  const isOrderSubmitting = isSubmitting || isSubmitLocked;
   const publicMenuAccentColor = props.accentColor ?? props.primaryColor;
   const primaryButtonStyle = publicMenuAccentColor
     ? {
@@ -237,7 +240,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
   const templateClassNames = TEMPLATE_CLASS_NAMES[props.templateStyle];
 
   const addItem = (item: MenuItem) => {
-    if (item.isAvailable === false) {
+    if (item.isAvailable === false || isOrderSubmitting) {
       return;
     }
 
@@ -254,6 +257,10 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
 
   const updateItemNote = (itemId: number, customerNote: string) => {
     setHasOrderError(false);
+    if (isOrderSubmitting) {
+      return;
+    }
+
     setCartItems((current) => {
       const item = current[itemId];
 
@@ -273,6 +280,10 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
 
   const decreaseItem = (itemId: number) => {
     setHasOrderError(false);
+    if (isOrderSubmitting) {
+      return;
+    }
+
     setCartItems((current) => {
       const item = current[itemId];
 
@@ -304,7 +315,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
   };
 
   const submitOrder = () => {
-    if (isSubmitting || !props.orderingEnabled) {
+    if (submitLockRef.current || isOrderSubmitting || !props.orderingEnabled) {
       return;
     }
 
@@ -319,29 +330,39 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
       return;
     }
 
+    submitLockRef.current = true;
+    setIsSubmitLocked(true);
+
     startTransition(async () => {
-      const result = await submitPublicOrderAction({
-        organizationId: props.organizationId,
-        tableId: props.tableId,
-        customerName: trimmedCustomerName,
-        customerNote: orderNote,
-        items: cart.map(item => ({
-          menuItemId: item.id,
-          quantity: item.quantity,
-          customerNote: item.customerNote,
-        })),
-      });
+      try {
+        const result = await submitPublicOrderAction({
+          organizationId: props.organizationId,
+          tableId: props.tableId,
+          customerName: trimmedCustomerName,
+          customerNote: orderNote,
+          items: cart.map(item => ({
+            menuItemId: item.id,
+            quantity: item.quantity,
+            customerNote: item.customerNote,
+          })),
+        });
 
-      if (result.ok) {
-        setCartItems({});
-        setCustomerName('');
-        setOrderNote('');
-        setSuccessOrderId(result.orderId);
-        setIsCartOpen(false);
-        return;
+        if (result.ok) {
+          setCartItems({});
+          setCustomerName('');
+          setOrderNote('');
+          setSuccessOrderId(result.orderId);
+          setIsCartOpen(false);
+          return;
+        }
+
+        setHasOrderError(true);
+      } catch {
+        setHasOrderError(true);
+      } finally {
+        submitLockRef.current = false;
+        setIsSubmitLocked(false);
       }
-
-      setHasOrderError(true);
     });
   };
 
@@ -431,6 +452,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
                       templateClassNames.button,
                     )}
                     style={primaryButtonStyle}
+                    disabled={isOrderSubmitting}
                     onClick={() => addItem(item)}
                   >
                     {t('add_button')}
@@ -443,6 +465,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
                       variant="ghost"
                       size="sm"
                       className="min-h-11 rounded-none border-r px-0 text-lg"
+                      disabled={isOrderSubmitting}
                       onClick={() => decreaseItem(item.id)}
                       aria-label={t('decrease_item_label', {
                         itemName: item.name,
@@ -458,6 +481,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
                       size="sm"
                       className="min-h-11 rounded-none px-0 text-lg font-semibold"
                       style={primaryButtonStyle}
+                      disabled={isOrderSubmitting}
                       onClick={() => addItem(item)}
                       aria-label={t('increase_item_label', {
                         itemName: item.name,
@@ -507,6 +531,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
                   variant="ghost"
                   size="sm"
                   className="min-h-10 rounded-none border-r px-0 text-lg"
+                  disabled={isOrderSubmitting}
                   onClick={() => decreaseItem(item.id)}
                   aria-label={t('decrease_item_label', {
                     itemName: item.name,
@@ -522,6 +547,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
                   size="sm"
                   className="min-h-10 rounded-none px-0 text-lg font-semibold"
                   style={primaryButtonStyle}
+                  disabled={isOrderSubmitting}
                   onClick={() => addItem(item)}
                   aria-label={t('increase_item_label', {
                     itemName: item.name,
@@ -536,6 +562,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
                 variant="ghost"
                 size="sm"
                 className="text-xs font-semibold text-muted-foreground"
+                disabled={isOrderSubmitting}
                 onClick={() => removeItem(item.id)}
               >
                 {t('remove_button')}
@@ -547,6 +574,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
                 value={item.customerNote}
                 maxLength={200}
                 rows={2}
+                disabled={isOrderSubmitting}
                 placeholder={t('item_note_placeholder')}
                 className="min-h-16 rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
                 onChange={event => updateItemNote(
@@ -568,6 +596,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
           value={customerName}
           maxLength={50}
           required
+          disabled={isOrderSubmitting}
           placeholder={t('customer_name_placeholder')}
           onChange={(event) => {
             setCustomerName(event.target.value);
@@ -590,20 +619,32 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
           value={orderNote}
           maxLength={200}
           rows={3}
+          disabled={isOrderSubmitting}
           placeholder={t('order_note_placeholder')}
           className="min-h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
           onChange={event => setOrderNote(event.target.value)}
         />
       </div>
 
+      <p className="mt-3 text-xs font-medium text-muted-foreground">
+        {t('submit_order_connection_helper')}
+      </p>
+
+      {hasOrderError && (
+        <div className="mt-3 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm font-medium text-destructive">
+          {t('order_error')}
+        </div>
+      )}
+
       <Button
         type="button"
         className="mt-4 min-h-11 w-full font-semibold"
-        disabled={isSubmitting}
+        aria-disabled={isOrderSubmitting}
+        disabled={isOrderSubmitting}
         style={primaryButtonStyle}
         onClick={submitOrder}
       >
-        {isSubmitting ? t('submit_order_pending') : t('submit_order_button')}
+        {isOrderSubmitting ? t('submit_order_pending') : t('submit_order_button')}
       </Button>
     </>
   );
@@ -700,12 +741,6 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
           <div className="mt-1 text-sm font-normal text-muted-foreground">
             {t('order_success_helper')}
           </div>
-        </div>
-      )}
-
-      {hasOrderError && (
-        <div className="rounded-md border border-destructive/30 bg-destructive/10 p-4 text-sm font-medium text-destructive">
-          {t('order_error')}
         </div>
       )}
 

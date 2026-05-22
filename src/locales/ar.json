@@ -327,6 +327,7 @@
     "order_note_placeholder": "يرجى إحضار الماء أولاً...",
     "submit_order_button": "إرسال الطلب",
     "submit_order_pending": "جارٍ الإرسال...",
+    "submit_order_connection_helper": "قد يستغرق ذلك بضع ثوانٍ على الاتصال البطيء. يرجى إبقاء هذه الشاشة مفتوحة.",
     "order_success_title": "تم استلام الطلب",
     "order_success": "تم إرسال الطلب رقم {orderId}.",
     "order_success_helper": "سجّل رقم الطلب وأظهره للموظف عند الحاجة.",

@@ -327,6 +327,7 @@
     "order_note_placeholder": "Please bring water first...",
     "submit_order_button": "Submit order",
     "submit_order_pending": "Submitting...",
+    "submit_order_connection_helper": "This may take a few seconds on slow connections. Please keep this screen open.",
     "order_success_title": "Order received",
     "order_success": "Order #{orderId} was sent.",
     "order_success_helper": "Keep this number visible for restaurant staff.",
