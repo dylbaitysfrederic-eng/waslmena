@@ -33,6 +33,27 @@ type SubmitOrderResult =
     ok: false;
   };
 
+type CheckPendingPublicOrderInput = {
+  organizationId: string;
+  idempotencyKey: string;
+};
+
+type CheckPendingPublicOrderResult =
+  | {
+    ok: true;
+    found: true;
+    orderId: number;
+    status: string;
+    createdAt: string;
+  }
+  | {
+    ok: true;
+    found: false;
+  }
+  | {
+    ok: false;
+  };
+
 const normalizeCustomerNote = (value: string | undefined) => {
   const textValue = value?.trim() ?? '';
 
@@ -223,5 +244,42 @@ export const submitPublicOrderAction = async (
   return {
     ok: true,
     orderId,
+  };
+};
+
+export const checkPendingPublicOrderAction = async (
+  input: CheckPendingPublicOrderInput,
+): Promise<CheckPendingPublicOrderResult> => {
+  const idempotencyKey = input.idempotencyKey?.toString().trim() ?? '';
+
+  if (!idempotencyKey) {
+    return { ok: false };
+  }
+
+  const [order] = await db
+    .select({
+      id: orderSchema.id,
+      status: orderSchema.status,
+      createdAt: orderSchema.createdAt,
+    })
+    .from(orderSchema)
+    .where(
+      and(
+        eq(orderSchema.organizationId, input.organizationId),
+        eq(orderSchema.idempotencyKey, idempotencyKey),
+      ),
+    )
+    .limit(1);
+
+  if (!order) {
+    return { ok: true, found: false };
+  }
+
+  return {
+    ok: true,
+    found: true,
+    orderId: order.id,
+    status: order.status,
+    createdAt: order.createdAt.toISOString(),
   };
 };

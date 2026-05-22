@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/utils/Helpers';
 
-import { submitPublicOrderAction } from './actions';
+import { checkPendingPublicOrderAction, submitPublicOrderAction } from './actions';
 
 type MenuItem = {
   id: number;
@@ -204,6 +204,8 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
   const submitLockRef = useRef(false);
   const idempotencyRef = useRef<string | null>(null);
   const [isSubmitLocked, setIsSubmitLocked] = useState(false);
+  const [isCheckingPending, setIsCheckingPending] = useState(false);
+  const [hasCheckedPendingOnce, setHasCheckedPendingOnce] = useState(false);
   const [pendingAttempt, setPendingAttempt] = useState<{
     idempotencyKey: string;
     createdAt: number;
@@ -297,22 +299,6 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
     }
   };
 
-  const saveCartToStorage = (items: Record<number, CartItem>, name: string, note: string) => {
-    try {
-      const payload = {
-        createdAt: Date.now(),
-        expiresAt: Date.now() + CART_TTL_MS,
-        customerName: name ?? '',
-        orderNote: note ?? '',
-        items: Object.values(items).map(i => ({ id: i.id, quantity: i.quantity, customerNote: i.customerNote })),
-      };
-
-      localStorage.setItem(CART_KEY, JSON.stringify(payload));
-    } catch {
-      // ignore storage errors
-    }
-  };
-
   const clearCartStorage = () => {
     try {
       localStorage.removeItem(CART_KEY);
@@ -360,6 +346,49 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
     }
   };
 
+  async function checkPendingOrderStatus() {
+    if (!pendingAttempt?.idempotencyKey || !props.organizationId) {
+      return;
+    }
+
+    setIsCheckingPending(true);
+
+    try {
+      const result = await checkPendingPublicOrderAction({
+        organizationId: props.organizationId,
+        idempotencyKey: pendingAttempt.idempotencyKey,
+      });
+
+      if (!result.ok) {
+        return;
+      }
+
+      if (result.found) {
+        setSuccessOrderId(result.orderId);
+        setPendingAttempt(null);
+        clearPendingStorage();
+        clearCartStorage();
+        setCartItems({});
+        setCustomerName('');
+        setOrderNote('');
+        idempotencyRef.current = null;
+        setIsCartOpen(false);
+        return;
+      }
+
+      setPendingAttempt({ ...pendingAttempt, status: 'failed' } as any);
+      try {
+        savePendingToStorage({ ...pendingAttempt, status: 'failed' } as any);
+      } catch {
+        // ignore
+      }
+    } catch {
+      // ignore network or action errors
+    } finally {
+      setIsCheckingPending(false);
+    }
+  }
+
   // restore on mount
   useEffect(() => {
     loadCartFromStorage();
@@ -370,8 +399,20 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
   // persist cart whenever it changes
 
   useEffect(() => {
-    saveCartToStorage(cartItems, customerName, orderNote);
-  }, [cartItems, customerName, orderNote]);
+    try {
+      const payload = {
+        createdAt: Date.now(),
+        expiresAt: Date.now() + CART_TTL_MS,
+        customerName: customerName ?? '',
+        orderNote: orderNote ?? '',
+        items: Object.values(cartItems).map(i => ({ id: i.id, quantity: i.quantity, customerNote: i.customerNote })),
+      };
+
+      localStorage.setItem(CART_KEY, JSON.stringify(payload));
+    } catch {
+      // ignore storage errors
+    }
+  }, [cartItems, customerName, orderNote, CART_KEY, CART_TTL_MS]);
 
   // connectivity awareness
   const [isOnline, setIsOnline] = useState<boolean>(() => typeof navigator !== 'undefined' ? navigator.onLine : true);
@@ -388,6 +429,21 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
       window.removeEventListener('offline', onOffline);
     };
   }, []);
+
+  useEffect(() => {
+    if (
+      !pendingAttempt
+      || pendingAttempt.status !== 'pending'
+      || !isOnline
+      || hasCheckedPendingOnce
+    ) {
+      return;
+    }
+
+    setHasCheckedPendingOnce(true);
+    checkPendingOrderStatus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingAttempt, isOnline, hasCheckedPendingOnce]);
 
   const addItem = (item: MenuItem) => {
     if (item.isAvailable === false || isOrderSubmitting) {
@@ -840,27 +896,49 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
       {pendingAttempt && (
         <div className="mt-3 rounded-md border border-sky-300 bg-sky-50 p-3 text-sm font-medium text-sky-950">
           {pendingAttempt.status === 'pending' && (
-            <div>
-              {t('order_pending_title')}
-              <div className="text-xs text-muted-foreground">{t('order_pending_helper')}</div>
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <div>Your order may still be processing.</div>
+                <div className="text-xs text-muted-foreground">
+                  {isCheckingPending
+                    ? 'Checking pending order...'
+                    : 'Check again when you are back online.'}
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  size="sm"
+                  disabled={isOrderSubmitting || isCheckingPending}
+                  onClick={checkPendingOrderStatus}
+                >
+                  {isCheckingPending ? 'Checking...' : 'Check order status'}
+                </Button>
+              </div>
             </div>
           )}
           {pendingAttempt.status === 'failed' && (
-            <div className="flex items-center justify-between gap-3">
+            <div className="space-y-3">
               <div>
-                {t('order_failed_title')}
-                <div className="text-xs text-muted-foreground">{t('order_failed_helper')}</div>
+                Your order may still be processing.
+                <div className="text-xs text-muted-foreground">
+                  {t('order_failed_helper')}
+                </div>
               </div>
-              <div>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  size="sm"
+                  disabled={isOrderSubmitting || isCheckingPending}
+                  onClick={checkPendingOrderStatus}
+                >
+                  {isCheckingPending ? 'Checking...' : 'Check again'}
+                </Button>
                 <Button
                   size="sm"
                   onClick={() => {
-                    // manual retry only
                     if (submitLockRef.current || isOrderSubmitting) {
                       return;
                     }
 
-                    // restore idempotency and payload
                     idempotencyRef.current = pendingAttempt.idempotencyKey;
                     setHasOrderError(false);
                     submitOrder();
