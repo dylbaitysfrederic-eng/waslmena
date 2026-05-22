@@ -202,6 +202,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
   const [cartItems, setCartItems] = useState<Record<number, CartItem>>({});
   const [isSubmitting, startTransition] = useTransition();
   const submitLockRef = useRef(false);
+  const idempotencyRef = useRef<string | null>(null);
   const [isSubmitLocked, setIsSubmitLocked] = useState(false);
   const [successOrderId, setSuccessOrderId] = useState<number | null>(null);
   const [hasOrderError, setHasOrderError] = useState(false);
@@ -330,6 +331,13 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
       return;
     }
 
+    // ensure a stable idempotency key for this checkout attempt
+    if (!idempotencyRef.current) {
+      idempotencyRef.current = (globalThis.crypto as any)?.randomUUID?.() ?? (
+        `wasl-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`
+      );
+    }
+
     submitLockRef.current = true;
     setIsSubmitLocked(true);
 
@@ -337,6 +345,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
       try {
         const result = await submitPublicOrderAction({
           organizationId: props.organizationId,
+          idempotencyKey: idempotencyRef.current ?? undefined,
           tableId: props.tableId,
           customerName: trimmedCustomerName,
           customerNote: orderNote,
@@ -352,6 +361,8 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
           setCustomerName('');
           setOrderNote('');
           setSuccessOrderId(result.orderId);
+          // reset idempotency key after successful confirmed order
+          idempotencyRef.current = null;
           setIsCartOpen(false);
           return;
         }

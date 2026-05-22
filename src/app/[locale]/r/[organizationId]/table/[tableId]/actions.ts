@@ -13,6 +13,7 @@ import {
 
 type SubmitOrderInput = {
   organizationId: string;
+  idempotencyKey?: string;
   tableId?: number | null;
   customerName: string;
   customerNote?: string;
@@ -41,6 +42,25 @@ const normalizeCustomerNote = (value: string | undefined) => {
 export const submitPublicOrderAction = async (
   input: SubmitOrderInput,
 ): Promise<SubmitOrderResult> => {
+  const rawIdempotencyKey = (input.idempotencyKey ?? '').toString().trim();
+  const idempotencyKey = rawIdempotencyKey.length > 0 ? rawIdempotencyKey : null;
+
+  if (idempotencyKey) {
+    const [existing] = await db
+      .select({ id: orderSchema.id })
+      .from(orderSchema)
+      .where(
+        and(
+          eq(orderSchema.organizationId, input.organizationId),
+          eq(orderSchema.idempotencyKey, idempotencyKey),
+        ),
+      )
+      .limit(1);
+
+    if (existing) {
+      return { ok: true, orderId: existing.id };
+    }
+  }
   const tableId = input.tableId === null || input.tableId === undefined
     ? null
     : Number.isInteger(input.tableId) ? input.tableId : Number.NaN;
@@ -171,6 +191,7 @@ export const submitPublicOrderAction = async (
       .insert(orderSchema)
       .values({
         organizationId: input.organizationId,
+        idempotencyKey: idempotencyKey ?? undefined,
         tableId,
         customerName,
         customerNote,

@@ -217,6 +217,7 @@ export const menuItemSchema = pgTable('menu_item', {
 export const orderSchema = pgTable('order', {
   id: serial('id').primaryKey(),
   organizationId: text('organization_id').notNull(),
+  idempotencyKey: text('idempotency_key'),
   tableId: integer('table_id'),
   customerName: text('customer_name'),
   customerNote: text('customer_note'),
@@ -229,6 +230,13 @@ export const orderSchema = pgTable('order', {
     .defaultNow()
     .$onUpdate(() => new Date())
     .notNull(),
+}, (table) => {
+  return {
+    orderOrgIdempotencyIdx: uniqueIndex('order_org_idempotency_idx').on(
+      table.organizationId,
+      table.idempotencyKey,
+    ),
+  };
 });
 
 export const orderItemSchema = pgTable('order_item', {
