@@ -119,6 +119,12 @@ const DashboardIndexPage = async (props: { params: { locale: string } }) => {
       cta: t('settings_cta'),
     },
     {
+      href: '/dashboard/modules',
+      title: 'Modules & integrations',
+      description: 'See which optional restaurant modules are prepared and ready for future integration.',
+      cta: 'View modules',
+    },
+    {
       href: '/dashboard/support',
       title: t('support_title'),
       description: t('support_description'),

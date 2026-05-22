@@ -39,6 +39,11 @@ const adminCards = [
     description: 'Configure each restaurant’s QR behavior, ordering flow, and table setup.',
   },
   {
+    href: '/admin/modules',
+    title: 'Modules & integrations',
+    description: 'Enable optional restaurant modules and manage client-level feature access.',
+  },
+  {
     href: '/admin/menu',
     title: 'Menu setup',
     description: 'Create multilingual starter categories and menu items during onboarding.',

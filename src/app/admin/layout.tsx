@@ -13,6 +13,7 @@ const adminNavigation = [
   { href: '/admin/access', label: 'Access' },
   { href: '/admin/identity', label: 'Identity' },
   { href: '/admin/templates', label: 'QR & Tables' },
+  { href: '/admin/modules', label: 'Modules & integrations' },
   { href: '/admin/menu', label: 'Menu setup' },
   { href: '/admin/exports', label: 'Exports' },
   { href: '/admin/usage', label: 'Usage' },

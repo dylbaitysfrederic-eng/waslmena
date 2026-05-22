@@ -1253,6 +1253,41 @@ export const updateAdminTemplatesAction = async (formData: FormData) => {
   );
 };
 
+export const updateAdminModulesAction = async (formData: FormData) => {
+  await assertAdmin();
+
+  const organizationId = getOrganizationId(formData);
+
+  if (!organizationId) {
+    return;
+  }
+
+  const values = {
+    deliveryEnabled: formData.get('deliveryEnabled') === 'on',
+    onlinePaymentsEnabled: formData.get('onlinePaymentsEnabled') === 'on',
+    posIntegrationEnabled: formData.get('posIntegrationEnabled') === 'on',
+    whatsappBusinessEnabled: formData.get('whatsappBusinessEnabled') === 'on',
+    loyaltyEnabled: formData.get('loyaltyEnabled') === 'on',
+  };
+
+  await db
+    .insert(organizationSchema)
+    .values({
+      id: organizationId,
+      ...values,
+    })
+    .onConflictDoUpdate({
+      target: organizationSchema.id,
+      set: values,
+    });
+
+  revalidateAdminPaths(
+    '/admin/modules',
+    `/admin/modules/${organizationId}`,
+    '/dashboard/modules',
+  );
+};
+
 export const updateAdminIdentityAction = async (formData: FormData) => {
   await assertAdmin();
 

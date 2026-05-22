@@ -223,6 +223,10 @@ export default async function DashboardLayout(props: {
                   label: t('branding'),
                 },
                 {
+                  href: '/dashboard/modules',
+                  label: 'Modules',
+                },
+                {
                   href: '/dashboard/support',
                   label: t('support'),
                 },

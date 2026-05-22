@@ -59,6 +59,11 @@ export const organizationSchema = pgTable(
     enableNamedTables: boolean('enable_named_tables').default(false).notNull(),
     enableCustomerName: boolean('enable_customer_name').default(true).notNull(),
     enableWhatsappContact: boolean('enable_whatsapp_contact').default(true).notNull(),
+    deliveryEnabled: boolean('delivery_enabled').default(false).notNull(),
+    onlinePaymentsEnabled: boolean('online_payments_enabled').default(false).notNull(),
+    posIntegrationEnabled: boolean('pos_integration_enabled').default(false).notNull(),
+    whatsappBusinessEnabled: boolean('whatsapp_business_enabled').default(false).notNull(),
+    loyaltyEnabled: boolean('loyalty_enabled').default(false).notNull(),
     orderVisualNotificationsEnabled: boolean('order_visual_notifications_enabled')
       .default(true)
       .notNull(),
