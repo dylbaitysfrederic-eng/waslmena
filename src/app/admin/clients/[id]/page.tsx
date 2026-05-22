@@ -3,6 +3,11 @@ import { notFound } from 'next/navigation';
 
 import { FormSubmitButton } from '@/components/FormSubmitButton';
 import { Input } from '@/components/ui/input';
+import {
+  getClerkRoleLabel,
+  getOperationalRoleLabelKey,
+  getRestaurantTeamMembers,
+} from '@/utils/RestaurantTeam';
 
 import {
   CLIENT_CATEGORIES,
@@ -41,6 +46,9 @@ const ClientDetailPage = async (props: { params: { id: string } }) => {
   const paymentStatus = organization?.monthlySubscriptionStatus ?? 'paused';
   const accessStatus = organization?.accessStatus ?? 'pending';
   const clientName = organization?.restaurantDisplayName || 'Unnamed restaurant';
+  const { members, unavailable: membersUnavailable } = await getRestaurantTeamMembers(
+    organizationId,
+  );
 
   return (
     <section className="grid gap-5">
@@ -264,6 +272,63 @@ const ClientDetailPage = async (props: { params: { id: string } }) => {
                 </dd>
               </div>
             </dl>
+          </div>
+
+          <div className="rounded-md border bg-background p-4">
+            <div className="text-sm font-semibold">Team access</div>
+            <p className="mt-1 text-xs leading-5 text-muted-foreground">
+              Uses current Clerk organization memberships. Restaurant roles are
+              informational for now.
+            </p>
+            {membersUnavailable
+              ? (
+                  <div className="mt-3 rounded-md border border-dashed bg-muted/20 p-3 text-xs text-muted-foreground">
+                    Members could not be loaded from Clerk.
+                  </div>
+                )
+              : members.length > 0
+                ? (
+                    <div className="mt-3 grid gap-2">
+                      {members.slice(0, 6).map(member => (
+                        <div key={member.id} className="rounded-md border bg-muted/20 p-3">
+                          <div className="truncate text-sm font-medium">
+                            {[member.firstName, member.lastName]
+                              .filter(Boolean)
+                              .join(' ')
+                              || member.email
+                              || 'Team member'}
+                          </div>
+                          {member.email && (
+                            <div className="mt-1 truncate text-xs text-muted-foreground">
+                              {member.email}
+                            </div>
+                          )}
+                          <div className="mt-2 flex flex-wrap gap-1">
+                            <span className="rounded-full border bg-background px-2 py-0.5 text-[11px] font-semibold text-muted-foreground">
+                              {getClerkRoleLabel(member.role)}
+                            </span>
+                            <span className="rounded-full border bg-background px-2 py-0.5 text-[11px] font-semibold">
+                              {getOperationalRoleLabelKey(member.role) === 'role_owner_manager'
+                                ? 'Owner / Manager'
+                                : 'Staff'}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                      {members.length > 6 && (
+                        <div className="text-xs text-muted-foreground">
+                          {members.length - 6}
+                          {' '}
+                          more members in Clerk.
+                        </div>
+                      )}
+                    </div>
+                  )
+                : (
+                    <div className="mt-3 rounded-md border border-dashed bg-muted/20 p-3 text-xs text-muted-foreground">
+                      No organization members found in Clerk yet.
+                    </div>
+                  )}
           </div>
 
           <div className="flex flex-wrap gap-2 rounded-md border bg-background p-4">

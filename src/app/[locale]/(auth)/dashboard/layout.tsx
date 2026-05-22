@@ -215,6 +215,10 @@ export default async function DashboardLayout(props: {
                   label: t('export_backup'),
                 },
                 {
+                  href: '/dashboard/team',
+                  label: t('team'),
+                },
+                {
                   href: '/dashboard/branding',
                   label: t('branding'),
                 },
@@ -243,6 +247,11 @@ export default async function DashboardLayout(props: {
                   group: t('menu_group_settings'),
                   href: '/dashboard/export',
                   label: t('export_backup'),
+                },
+                {
+                  group: t('menu_group_settings'),
+                  href: '/dashboard/team',
+                  label: t('team'),
                 },
                 {
                   group: t('menu_group_settings'),
