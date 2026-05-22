@@ -15,8 +15,12 @@ type SubmitOrderInput = {
   organizationId: string;
   idempotencyKey?: string;
   tableId?: number | null;
+  orderType?: 'table' | 'counter' | 'delivery';
   customerName: string;
   customerNote?: string;
+  deliveryAddress?: string;
+  deliveryPhone?: string;
+  deliveryNotes?: string;
   items: {
     menuItemId: number;
     quantity: number;
@@ -128,19 +132,40 @@ export const submitPublicOrderAction = async (
     }
   }
 
-  const [organization] = await db
+  const rawOrderType = input.orderType?.toString().trim();
+  const orderType = rawOrderType === 'delivery'
+    ? 'delivery'
+    : rawOrderType === 'counter'
+      ? 'counter'
+      : tableId !== null
+        ? 'table'
+        : 'counter';
+  const deliveryAddress = input.deliveryAddress?.trim() ?? '';
+  const deliveryPhone = input.deliveryPhone?.trim() ?? '';
+  const deliveryNotes = normalizeCustomerNote(input.deliveryNotes);
+
+  const [organizationWithDelivery] = await db
     .select({
       accessStatus: organizationSchema.accessStatus,
       accessSuspended: organizationSchema.accessSuspended,
+      deliveryEnabled: organizationSchema.deliveryEnabled,
+      deliveryFeeUsdCents: organizationSchema.deliveryFeeUsdCents,
+      deliveryFeeLocal: organizationSchema.deliveryFeeLocal,
+      minimumOrderAmountUsdCents: organizationSchema.minimumOrderAmountUsdCents,
+      minimumOrderAmountLocal: organizationSchema.minimumOrderAmountLocal,
+      deliveryEstimatedTime: organizationSchema.deliveryEstimatedTime,
     })
     .from(organizationSchema)
     .where(eq(organizationSchema.id, input.organizationId))
     .limit(1);
 
   if (
-    !organization
-    || organization.accessStatus !== 'active'
-    || organization.accessSuspended
+    !organizationWithDelivery
+    || organizationWithDelivery.accessStatus !== 'active'
+    || organizationWithDelivery.accessSuspended
+    || (orderType === 'delivery' && !organizationWithDelivery.deliveryEnabled)
+    || (orderType === 'delivery' && deliveryAddress.length === 0)
+    || (orderType === 'delivery' && deliveryPhone.length === 0)
   ) {
     return { ok: false };
   }
@@ -206,6 +231,15 @@ export const submitPublicOrderAction = async (
   const hasLbpPrices = orderItems.some(item => item.unitPriceLbp !== null);
   const totalUsdCents = hasUsdPrices ? totalUsdCentsValue : null;
   const totalLbp = hasLbpPrices ? totalLbpValue : null;
+  const deliveryFeeUsdCents = orderType === 'delivery'
+    ? organizationWithDelivery.deliveryFeeUsdCents
+    : null;
+  const deliveryFeeLocal = orderType === 'delivery'
+    ? organizationWithDelivery.deliveryFeeLocal
+    : null;
+  const deliveryEstimatedTime = orderType === 'delivery'
+    ? organizationWithDelivery.deliveryEstimatedTime
+    : null;
 
   const orderId = await db.transaction(async (tx) => {
     const [order] = await tx
@@ -214,8 +248,15 @@ export const submitPublicOrderAction = async (
         organizationId: input.organizationId,
         idempotencyKey: idempotencyKey ?? undefined,
         tableId,
+        orderType,
         customerName,
         customerNote,
+        deliveryAddress: deliveryAddress || undefined,
+        deliveryPhone: deliveryPhone || undefined,
+        deliveryNotes,
+        deliveryFeeUsdCents: deliveryFeeUsdCents ?? undefined,
+        deliveryFeeLocal: deliveryFeeLocal ?? undefined,
+        deliveryEstimatedTime: deliveryEstimatedTime ?? undefined,
         status: 'pending',
         paymentMethod: 'cash',
         totalUsdCents,

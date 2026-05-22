@@ -41,6 +41,22 @@ type CartItem = MenuItem & {
   customerNote: string;
 };
 
+type PendingAttempt = {
+  idempotencyKey: string;
+  createdAt: number;
+  status: 'pending' | 'failed' | 'confirmed';
+  payload: {
+    items: { menuItemId: number; quantity: number; customerNote?: string | null }[];
+    customerName: string;
+    customerNote?: string | null;
+    tableId?: number | null;
+    orderType?: 'table' | 'counter' | 'delivery';
+    deliveryAddress?: string | null;
+    deliveryPhone?: string | null;
+    deliveryNotes?: string | null;
+  };
+};
+
 type PublicMenuCartProps = {
   categories: MenuCategory[];
   locale: string;
@@ -50,6 +66,14 @@ type PublicMenuCartProps = {
   showMenuItemImages: boolean;
   tableId: number | null;
   orderingEnabled: boolean;
+  deliveryEnabled: boolean;
+  pickupEnabled: boolean;
+  deliveryFeeUsdCents: number | null;
+  deliveryFeeLocal: number | null;
+  minimumOrderAmountUsdCents: number | null;
+  minimumOrderAmountLocal: number | null;
+  deliveryEstimatedTime: string | null;
+  deliveryCoverageNotes: string | null;
   templateStyle:
     | 'fast_food'
     | 'cafe'
@@ -206,13 +230,24 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
   const [isSubmitLocked, setIsSubmitLocked] = useState(false);
   const [isCheckingPending, setIsCheckingPending] = useState(false);
   const [hasCheckedPendingOnce, setHasCheckedPendingOnce] = useState(false);
-  const [pendingAttempt, setPendingAttempt] = useState<{
-    idempotencyKey: string;
-    createdAt: number;
-    status: 'pending' | 'failed' | 'confirmed';
-    payload: { items: { menuItemId: number; quantity: number; customerNote?: string | null }[]; customerName: string; customerNote?: string | null; tableId?: number | null };
-  } | null>(null);
+  const [pendingAttempt, setPendingAttempt] = useState<PendingAttempt | null>(null);
   const [successOrderId, setSuccessOrderId] = useState<number | null>(null);
+  const [hasDeliveryAddressError, setHasDeliveryAddressError] = useState(false);
+  const [hasDeliveryPhoneError, setHasDeliveryPhoneError] = useState(false);
+  const [orderType, setOrderType] = useState<'table' | 'counter' | 'delivery'>(() => {
+    if (props.tableId !== null) {
+      return 'table';
+    }
+
+    if (props.deliveryEnabled && !props.pickupEnabled) {
+      return 'delivery';
+    }
+
+    return 'counter';
+  });
+  const [deliveryAddress, setDeliveryAddress] = useState('');
+  const [deliveryPhone, setDeliveryPhone] = useState('');
+  const [deliveryNotes, setDeliveryNotes] = useState('');
   const [hasOrderError, setHasOrderError] = useState(false);
   const [customerName, setCustomerName] = useState('');
   const [orderNote, setOrderNote] = useState('');
@@ -260,7 +295,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
         return;
       }
 
-      const parsed = JSON.parse(raw as string) as { createdAt: number; expiresAt: number; customerName?: string; orderNote?: string; items?: { id: number; quantity: number; customerNote?: string }[] };
+      const parsed = JSON.parse(raw as string) as { createdAt: number; expiresAt: number; customerName?: string; orderNote?: string; orderType?: 'table' | 'counter' | 'delivery'; deliveryAddress?: string; deliveryPhone?: string; deliveryNotes?: string; items?: { id: number; quantity: number; customerNote?: string }[] };
 
       if (parsed.expiresAt && Date.now() > parsed.expiresAt) {
         localStorage.removeItem(CART_KEY);
@@ -293,6 +328,22 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
 
       if (parsed.orderNote) {
         setOrderNote(parsed.orderNote);
+      }
+
+      if (props.tableId === null && parsed.orderType) {
+        setOrderType(parsed.orderType);
+      }
+
+      if (parsed.deliveryAddress) {
+        setDeliveryAddress(parsed.deliveryAddress);
+      }
+
+      if (parsed.deliveryPhone) {
+        setDeliveryPhone(parsed.deliveryPhone);
+      }
+
+      if (parsed.deliveryNotes) {
+        setDeliveryNotes(parsed.deliveryNotes);
       }
     } catch {
       // ignore corrupted storage
@@ -405,6 +456,10 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
         expiresAt: Date.now() + CART_TTL_MS,
         customerName: customerName ?? '',
         orderNote: orderNote ?? '',
+        orderType,
+        deliveryAddress,
+        deliveryPhone,
+        deliveryNotes,
         items: Object.values(cartItems).map(i => ({ id: i.id, quantity: i.quantity, customerNote: i.customerNote })),
       };
 
@@ -412,7 +467,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
     } catch {
       // ignore storage errors
     }
-  }, [cartItems, customerName, orderNote, CART_KEY, CART_TTL_MS]);
+  }, [cartItems, customerName, orderNote, orderType, deliveryAddress, deliveryPhone, deliveryNotes, CART_KEY, CART_TTL_MS]);
 
   // connectivity awareness
   const [isOnline, setIsOnline] = useState<boolean>(() => typeof navigator !== 'undefined' ? navigator.onLine : true);
@@ -536,6 +591,18 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
       return;
     }
 
+    if (orderType === 'delivery') {
+      if (!deliveryAddress.trim() || deliveryAddress.length > 240) {
+        setHasDeliveryAddressError(true);
+        return;
+      }
+
+      if (!deliveryPhone.trim() || deliveryPhone.length > 40) {
+        setHasDeliveryPhoneError(true);
+        return;
+      }
+    }
+
     // ensure a stable idempotency key for this checkout attempt
     if (!idempotencyRef.current) {
       idempotencyRef.current = (globalThis.crypto as any)?.randomUUID?.() ?? (
@@ -553,6 +620,10 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
         customerName: trimmedCustomerName,
         customerNote: orderNote,
         tableId: props.tableId,
+        orderType,
+        deliveryAddress: deliveryAddress || undefined,
+        deliveryPhone: deliveryPhone || undefined,
+        deliveryNotes: deliveryNotes || undefined,
       },
     };
 
@@ -572,8 +643,12 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
           organizationId: props.organizationId,
           idempotencyKey: idempotencyRef.current ?? undefined,
           tableId: props.tableId,
+          orderType,
           customerName: trimmedCustomerName,
           customerNote: orderNote,
+          deliveryAddress: deliveryAddress || undefined,
+          deliveryPhone: deliveryPhone || undefined,
+          deliveryNotes: deliveryNotes || undefined,
           items: cart.map(item => ({
             menuItemId: item.id,
             quantity: item.quantity,
@@ -865,6 +940,102 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
           </p>
         )}
       </div>
+
+      {props.tableId === null && (props.deliveryEnabled || props.pickupEnabled) && (
+        <div className="mt-4 space-y-2">
+          <Label>
+            {t('order_type_label')}
+          </Label>
+
+          <div className="flex flex-wrap gap-2">
+            {props.pickupEnabled && (
+              <Button
+                type="button"
+                variant={orderType === 'counter' ? 'secondary' : 'outline'}
+                disabled={isOrderSubmitting}
+                onClick={() => {
+                  setOrderType('counter');
+                  setHasDeliveryAddressError(false);
+                  setHasDeliveryPhoneError(false);
+                }}
+              >
+                {t('order_type_counter_label')}
+              </Button>
+            )}
+
+            {props.deliveryEnabled && (
+              <Button
+                type="button"
+                variant={orderType === 'delivery' ? 'secondary' : 'outline'}
+                disabled={isOrderSubmitting}
+                onClick={() => {
+                  setOrderType('delivery');
+                }}
+              >
+                {t('order_type_delivery_label')}
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {orderType === 'delivery' && (
+        <div className="mt-4 space-y-2">
+          <Label htmlFor="deliveryAddress">
+            {t('delivery_address_label')}
+          </Label>
+          <Input
+            id="deliveryAddress"
+            value={deliveryAddress}
+            maxLength={240}
+            disabled={isOrderSubmitting}
+            placeholder={t('delivery_address_placeholder')}
+            onChange={(event) => {
+              setDeliveryAddress(event.target.value);
+              setHasDeliveryAddressError(false);
+            }}
+          />
+          {hasDeliveryAddressError && (
+            <p className="text-sm font-medium text-destructive">
+              {t('delivery_address_error')}
+            </p>
+          )}
+
+          <Label htmlFor="deliveryPhone">
+            {t('delivery_phone_label')}
+          </Label>
+          <Input
+            id="deliveryPhone"
+            value={deliveryPhone}
+            maxLength={40}
+            disabled={isOrderSubmitting}
+            placeholder={t('delivery_phone_placeholder')}
+            onChange={(event) => {
+              setDeliveryPhone(event.target.value);
+              setHasDeliveryPhoneError(false);
+            }}
+          />
+          {hasDeliveryPhoneError && (
+            <p className="text-sm font-medium text-destructive">
+              {t('delivery_phone_error')}
+            </p>
+          )}
+
+          <Label htmlFor="deliveryNotes">
+            {t('delivery_notes_label')}
+          </Label>
+          <textarea
+            id="deliveryNotes"
+            value={deliveryNotes}
+            maxLength={200}
+            rows={3}
+            disabled={isOrderSubmitting}
+            placeholder={t('delivery_notes_placeholder')}
+            className="min-h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
+            onChange={event => setDeliveryNotes(event.target.value)}
+          />
+        </div>
+      )}
 
       <div className="mt-4 space-y-2">
         <Label htmlFor="orderNote">

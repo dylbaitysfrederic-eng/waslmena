@@ -124,6 +124,14 @@ const PublicGeneralMenuPage = async (props: PublicGeneralMenuPageProps) => {
       restaurantWhatsappNumber: organizationSchema.restaurantWhatsappNumber,
       enableWhatsappContact: organizationSchema.enableWhatsappContact,
       localCurrencyLabel: organizationSchema.localCurrencyLabel,
+      deliveryEnabled: organizationSchema.deliveryEnabled,
+      pickupEnabled: organizationSchema.pickupEnabled,
+      deliveryFeeUsdCents: organizationSchema.deliveryFeeUsdCents,
+      deliveryFeeLocal: organizationSchema.deliveryFeeLocal,
+      minimumOrderAmountUsdCents: organizationSchema.minimumOrderAmountUsdCents,
+      minimumOrderAmountLocal: organizationSchema.minimumOrderAmountLocal,
+      deliveryEstimatedTime: organizationSchema.deliveryEstimatedTime,
+      deliveryCoverageNotes: organizationSchema.deliveryCoverageNotes,
       orderingMode: organizationSchema.orderingMode,
       accessStatus: organizationSchema.accessStatus,
       accessSuspended: organizationSchema.accessSuspended,
@@ -436,6 +444,14 @@ const PublicGeneralMenuPage = async (props: PublicGeneralMenuPageProps) => {
                 showMenuItemImages={organization.showMenuItemImages}
                 tableId={null}
                 orderingEnabled={orderingEnabled}
+                deliveryEnabled={organization.deliveryEnabled}
+                pickupEnabled={organization.pickupEnabled}
+                deliveryFeeUsdCents={organization.deliveryFeeUsdCents}
+                deliveryFeeLocal={organization.deliveryFeeLocal}
+                minimumOrderAmountUsdCents={organization.minimumOrderAmountUsdCents}
+                minimumOrderAmountLocal={organization.minimumOrderAmountLocal}
+                deliveryEstimatedTime={organization.deliveryEstimatedTime}
+                deliveryCoverageNotes={organization.deliveryCoverageNotes}
                 templateStyle={templateStyle}
                 localCurrencyLabel={localCurrencyLabel}
               />

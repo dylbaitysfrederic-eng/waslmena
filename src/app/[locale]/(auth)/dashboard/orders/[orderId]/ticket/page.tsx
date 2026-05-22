@@ -81,6 +81,9 @@ const TicketPage = async (props: {
       tableNumber: restaurantTableSchema.tableNumber,
       customerName: orderSchema.customerName,
       customerNote: orderSchema.customerNote,
+      orderType: orderSchema.orderType,
+      deliveryAddress: orderSchema.deliveryAddress,
+      deliveryPhone: orderSchema.deliveryPhone,
       status: orderSchema.status,
       paymentMethod: orderSchema.paymentMethod,
       totalUsdCents: orderSchema.totalUsdCents,
@@ -135,9 +138,11 @@ const TicketPage = async (props: {
     : order.tableNumber === null
       ? t('deleted_table')
       : t('table_label', { tableNumber: order.tableNumber });
-  const orderTypeLabel = order.tableId === null
-    ? t('ticket_order_type_counter')
-    : t('ticket_order_type_table');
+  const orderTypeLabel = order.orderType === 'delivery'
+    ? t('ticket_order_type_delivery')
+    : order.tableId === null
+      ? t('ticket_order_type_counter')
+      : t('ticket_order_type_table');
   const showWhatsapp = order.enableWhatsappContact !== false
     && Boolean(order.restaurantWhatsappNumber);
   const hasStoredTotal = order.totalUsdCents !== null || order.totalLbp !== null;
@@ -207,6 +212,24 @@ const TicketPage = async (props: {
               {': '}
               <span className="font-bold">{orderTypeLabel}</span>
             </div>
+            {order.orderType === 'delivery' && (
+              <>
+                {order.deliveryAddress && (
+                  <div>
+                    {t('delivery_address_label')}
+                    {': '}
+                    <span className="font-bold">{order.deliveryAddress}</span>
+                  </div>
+                )}
+                {order.deliveryPhone && (
+                  <div>
+                    {t('delivery_phone_label')}
+                    {': '}
+                    <span className="font-bold">{order.deliveryPhone}</span>
+                  </div>
+                )}
+              </>
+            )}
             <div>
               {orderSourceLabel}
             </div>
