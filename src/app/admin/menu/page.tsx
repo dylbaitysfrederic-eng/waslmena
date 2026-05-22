@@ -13,16 +13,30 @@ import {
   formatAdminLabel,
   getAdminOrganizations,
 } from '../_helpers';
+import {
+  filterAdminRestaurantIds,
+  getAdminRestaurantSearchQuery,
+} from '../_restaurantSearch';
+import { AdminRestaurantSearch } from '../AdminRestaurantSearch';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-const AdminMenuPage = async () => {
+const AdminMenuPage = async (props: {
+  searchParams?: { q?: string | string[] };
+}) => {
   const {
     ids,
     organizationRecords,
     menuItemCountByOrganizationId,
   } = await getAdminOrganizations();
+  const searchQuery = getAdminRestaurantSearchQuery(props.searchParams);
+  const filteredIds = filterAdminRestaurantIds(
+    ids,
+    organizationRecords,
+    searchQuery,
+  );
+
   return (
     <section className="rounded-md border bg-background p-5 shadow-sm">
       <div className="mb-5 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
@@ -33,6 +47,13 @@ const AdminMenuPage = async () => {
           </p>
         </div>
       </div>
+
+      <AdminRestaurantSearch
+        action="/admin/menu"
+        resultCount={filteredIds.length}
+        searchQuery={searchQuery}
+        totalCount={ids.length}
+      />
 
       {ids.length === 0
         ? (
@@ -54,7 +75,7 @@ const AdminMenuPage = async () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {ids.map((organizationId, index) => {
+                  {filteredIds.map((organizationId, index) => {
                     const organization = organizationRecords.get(organizationId);
                     const itemCount = menuItemCountByOrganizationId.get(organizationId) ?? 0;
                     const clientName = organization?.restaurantDisplayName

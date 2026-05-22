@@ -13,15 +13,28 @@ import {
   formatAdminLabel,
   getAdminOrganizations,
 } from '../_helpers';
+import {
+  filterAdminRestaurantIds,
+  getAdminRestaurantSearchQuery,
+} from '../_restaurantSearch';
+import { AdminRestaurantSearch } from '../AdminRestaurantSearch';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-const AdminTemplatesPage = async () => {
+const AdminTemplatesPage = async (props: {
+  searchParams?: { q?: string | string[] };
+}) => {
   const {
     ids,
     organizationRecords,
   } = await getAdminOrganizations();
+  const searchQuery = getAdminRestaurantSearchQuery(props.searchParams);
+  const filteredIds = filterAdminRestaurantIds(
+    ids,
+    organizationRecords,
+    searchQuery,
+  );
 
   return (
     <section className="rounded-md bg-background p-5">
@@ -33,6 +46,13 @@ const AdminTemplatesPage = async () => {
           </p>
         </div>
       </div>
+
+      <AdminRestaurantSearch
+        action="/admin/templates"
+        resultCount={filteredIds.length}
+        searchQuery={searchQuery}
+        totalCount={ids.length}
+      />
 
       {ids.length === 0
         ? (
@@ -53,7 +73,7 @@ const AdminTemplatesPage = async () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {ids.map((organizationId, index) => {
+                  {filteredIds.map((organizationId, index) => {
                     const organization = organizationRecords.get(organizationId);
                     const clientName = organization?.restaurantDisplayName
                       || 'Unnamed restaurant';

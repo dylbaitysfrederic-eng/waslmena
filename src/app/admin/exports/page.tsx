@@ -13,6 +13,11 @@ import {
   formatAdminLabel,
   getAdminOrganizations,
 } from '../_helpers';
+import {
+  filterAdminRestaurantIds,
+  getAdminRestaurantSearchQuery,
+} from '../_restaurantSearch';
+import { AdminRestaurantSearch } from '../AdminRestaurantSearch';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -27,16 +32,12 @@ const AdminExportsPage = async (props: {
     organizationRecords,
     tableCountByOrganizationId,
   } = await getAdminOrganizations();
-  const searchQuery = props.searchParams?.q?.trim().toLowerCase() ?? '';
-  const filteredIds = searchQuery
-    ? ids.filter((organizationId) => {
-      const organization = organizationRecords.get(organizationId);
-      const restaurantName = organization?.restaurantDisplayName ?? '';
-
-      return organizationId.toLowerCase().includes(searchQuery)
-        || restaurantName.toLowerCase().includes(searchQuery);
-    })
-    : ids;
+  const searchQuery = getAdminRestaurantSearchQuery(props.searchParams);
+  const filteredIds = filterAdminRestaurantIds(
+    ids,
+    organizationRecords,
+    searchQuery,
+  );
 
   return (
     <section className="rounded-md border bg-background p-5 shadow-sm">
@@ -51,20 +52,12 @@ const AdminExportsPage = async (props: {
         </div>
       </div>
 
-      <form className="mb-4 flex flex-col gap-2 sm:max-w-md sm:flex-row" action="/admin/exports">
-        <input
-          name="q"
-          defaultValue={props.searchParams?.q ?? ''}
-          placeholder="Search restaurant or organization id"
-          className="h-10 rounded-md border border-input bg-background px-3 text-sm"
-        />
-        <button
-          type="submit"
-          className="inline-flex h-10 items-center justify-center rounded-md border bg-background px-3 text-sm font-semibold hover:bg-muted"
-        >
-          Search
-        </button>
-      </form>
+      <AdminRestaurantSearch
+        action="/admin/exports"
+        resultCount={filteredIds.length}
+        searchQuery={searchQuery}
+        totalCount={ids.length}
+      />
 
       {filteredIds.length === 0
         ? (

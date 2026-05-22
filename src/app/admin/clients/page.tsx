@@ -15,7 +15,12 @@ import {
   getAdminOrganizations,
   getStatusBadgeClassName,
 } from '../_helpers';
+import {
+  filterAdminRestaurantIds,
+  getAdminRestaurantSearchQuery,
+} from '../_restaurantSearch';
 import { syncClerkOrganizationsAction } from '../actions';
+import { AdminRestaurantSearch } from '../AdminRestaurantSearch';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -48,6 +53,7 @@ const getContactName = (organization: {
 
 const AdminClientsPage = async (props: {
   searchParams?: {
+    q?: string | string[];
     syncCreated?: string | string[];
     syncExisting?: string | string[];
   };
@@ -58,6 +64,12 @@ const AdminClientsPage = async (props: {
   } = await getAdminOrganizations();
   const syncCreated = getSyncCount(props.searchParams?.syncCreated);
   const syncExisting = getSyncCount(props.searchParams?.syncExisting);
+  const searchQuery = getAdminRestaurantSearchQuery(props.searchParams);
+  const filteredIds = filterAdminRestaurantIds(
+    ids,
+    organizationRecords,
+    searchQuery,
+  );
 
   return (
     <section className="rounded-md bg-background p-5">
@@ -90,6 +102,13 @@ const AdminClientsPage = async (props: {
         </div>
       )}
 
+      <AdminRestaurantSearch
+        action="/admin/clients"
+        resultCount={filteredIds.length}
+        searchQuery={searchQuery}
+        totalCount={ids.length}
+      />
+
       {ids.length === 0
         ? (
             <div className="rounded-md border p-8 text-center text-muted-foreground">
@@ -113,7 +132,7 @@ const AdminClientsPage = async (props: {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {ids.map((organizationId, index) => {
+                  {filteredIds.map((organizationId, index) => {
                     const organization = organizationRecords.get(organizationId);
                     const subscriptionStatus = organization?.subscriptionStatus ?? 'trial';
                     const paymentStatus = organization?.monthlySubscriptionStatus ?? 'paused';

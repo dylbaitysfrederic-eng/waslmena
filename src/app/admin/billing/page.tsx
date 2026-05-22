@@ -14,16 +14,29 @@ import {
   SUBSCRIPTION_PAYMENT_METHODS,
   SUBSCRIPTION_STATUSES,
 } from '../_helpers';
+import {
+  filterAdminRestaurantIds,
+  getAdminRestaurantSearchQuery,
+} from '../_restaurantSearch';
 import { updateAdminBillingAction } from '../actions';
+import { AdminRestaurantSearch } from '../AdminRestaurantSearch';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-const AdminBillingPage = async () => {
+const AdminBillingPage = async (props: {
+  searchParams?: { q?: string | string[] };
+}) => {
   const {
     ids,
     organizationRecords,
   } = await getAdminOrganizations();
+  const searchQuery = getAdminRestaurantSearchQuery(props.searchParams);
+  const filteredIds = filterAdminRestaurantIds(
+    ids,
+    organizationRecords,
+    searchQuery,
+  );
 
   return (
     <section className="grid gap-4">
@@ -39,7 +52,14 @@ const AdminBillingPage = async () => {
         </p>
       </div>
 
-      {ids.map((organizationId) => {
+      <AdminRestaurantSearch
+        action="/admin/billing"
+        resultCount={filteredIds.length}
+        searchQuery={searchQuery}
+        totalCount={ids.length}
+      />
+
+      {filteredIds.map((organizationId) => {
         const organization = organizationRecords.get(organizationId);
         const subscriptionStatus = organization?.subscriptionStatus ?? 'trial';
 

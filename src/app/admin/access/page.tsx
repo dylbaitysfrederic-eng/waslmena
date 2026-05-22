@@ -18,16 +18,29 @@ import {
   getStatusBadgeClassName,
   SUBSCRIPTION_STATUSES,
 } from '../_helpers';
+import {
+  filterAdminRestaurantIds,
+  getAdminRestaurantSearchQuery,
+} from '../_restaurantSearch';
 import { updateAdminAccessAction } from '../actions';
+import { AdminRestaurantSearch } from '../AdminRestaurantSearch';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-const AdminAccessPage = async () => {
+const AdminAccessPage = async (props: {
+  searchParams?: { q?: string | string[] };
+}) => {
   const {
     ids,
     organizationRecords,
   } = await getAdminOrganizations();
+  const searchQuery = getAdminRestaurantSearchQuery(props.searchParams);
+  const filteredIds = filterAdminRestaurantIds(
+    ids,
+    organizationRecords,
+    searchQuery,
+  );
 
   return (
     <section className="rounded-md bg-background p-5">
@@ -37,6 +50,13 @@ const AdminAccessPage = async () => {
           Suspend or restore restaurant dashboard access for commercial or support reasons.
         </p>
       </div>
+
+      <AdminRestaurantSearch
+        action="/admin/access"
+        resultCount={filteredIds.length}
+        searchQuery={searchQuery}
+        totalCount={ids.length}
+      />
 
       <div className="overflow-x-auto">
         <Table>
@@ -48,7 +68,7 @@ const AdminAccessPage = async () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {ids.map((organizationId) => {
+            {filteredIds.map((organizationId) => {
               const organization = organizationRecords.get(organizationId);
               const subscriptionStatus = organization?.subscriptionStatus ?? 'trial';
               const accessStatus = organization?.accessStatus ?? 'pending';
