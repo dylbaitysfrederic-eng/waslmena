@@ -149,6 +149,9 @@ const ExportBackupPage = async (props: { params: { locale: string } }) => {
         <div className="mt-5 rounded-md border border-dashed bg-background p-4 text-sm leading-6 text-muted-foreground">
           {t('safety_note')}
         </div>
+        <div className="mt-3 rounded-md border border-dashed bg-background p-4 text-sm leading-6 text-muted-foreground">
+          {t('location_scope_note')}
+        </div>
       </DashboardSection>
     </>
   );

@@ -77,8 +77,9 @@ const AdminClientsPage = async (props: {
         <div>
           <h2 className="text-xl font-semibold">Restaurant clients</h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            Compact client index. Open a client to manage identity, billing,
-            access, and template shortcuts.
+            Compact client and location index. Each organization represents one
+            restaurant branch/location; multi-branch clients can be managed as
+            separate restaurant profiles.
           </p>
         </div>
         <form action={syncClerkOrganizationsAction}>
@@ -121,7 +122,7 @@ const AdminClientsPage = async (props: {
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-24">Client #</TableHead>
-                    <TableHead>Restaurant</TableHead>
+                    <TableHead>Restaurant / Location</TableHead>
                     <TableHead>Type</TableHead>
                     <TableHead>Contact</TableHead>
                     <TableHead>WhatsApp</TableHead>
@@ -155,6 +156,9 @@ const AdminClientsPage = async (props: {
                           <code className="mt-1 block max-w-64 truncate text-xs text-muted-foreground">
                             {organizationId}
                           </code>
+                          <div className="mt-1 max-w-72 truncate text-xs text-muted-foreground">
+                            {organization?.restaurantAddress ?? 'No location address yet'}
+                          </div>
                         </TableCell>
                         <TableCell>
                           {formatAdminLabel(

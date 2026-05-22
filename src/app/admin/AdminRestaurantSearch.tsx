@@ -12,7 +12,7 @@ export const AdminRestaurantSearch = (props: {
       <input
         name="q"
         defaultValue={props.searchQuery}
-        placeholder="Search restaurant, organization ID, contact, or status"
+        placeholder="Search restaurant, location/address, organization ID, contact, or status"
         className="h-10 rounded-md border border-input bg-background px-3 text-sm"
       />
       <button

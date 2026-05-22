@@ -82,10 +82,11 @@ const ClientDetailPage = async (props: { params: { id: string } }) => {
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div className="rounded-md bg-background p-5">
-          <h3 className="text-base font-semibold">Client identity</h3>
+          <h3 className="text-base font-semibold">Client location identity</h3>
           <p className="mt-1 text-sm text-muted-foreground">
-            These details are used across the restaurant dashboard, public menu,
-            QR previews, tickets, and admin templates.
+            These details define one restaurant branch/location. Multi-branch
+            businesses should use separate restaurant profiles so QR codes,
+            orders, exports, and settings stay location-scoped.
           </p>
 
           <form action={updateAdminClientAction} className="mt-5 grid gap-4">
@@ -162,7 +163,7 @@ const ClientDetailPage = async (props: { params: { id: string } }) => {
                 htmlFor="restaurant-address"
                 className="grid gap-1 text-xs font-medium text-muted-foreground md:col-span-2"
               >
-                Restaurant address
+                Restaurant branch/location address
                 <textarea
                   id="restaurant-address"
                   name="restaurantAddress"

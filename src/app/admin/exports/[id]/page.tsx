@@ -115,8 +115,9 @@ const AdminRestaurantExportsPage = async (props: {
             </h2>
             <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
               Admin-only downloads for this restaurant organization. Each route
-              is scoped to this organization id and generates server-side files
-              on demand.
+              is scoped to this organization id, which represents one
+              restaurant branch/location, and generates server-side files on
+              demand.
             </p>
             <code className="mt-2 block text-xs text-muted-foreground">
               {organizationId}

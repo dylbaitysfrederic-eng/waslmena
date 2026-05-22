@@ -89,6 +89,15 @@ const RestaurantBrandingPage = async (props: {
         title={t('section_title')}
         description={t('section_description')}
       >
+        <div className="mb-4 rounded-md border bg-muted/30 p-4 text-sm leading-6 text-muted-foreground">
+          <div className="font-semibold text-foreground">
+            {t('branch_note_title')}
+          </div>
+          <p className="mt-1">
+            {t('branch_note_description')}
+          </p>
+        </div>
+
         <form
           action={updateRestaurantBrandingAction}
           encType="multipart/form-data"

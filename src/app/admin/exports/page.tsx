@@ -46,8 +46,8 @@ const AdminExportsPage = async (props: {
           <h2 className="text-xl font-semibold">Exports & Backups</h2>
           <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
             Generate lightweight organization-scoped exports for restaurant
-            operations. Restaurant dashboard exports stay available to each
-            restaurant for its own data only.
+            operations. Each organization is treated as one restaurant
+            branch/location, so exports stay scoped to that location only.
           </p>
         </div>
       </div>
