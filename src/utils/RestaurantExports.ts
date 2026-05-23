@@ -49,6 +49,12 @@ const csvHeaders = [
   'quantities',
   'total_usd',
   'total_local',
+  'order_type',
+  'delivery_address',
+  'delivery_phone',
+  'delivery_notes',
+  'delivery_fee_usd',
+  'delivery_fee_local',
 ];
 
 const escapeCsvValue = (value: string | number | null) => {
@@ -328,6 +334,12 @@ export const createRestaurantOrdersCsvExport = async (
       totalUsdCents: orderSchema.totalUsdCents,
       totalLbp: orderSchema.totalLbp,
       createdAt: orderSchema.createdAt,
+      orderType: orderSchema.orderType,
+      deliveryAddress: orderSchema.deliveryAddress,
+      deliveryPhone: orderSchema.deliveryPhone,
+      deliveryNotes: orderSchema.deliveryNotes,
+      deliveryFeeUsdCents: orderSchema.deliveryFeeUsdCents,
+      deliveryFeeLocal: orderSchema.deliveryFeeLocal,
     })
     .from(orderSchema)
     .leftJoin(
@@ -384,6 +396,12 @@ export const createRestaurantOrdersCsvExport = async (
       quantitySummaries.join('; '),
       formatUsdTotal(order.totalUsdCents),
       formatLocalTotal(order.totalLbp, localCurrencyLabel),
+      order.orderType ?? '',
+      order.deliveryAddress ?? '',
+      order.deliveryPhone ?? '',
+      order.deliveryNotes ?? '',
+      formatUsdTotal(order.deliveryFeeUsdCents),
+      formatLocalTotal(order.deliveryFeeLocal, localCurrencyLabel),
     ];
   });
 

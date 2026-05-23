@@ -313,6 +313,12 @@ const OrdersPage = async (props: {
         totalLbp: orderSchema.totalLbp,
         createdAt: orderSchema.createdAt,
         updatedAt: orderSchema.updatedAt,
+        orderType: orderSchema.orderType,
+        deliveryAddress: orderSchema.deliveryAddress,
+        deliveryPhone: orderSchema.deliveryPhone,
+        deliveryNotes: orderSchema.deliveryNotes,
+        deliveryFeeUsdCents: orderSchema.deliveryFeeUsdCents,
+        deliveryFeeLocal: orderSchema.deliveryFeeLocal,
       })
       .from(orderSchema)
       .leftJoin(
@@ -872,6 +878,43 @@ const OrdersPage = async (props: {
                                                   <p className="mt-1 whitespace-pre-wrap">
                                                     {order.customerNote}
                                                   </p>
+                                                </div>
+                                              )}
+
+                                              {order.orderType === 'delivery' && (
+                                                <div className="mt-3 rounded-md border bg-background p-3 text-sm">
+                                                  <div className="text-xs font-semibold uppercase text-muted-foreground">
+                                                    {t('ticket_order_type_delivery')}
+                                                  </div>
+                                                  <div className="mt-1 text-sm">
+                                                    {order.deliveryAddress && (
+                                                      <div>
+                                                        <span className="font-semibold">
+                                                          {t('delivery_address_label')}
+                                                          {': '}
+                                                        </span>
+                                                        <span>{order.deliveryAddress}</span>
+                                                      </div>
+                                                    )}
+                                                    {order.deliveryPhone && (
+                                                      <div className="mt-1">
+                                                        <span className="font-semibold">
+                                                          {t('delivery_phone_label')}
+                                                          {': '}
+                                                        </span>
+                                                        <span>{order.deliveryPhone}</span>
+                                                      </div>
+                                                    )}
+                                                    {order.deliveryNotes && (
+                                                      <div className="mt-1">
+                                                        <span className="font-semibold">
+                                                          {t('delivery_notes_label')}
+                                                          {': '}
+                                                        </span>
+                                                        <span>{order.deliveryNotes}</span>
+                                                      </div>
+                                                    )}
+                                                  </div>
                                                 </div>
                                               )}
                                             </div>
