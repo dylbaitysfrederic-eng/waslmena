@@ -64,7 +64,7 @@ const normalizeCustomerNote = (value: string | undefined) => {
   return textValue.length > 0 ? textValue.slice(0, 200) : null;
 };
 
-export const submitPublicOrderAction = async (
+const submitPublicOrderActionImpl = async (
   input: SubmitOrderInput,
 ): Promise<SubmitOrderResult> => {
   const rawIdempotencyKey = (input.idempotencyKey ?? '').toString().trim();
@@ -287,6 +287,46 @@ export const submitPublicOrderAction = async (
     orderId,
   };
 };
+
+// Improve idempotency race resilience: if a concurrent insert created the
+// same idempotency key, the DB may raise a unique constraint error. Catch
+// that and return the existing order instead of surfacing an error.
+const wrapSubmitPublicOrderAction = async (
+  input: SubmitOrderInput,
+): Promise<SubmitOrderResult> => {
+  try {
+    return await submitPublicOrderActionImpl(input);
+  } catch (err: any) {
+    const key = (input.idempotencyKey ?? '').toString().trim();
+
+    if (!key) {
+      throw err;
+    }
+
+    try {
+      const [existing] = await db
+        .select({ id: orderSchema.id })
+        .from(orderSchema)
+        .where(
+          and(
+            eq(orderSchema.organizationId, input.organizationId),
+            eq(orderSchema.idempotencyKey, key),
+          ),
+        )
+        .limit(1);
+
+      if (existing) {
+        return { ok: true, orderId: existing.id };
+      }
+    } catch {
+      // fall through to rethrow original error
+    }
+
+    throw err;
+  }
+};
+
+export { wrapSubmitPublicOrderAction as submitPublicOrderAction };
 
 export const checkPendingPublicOrderAction = async (
   input: CheckPendingPublicOrderInput,
