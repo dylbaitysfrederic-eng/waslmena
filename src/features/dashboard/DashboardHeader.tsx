@@ -59,7 +59,7 @@ export const DashboardHeader = (props: {
             '/dashboard/organization-profile',
             locale,
           )}
-          afterCreateOrganizationUrl="/dashboard"
+          afterCreateOrganizationUrl={getI18nPath('/dashboard', locale)}
           hidePersonal
           skipInvitationScreen
           appearance={{
@@ -162,7 +162,7 @@ export const DashboardHeader = (props: {
           <li>
             <UserButton
               userProfileMode="navigation"
-              userProfileUrl="/dashboard/user-profile"
+              userProfileUrl={getI18nPath('/dashboard/user-profile', locale)}
               appearance={{
                 elements: {
                   rootBox: 'px-2 py-1.5',

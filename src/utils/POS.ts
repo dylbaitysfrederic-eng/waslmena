@@ -78,7 +78,7 @@ const PUSH_STATUS_LABELS: Record<PosPushStatus, string> = {
 };
 
 const PROVIDER_DESCRIPTIONS: Record<PosProvider, string> = {
-  csv_manual: 'CSV/manual bridge first. Export, compare, and reconcile operational data without provider APIs.',
+  csv_manual: 'Planned CSV/manual foundation first. Export, compare, and reconcile operational data without provider APIs when this module is activated later.',
   foodics: 'Future API provider placeholder. No Foodics connection is active yet.',
   sapaad: 'Future API provider placeholder. No Sapaad connection is active yet.',
   square: 'Future API provider placeholder. No Square connection is active yet.',

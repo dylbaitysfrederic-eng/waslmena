@@ -45,10 +45,10 @@ export const MODULES: ModuleDefinition[] = [
   {
     key: 'posIntegration',
     title: 'POS Integrations',
-    description: 'CSV/manual POS bridge first, provider integrations later.',
+    description: 'Planned CSV/manual POS foundation first, provider integrations later.',
     maturity: 'Planned',
-    positioning: 'Use clean exports and manual reconciliation now while leaving room for Foodics, Sapaad, Square, Toast, Lightspeed, and other providers later.',
-    adminHelper: 'Keep CSV/manual workflows as the default. Enabling the flag does not connect APIs, send orders to a POS, or start automatic sync.',
+    positioning: 'Wasl is not connected to a POS yet. The planned first step is clean exports and manual reconciliation before provider APIs arrive.',
+    adminHelper: 'Planned foundation only. Enabling the flag does not connect APIs, send orders to a POS, start automatic sync, or activate a live POS integration.',
   },
   {
     key: 'whatsappBusiness',

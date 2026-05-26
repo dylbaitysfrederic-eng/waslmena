@@ -28,6 +28,12 @@ const isProtectedRoute = createRouteMatcher([
   '/:locale/api(.*)',
 ]);
 
+const getLocalePrefix = (pathname: string) => {
+  const firstSegment = pathname.split('/')[1] ?? '';
+
+  return AllLocales.includes(firstSegment) ? `/${firstSegment}` : '';
+};
+
 export default function middleware(
   request: NextRequest,
   event: NextFetchEvent,
@@ -39,8 +45,7 @@ export default function middleware(
   ) {
     return clerkMiddleware(async (auth, req) => {
       if (isProtectedRoute(req)) {
-        const locale
-          = req.nextUrl.pathname.match(/(\/.*)\/dashboard/)?.at(1) ?? '';
+        const locale = getLocalePrefix(req.nextUrl.pathname);
 
         const signInUrl = new URL(`${locale}/sign-in`, req.url);
 
@@ -62,8 +67,9 @@ export default function middleware(
         && req.nextUrl.pathname.includes('/dashboard')
         && !req.nextUrl.pathname.endsWith('/organization-selection')
       ) {
+        const locale = getLocalePrefix(req.nextUrl.pathname);
         const orgSelection = new URL(
-          '/onboarding/organization-selection',
+          `${locale}/onboarding/organization-selection`,
           req.url,
         );
 
