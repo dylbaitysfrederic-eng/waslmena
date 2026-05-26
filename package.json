@@ -11,6 +11,7 @@
     "clean": "rimraf .next out coverage",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "check:migrations": "node scripts/check-migrations.mjs",
     "check-types": "tsc --noEmit --pretty",
     "test": "vitest run",
     "test:e2e": "playwright test",
