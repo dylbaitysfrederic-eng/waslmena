@@ -259,6 +259,7 @@ const submitPublicOrderActionImpl = async (
         deliveryEstimatedTime: deliveryEstimatedTime ?? undefined,
         status: 'pending',
         paymentMethod: 'cash',
+        paymentStatus: 'unpaid',
         totalUsdCents,
         totalLbp,
       })

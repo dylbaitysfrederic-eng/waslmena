@@ -16,6 +16,7 @@ import {
   restaurantTableSchema,
 } from '@/models/Schema';
 import { cn, getI18nPath } from '@/utils/Helpers';
+import { getPaymentStatusLabelKey } from '@/utils/Payments';
 
 import { updateOrderAction, updateOrderStatusAction } from './actions';
 import { CopyTicketButton } from './CopyTicketButton';
@@ -97,6 +98,21 @@ const ORDER_STATUS_STYLES = {
 const getOrderStatusStyle = (status: string) => {
   return ORDER_STATUS_STYLES[status as keyof typeof ORDER_STATUS_STYLES]
     ?? ORDER_STATUS_STYLES.pending;
+};
+
+const PAYMENT_STATUS_STYLES = {
+  unpaid: 'border-slate-200 bg-slate-50 text-slate-600',
+  pending_payment: 'border-blue-200 bg-blue-50 text-blue-700',
+  paid: 'border-green-200 bg-green-50 text-green-700',
+  failed: 'border-rose-200 bg-rose-50 text-rose-700',
+  refunded: 'border-purple-200 bg-purple-50 text-purple-700',
+  cancelled: 'border-slate-200 bg-slate-50 text-slate-500',
+} as const;
+
+const getPaymentStatusStyle = (status: string | null) => {
+  return PAYMENT_STATUS_STYLES[
+    status as keyof typeof PAYMENT_STATUS_STYLES
+  ] ?? PAYMENT_STATUS_STYLES.unpaid;
 };
 
 const normalizeOrderStatus = (status: string) => {
@@ -309,6 +325,7 @@ const OrdersPage = async (props: {
         customerNote: orderSchema.customerNote,
         status: orderSchema.status,
         paymentMethod: orderSchema.paymentMethod,
+        paymentStatus: orderSchema.paymentStatus,
         totalUsdCents: orderSchema.totalUsdCents,
         totalLbp: orderSchema.totalLbp,
         createdAt: orderSchema.createdAt,
@@ -706,6 +723,16 @@ const OrdersPage = async (props: {
                                         elapsedMinutes,
                                         order.status,
                                       );
+                                      const paymentStatusLabel = t(
+                                        getPaymentStatusLabelKey(order.paymentStatus),
+                                      );
+                                      const paymentSummary = t(
+                                        'payment_method_status_label',
+                                        {
+                                          paymentMethod: order.paymentMethod,
+                                          paymentStatus: paymentStatusLabel,
+                                        },
+                                      );
                                       const copyTicketText = [
                                         restaurantDisplayName,
                                         ...(restaurantAddress
@@ -729,9 +756,7 @@ const OrdersPage = async (props: {
                                           }`
                                           : null,
                                         `${t('status_label')}: ${t(`status_${order.status}`)}`,
-                                        t('payment_method_label', {
-                                          paymentMethod: order.paymentMethod,
-                                        }),
+                                        paymentSummary,
                                         orderSourceLabel,
                                         order.customerName
                                           ? t('ticket_customer', {
@@ -941,9 +966,17 @@ const OrdersPage = async (props: {
                                                 {!hasStoredTotal && t('no_order_total')}
                                               </div>
                                               <div className="text-sm text-muted-foreground">
-                                                {t('payment_method_label', {
-                                                  paymentMethod: order.paymentMethod,
-                                                })}
+                                                {paymentSummary}
+                                              </div>
+                                              <div className="mt-1">
+                                                <span
+                                                  className={cn(
+                                                    'inline-flex rounded-md border px-2 py-1 text-xs font-semibold',
+                                                    getPaymentStatusStyle(order.paymentStatus),
+                                                  )}
+                                                >
+                                                  {paymentStatusLabel}
+                                                </span>
                                               </div>
                                             </div>
                                           </div>

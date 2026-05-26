@@ -232,6 +232,13 @@
       "when": 1779326600000,
       "tag": "0032_menu_item_merchandising",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1779840000000,
+      "tag": "0036_payment_foundation",
+      "breakpoints": true
     }
   ]
 }

@@ -238,6 +238,8 @@ export const orderSchema = pgTable('order', {
   deliveryEstimatedTime: text('delivery_estimated_time'),
   status: text('status').default('pending').notNull(),
   paymentMethod: text('payment_method').default('cash').notNull(),
+  paymentStatus: text('payment_status').default('unpaid').notNull(),
+  paymentSessionId: integer('payment_session_id'),
   totalUsdCents: integer('total_usd_cents'),
   totalLbp: integer('total_lbp'),
   createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
@@ -252,6 +254,30 @@ export const orderSchema = pgTable('order', {
       table.idempotencyKey,
     ),
   };
+});
+
+export const paymentSessionSchema = pgTable('payment_session', {
+  id: serial('id').primaryKey(),
+  organizationId: text('organization_id').notNull(),
+  orderId: integer('order_id'),
+  provider: text('provider').notNull(),
+  providerSessionId: text('provider_session_id'),
+  providerPaymentId: text('provider_payment_id'),
+  providerStatus: text('provider_status'),
+  paymentStatus: text('payment_status').default('pending_payment').notNull(),
+  amountUsdCents: integer('amount_usd_cents'),
+  amountLocal: integer('amount_local'),
+  localCurrencyLabel: text('local_currency_label'),
+  idempotencyKey: text('idempotency_key'),
+  webhookEventId: text('webhook_event_id'),
+  checkoutUrl: text('checkout_url'),
+  metadata: text('metadata'),
+  manualReconciliationNotes: text('manual_reconciliation_notes'),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'date' })
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
 });
 
 export const orderItemSchema = pgTable('order_item', {

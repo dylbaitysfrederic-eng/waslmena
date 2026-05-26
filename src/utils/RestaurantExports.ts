@@ -13,6 +13,7 @@ import {
   orderItemSchema,
   orderSchema,
   organizationSchema,
+  paymentSessionSchema,
   restaurantTableSchema,
 } from '@/models/Schema';
 import { getBaseUrl } from '@/utils/Helpers';
@@ -44,6 +45,11 @@ const csvHeaders = [
   'order_number',
   'date_time',
   'status',
+  'payment_status',
+  'payment_method',
+  'payment_provider',
+  'provider_session_id',
+  'provider_payment_id',
   'table_or_menu',
   'items',
   'quantities',
@@ -331,6 +337,11 @@ export const createRestaurantOrdersCsvExport = async (
       tableId: orderSchema.tableId,
       tableNumber: restaurantTableSchema.tableNumber,
       status: orderSchema.status,
+      paymentStatus: orderSchema.paymentStatus,
+      paymentMethod: orderSchema.paymentMethod,
+      paymentProvider: paymentSessionSchema.provider,
+      providerSessionId: paymentSessionSchema.providerSessionId,
+      providerPaymentId: paymentSessionSchema.providerPaymentId,
       totalUsdCents: orderSchema.totalUsdCents,
       totalLbp: orderSchema.totalLbp,
       createdAt: orderSchema.createdAt,
@@ -345,6 +356,10 @@ export const createRestaurantOrdersCsvExport = async (
     .leftJoin(
       restaurantTableSchema,
       eq(orderSchema.tableId, restaurantTableSchema.id),
+    )
+    .leftJoin(
+      paymentSessionSchema,
+      eq(orderSchema.paymentSessionId, paymentSessionSchema.id),
     )
     .where(orderPeriodWhere)
     .orderBy(desc(orderSchema.createdAt));
@@ -391,6 +406,11 @@ export const createRestaurantOrdersCsvExport = async (
       order.id,
       formatDateTime(order.createdAt, locale),
       order.status,
+      order.paymentStatus,
+      order.paymentMethod,
+      order.paymentProvider ?? '',
+      order.providerSessionId ?? '',
+      order.providerPaymentId ?? '',
       orderSourceLabel,
       itemSummaries.join('; '),
       quantitySummaries.join('; '),

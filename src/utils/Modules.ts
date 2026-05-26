@@ -37,10 +37,10 @@ export const MODULES: ModuleDefinition[] = [
   {
     key: 'onlinePayments',
     title: 'Online Payments',
-    description: 'Provider-agnostic payment foundation planned for future checkout flows.',
+    description: 'Provider-agnostic payment foundation prepared for future checkout flows.',
     maturity: 'Coming soon',
-    positioning: 'Designed to let Wasl support digital payment providers later without locking the restaurant into one processor.',
-    adminHelper: 'Enabling the flag only marks interest/readiness. It does not connect a payment provider or activate online collection.',
+    positioning: 'Foundation ready for a future premium payment module without locking the restaurant into one processor.',
+    adminHelper: 'Enabling the flag only marks interest/readiness. It does not connect a payment provider, create checkout links, or activate online collection.',
   },
   {
     key: 'posIntegration',

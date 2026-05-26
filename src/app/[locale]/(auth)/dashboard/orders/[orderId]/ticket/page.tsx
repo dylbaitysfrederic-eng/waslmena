@@ -12,6 +12,7 @@ import {
   organizationSchema,
   restaurantTableSchema,
 } from '@/models/Schema';
+import { getPaymentStatusLabelKey } from '@/utils/Payments';
 
 import { AutoPrintTicket } from './AutoPrintTicket';
 
@@ -86,6 +87,7 @@ const TicketPage = async (props: {
       deliveryPhone: orderSchema.deliveryPhone,
       status: orderSchema.status,
       paymentMethod: orderSchema.paymentMethod,
+      paymentStatus: orderSchema.paymentStatus,
       totalUsdCents: orderSchema.totalUsdCents,
       totalLbp: orderSchema.totalLbp,
       createdAt: orderSchema.createdAt,
@@ -146,6 +148,11 @@ const TicketPage = async (props: {
   const showWhatsapp = order.enableWhatsappContact !== false
     && Boolean(order.restaurantWhatsappNumber);
   const hasStoredTotal = order.totalUsdCents !== null || order.totalLbp !== null;
+  const paymentStatusLabel = t(getPaymentStatusLabelKey(order.paymentStatus));
+  const paymentSummary = t('payment_method_status_label', {
+    paymentMethod: order.paymentMethod,
+    paymentStatus: paymentStatusLabel,
+  });
   const ticketId = `order-ticket-${order.id}`;
 
   return (
@@ -234,9 +241,7 @@ const TicketPage = async (props: {
               {orderSourceLabel}
             </div>
             <div>
-              {t('payment_method_label', {
-                paymentMethod: order.paymentMethod,
-              })}
+              {paymentSummary}
             </div>
             {order.customerName && (
               <div>
