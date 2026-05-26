@@ -253,6 +253,13 @@
       "when": 1779842000000,
       "tag": "0038_pos_integration_foundation",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1779843000000,
+      "tag": "0039_recover_missing_access_columns",
+      "breakpoints": true
     }
   ]
 }
