@@ -6,8 +6,9 @@ Wasl uses Drizzle SQL migrations from `migrations/` and the Drizzle journal at `
 
 - Create migrations with `npm run db:generate` or add a deliberate forward-only SQL migration.
 - Commit the SQL migration and `migrations/meta/_journal.json` together.
-- Run `npm run check:migrations` before pushing.
+- Run `npm run verify` before pushing.
 - Run `npm run db:migrate` before deployment when schema changes are included.
+- Deploy only after Vercel is Ready and a quick smoke test covers the homepage, public QR menu, dashboard orders, and admin.
 - Never edit old migrations that may already have been applied to production.
 
 ## Production Mismatch Recovery

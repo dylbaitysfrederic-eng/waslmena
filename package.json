@@ -13,6 +13,7 @@
     "lint:fix": "eslint . --fix",
     "check:migrations": "node scripts/check-migrations.mjs",
     "check-types": "tsc --noEmit --pretty",
+    "verify": "npm run check:migrations && npm run check-types && npm run lint && npm run build",
     "test": "vitest run",
     "test:e2e": "playwright test",
     "commit": "cz",
