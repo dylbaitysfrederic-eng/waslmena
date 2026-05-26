@@ -14,9 +14,15 @@ import {
   orderSchema,
   organizationSchema,
   restaurantTableSchema,
+  whatsappMessageSchema,
 } from '@/models/Schema';
 import { cn, getI18nPath } from '@/utils/Helpers';
 import { getPaymentStatusLabelKey } from '@/utils/Payments';
+import {
+  formatWhatsappMessageStatus,
+  formatWhatsappMessageType,
+  formatWhatsappProvider,
+} from '@/utils/Whatsapp';
 
 import { updateOrderAction, updateOrderStatusAction } from './actions';
 import { CopyTicketButton } from './CopyTicketButton';
@@ -296,6 +302,7 @@ const OrdersPage = async (props: {
       restaurantAddress: organizationSchema.restaurantAddress,
       restaurantWhatsappNumber: organizationSchema.restaurantWhatsappNumber,
       localCurrencyLabel: organizationSchema.localCurrencyLabel,
+      whatsappBusinessEnabled: organizationSchema.whatsappBusinessEnabled,
       orderVisualNotificationsEnabled:
         organizationSchema.orderVisualNotificationsEnabled,
       orderSoundNotificationsEnabled:
@@ -308,6 +315,7 @@ const OrdersPage = async (props: {
   const restaurantDisplayName = organization?.restaurantDisplayName ?? 'Restaurant';
   const restaurantAddress = organization?.restaurantAddress ?? null;
   const restaurantWhatsappNumber = organization?.restaurantWhatsappNumber ?? null;
+  const whatsappBusinessEnabled = organization?.whatsappBusinessEnabled ?? false;
   const orderVisualNotificationsEnabled = (
     organization?.orderVisualNotificationsEnabled ?? true
   );
@@ -367,6 +375,28 @@ const OrdersPage = async (props: {
       .where(inArray(orderItemSchema.orderId, orderIds))
       .orderBy(orderItemSchema.id)
     : [];
+  const whatsappMessages = whatsappBusinessEnabled && orderIds.length > 0
+    ? await db
+      .select({
+        id: whatsappMessageSchema.id,
+        orderId: whatsappMessageSchema.orderId,
+        recipientPhone: whatsappMessageSchema.recipientPhone,
+        messageType: whatsappMessageSchema.messageType,
+        messageStatus: whatsappMessageSchema.messageStatus,
+        provider: whatsappMessageSchema.provider,
+        providerStatus: whatsappMessageSchema.providerStatus,
+        retryCount: whatsappMessageSchema.retryCount,
+        createdAt: whatsappMessageSchema.createdAt,
+      })
+      .from(whatsappMessageSchema)
+      .where(
+        and(
+          eq(whatsappMessageSchema.organizationId, orgId),
+          inArray(whatsappMessageSchema.orderId, orderIds),
+        ),
+      )
+      .orderBy(desc(whatsappMessageSchema.createdAt))
+    : [];
 
   const menuItems = orders.length > 0
     ? await db
@@ -382,11 +412,22 @@ const OrdersPage = async (props: {
     : [];
 
   const itemsByOrderId = new Map<number, typeof orderItems>();
+  const whatsappMessagesByOrderId = new Map<number, typeof whatsappMessages>();
 
   for (const item of orderItems) {
     const currentItems = itemsByOrderId.get(item.orderId) ?? [];
     currentItems.push(item);
     itemsByOrderId.set(item.orderId, currentItems);
+  }
+
+  for (const message of whatsappMessages) {
+    if (message.orderId === null) {
+      continue;
+    }
+
+    const currentMessages = whatsappMessagesByOrderId.get(message.orderId) ?? [];
+    currentMessages.push(message);
+    whatsappMessagesByOrderId.set(message.orderId, currentMessages);
   }
 
   const ordersByStatus = new Map<string, typeof orders>();
@@ -685,6 +726,8 @@ const OrdersPage = async (props: {
                                   <div className="mt-3 space-y-4">
                                     {statusOrders.map((order) => {
                                       const items = itemsByOrderId.get(order.id) ?? [];
+                                      const orderWhatsappMessages = whatsappMessagesByOrderId
+                                        .get(order.id) ?? [];
                                       const orderStatusStyle = getOrderStatusStyle(
                                         order.status,
                                       );
@@ -1048,6 +1091,50 @@ const OrdersPage = async (props: {
                                                   text={copyTicketText}
                                                 />
                                               </div>
+
+                                              {whatsappBusinessEnabled && (
+                                                <div className="mb-3 rounded-md border border-dashed bg-background p-3 text-sm">
+                                                  <div className="font-semibold">
+                                                    {t('whatsapp_automation_title')}
+                                                  </div>
+                                                  {orderWhatsappMessages.length > 0
+                                                    ? (
+                                                        <div className="mt-2 space-y-2">
+                                                          {orderWhatsappMessages.map(message => (
+                                                            <div
+                                                              key={message.id}
+                                                              className="rounded-md bg-muted/50 px-2 py-1.5 text-xs text-muted-foreground"
+                                                            >
+                                                              <div className="font-semibold text-foreground">
+                                                                {formatWhatsappMessageType(
+                                                                  message.messageType,
+                                                                )}
+                                                                {' · '}
+                                                                {formatWhatsappMessageStatus(
+                                                                  message.messageStatus,
+                                                                )}
+                                                              </div>
+                                                              <div className="mt-1">
+                                                                {formatWhatsappProvider(message.provider)}
+                                                                {' · '}
+                                                                {message.recipientPhone}
+                                                              </div>
+                                                              {message.providerStatus && (
+                                                                <div className="mt-1">
+                                                                  {message.providerStatus}
+                                                                </div>
+                                                              )}
+                                                            </div>
+                                                          ))}
+                                                        </div>
+                                                      )
+                                                    : (
+                                                        <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                                                          {t('whatsapp_automation_coming_soon')}
+                                                        </p>
+                                                      )}
+                                                </div>
+                                              )}
 
                                               <div className="mb-2 text-sm font-medium">
                                                 {t('status_label')}

@@ -239,6 +239,13 @@
       "when": 1779840000000,
       "tag": "0036_payment_foundation",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1779841000000,
+      "tag": "0037_whatsapp_business_foundation",
+      "breakpoints": true
     }
   ]
 }

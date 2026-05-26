@@ -95,6 +95,7 @@ const TicketPage = async (props: {
       restaurantAddress: organizationSchema.restaurantAddress,
       restaurantWhatsappNumber: organizationSchema.restaurantWhatsappNumber,
       enableWhatsappContact: organizationSchema.enableWhatsappContact,
+      whatsappBusinessEnabled: organizationSchema.whatsappBusinessEnabled,
       localCurrencyLabel: organizationSchema.localCurrencyLabel,
     })
     .from(orderSchema)
@@ -147,6 +148,7 @@ const TicketPage = async (props: {
       : t('ticket_order_type_table');
   const showWhatsapp = order.enableWhatsappContact !== false
     && Boolean(order.restaurantWhatsappNumber);
+  const showWhatsappBusinessHelper = order.whatsappBusinessEnabled === true;
   const hasStoredTotal = order.totalUsdCents !== null || order.totalLbp !== null;
   const paymentStatusLabel = t(getPaymentStatusLabelKey(order.paymentStatus));
   const paymentSummary = t('payment_method_status_label', {
@@ -243,6 +245,11 @@ const TicketPage = async (props: {
             <div>
               {paymentSummary}
             </div>
+            {showWhatsappBusinessHelper && (
+              <div className="text-[10px]">
+                {t('whatsapp_ticket_helper')}
+              </div>
+            )}
             {order.customerName && (
               <div>
                 {t('ticket_customer', { customerName: order.customerName })}

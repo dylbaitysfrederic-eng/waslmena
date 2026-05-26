@@ -280,6 +280,44 @@ export const paymentSessionSchema = pgTable('payment_session', {
     .notNull(),
 });
 
+export const whatsappMessageSchema = pgTable('whatsapp_message', {
+  id: serial('id').primaryKey(),
+  organizationId: text('organization_id').notNull(),
+  orderId: integer('order_id'),
+  recipientPhone: text('recipient_phone').notNull(),
+  templateKey: text('template_key'),
+  messageType: text('message_type').notNull(),
+  messageStatus: text('message_status').default('pending').notNull(),
+  provider: text('provider').default('internal').notNull(),
+  providerMessageId: text('provider_message_id'),
+  providerStatus: text('provider_status'),
+  idempotencyKey: text('idempotency_key'),
+  retryCount: integer('retry_count').default(0).notNull(),
+  lastAttemptAt: timestamp('last_attempt_at', { mode: 'date' }),
+  deliveredAt: timestamp('delivered_at', { mode: 'date' }),
+  readAt: timestamp('read_at', { mode: 'date' }),
+  failedAt: timestamp('failed_at', { mode: 'date' }),
+  failureReason: text('failure_reason'),
+  payloadSnapshot: text('payload_snapshot'),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'date' })
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
+});
+
+export const whatsappWebhookEventSchema = pgTable('whatsapp_webhook_event', {
+  id: serial('id').primaryKey(),
+  organizationId: text('organization_id'),
+  provider: text('provider').notNull(),
+  eventType: text('event_type').notNull(),
+  providerEventId: text('provider_event_id'),
+  payloadSnapshot: text('payload_snapshot').notNull(),
+  processed: boolean('processed').default(false).notNull(),
+  processedAt: timestamp('processed_at', { mode: 'date' }),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+});
+
 export const orderItemSchema = pgTable('order_item', {
   id: serial('id').primaryKey(),
   orderId: integer('order_id').notNull(),

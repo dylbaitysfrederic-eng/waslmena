@@ -53,10 +53,10 @@ export const MODULES: ModuleDefinition[] = [
   {
     key: 'whatsappBusiness',
     title: 'WhatsApp Business',
-    description: 'Premium automation for order updates through WhatsApp Business.',
+    description: 'Premium foundation for automated order updates through WhatsApp Business.',
     maturity: 'Coming soon',
-    positioning: 'A future premium layer for automated guest updates, separate from the free WhatsApp contact button.',
-    adminHelper: 'This is separate from the public WhatsApp contact button. Enabling it does not configure WhatsApp Business automation.',
+    positioning: 'A future premium automation layer for guest updates, separate from the existing free WhatsApp contact button.',
+    adminHelper: 'This is separate from the public WhatsApp contact button. Enabling it does not configure Meta, send messages, or activate WhatsApp Business automation.',
   },
   {
     key: 'loyalty',

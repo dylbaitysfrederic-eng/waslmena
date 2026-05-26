@@ -15,6 +15,7 @@ import {
   organizationSchema,
   paymentSessionSchema,
   restaurantTableSchema,
+  whatsappMessageSchema,
 } from '@/models/Schema';
 import { getBaseUrl } from '@/utils/Helpers';
 
@@ -277,6 +278,34 @@ export const createRestaurantJsonExport = async (
     organizationId,
     settings: organization ?? null,
   });
+};
+
+export const getWhatsappMessageExportRows = async (organizationId: string) => {
+  return db
+    .select({
+      id: whatsappMessageSchema.id,
+      organizationId: whatsappMessageSchema.organizationId,
+      orderId: whatsappMessageSchema.orderId,
+      recipientPhone: whatsappMessageSchema.recipientPhone,
+      templateKey: whatsappMessageSchema.templateKey,
+      messageType: whatsappMessageSchema.messageType,
+      messageStatus: whatsappMessageSchema.messageStatus,
+      provider: whatsappMessageSchema.provider,
+      providerMessageId: whatsappMessageSchema.providerMessageId,
+      providerStatus: whatsappMessageSchema.providerStatus,
+      idempotencyKey: whatsappMessageSchema.idempotencyKey,
+      retryCount: whatsappMessageSchema.retryCount,
+      lastAttemptAt: whatsappMessageSchema.lastAttemptAt,
+      deliveredAt: whatsappMessageSchema.deliveredAt,
+      readAt: whatsappMessageSchema.readAt,
+      failedAt: whatsappMessageSchema.failedAt,
+      failureReason: whatsappMessageSchema.failureReason,
+      createdAt: whatsappMessageSchema.createdAt,
+      updatedAt: whatsappMessageSchema.updatedAt,
+    })
+    .from(whatsappMessageSchema)
+    .where(eq(whatsappMessageSchema.organizationId, organizationId))
+    .orderBy(desc(whatsappMessageSchema.createdAt));
 };
 
 export const createRestaurantOrdersCsvExport = async (
