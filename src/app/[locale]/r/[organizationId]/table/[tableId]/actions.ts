@@ -149,6 +149,7 @@ const submitPublicOrderActionImpl = async (
       accessStatus: organizationSchema.accessStatus,
       accessSuspended: organizationSchema.accessSuspended,
       deliveryEnabled: organizationSchema.deliveryEnabled,
+      pickupEnabled: organizationSchema.pickupEnabled,
       deliveryFeeUsdCents: organizationSchema.deliveryFeeUsdCents,
       deliveryFeeLocal: organizationSchema.deliveryFeeLocal,
       minimumOrderAmountUsdCents: organizationSchema.minimumOrderAmountUsdCents,
@@ -164,6 +165,7 @@ const submitPublicOrderActionImpl = async (
     || organizationWithDelivery.accessStatus !== 'active'
     || organizationWithDelivery.accessSuspended
     || (orderType === 'delivery' && !organizationWithDelivery.deliveryEnabled)
+    || (tableId === null && orderType === 'counter' && !organizationWithDelivery.pickupEnabled)
     || (orderType === 'delivery' && deliveryAddress.length === 0)
     || (orderType === 'delivery' && deliveryPhone.length === 0)
   ) {

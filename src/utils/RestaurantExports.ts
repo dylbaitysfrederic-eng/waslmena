@@ -283,7 +283,6 @@ export const createRestaurantJsonExport = async (
         syncStatus: posProviderConfigSchema.syncStatus,
         syncErrorMessage: posProviderConfigSchema.syncErrorMessage,
         providerMerchantId: posProviderConfigSchema.providerMerchantId,
-        providerMetadata: posProviderConfigSchema.providerMetadata,
         createdAt: posProviderConfigSchema.createdAt,
         updatedAt: posProviderConfigSchema.updatedAt,
       })

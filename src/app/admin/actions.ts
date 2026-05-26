@@ -1,7 +1,7 @@
 'use server';
 
 import { clerkClient, currentUser } from '@clerk/nextjs/server';
-import { and, eq, isNull } from 'drizzle-orm';
+import { and, desc, eq, isNull } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
@@ -1320,12 +1320,28 @@ export const updateAdminPosConfigAction = async (formData: FormData) => {
     providerMetadata: normalizeOptionalText(formData.get('providerMetadata')),
   };
 
-  await db.insert(posProviderConfigSchema).values(values);
+  const [existingConfig] = await db
+    .select({ id: posProviderConfigSchema.id })
+    .from(posProviderConfigSchema)
+    .where(eq(posProviderConfigSchema.organizationId, organizationId))
+    .orderBy(desc(posProviderConfigSchema.createdAt))
+    .limit(1);
+
+  if (existingConfig) {
+    await db
+      .update(posProviderConfigSchema)
+      .set(values)
+      .where(eq(posProviderConfigSchema.id, existingConfig.id));
+  } else {
+    await db.insert(posProviderConfigSchema).values(values);
+  }
 
   revalidateAdminPaths(
     '/admin/pos',
     `/admin/pos/${organizationId}`,
+    `/admin/exports/${organizationId}`,
     '/dashboard/pos',
+    '/dashboard/export',
     '/dashboard/modules',
   );
 
