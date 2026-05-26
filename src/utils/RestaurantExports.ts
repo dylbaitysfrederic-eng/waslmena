@@ -14,6 +14,7 @@ import {
   orderSchema,
   organizationSchema,
   paymentSessionSchema,
+  posProviderConfigSchema,
   restaurantTableSchema,
   whatsappMessageSchema,
 } from '@/models/Schema';
@@ -213,70 +214,90 @@ export const createRestaurantJsonExport = async (
     });
   }
 
-  const [organization] = await db
-    .select({
-      id: organizationSchema.id,
-      restaurantDisplayName: organizationSchema.restaurantDisplayName,
-      clientCategory: organizationSchema.clientCategory,
-      restaurantAddress: organizationSchema.restaurantAddress,
-      restaurantOpeningHours: organizationSchema.restaurantOpeningHours,
-      restaurantInstagramUrl: organizationSchema.restaurantInstagramUrl,
-      restaurantWifiName: organizationSchema.restaurantWifiName,
-      restaurantWifiPassword: organizationSchema.restaurantWifiPassword,
-      restaurantGoogleMapsUrl: organizationSchema.restaurantGoogleMapsUrl,
-      restaurantLogoUrl: organizationSchema.restaurantLogoUrl,
-      restaurantPrimaryColor: organizationSchema.restaurantPrimaryColor,
-      restaurantAccentColor: organizationSchema.restaurantAccentColor,
-      restaurantThemeMode: organizationSchema.restaurantThemeMode,
-      restaurantTemplateStyle: organizationSchema.restaurantTemplateStyle,
-      restaurantWhatsappNumber: organizationSchema.restaurantWhatsappNumber,
-      localCurrencyCode: organizationSchema.localCurrencyCode,
-      localCurrencyLabel: organizationSchema.localCurrencyLabel,
-      showMenuItemImages: organizationSchema.showMenuItemImages,
-      orderingMode: organizationSchema.orderingMode,
-      enableTableNumbers: organizationSchema.enableTableNumbers,
-      enableNamedTables: organizationSchema.enableNamedTables,
-      enableCustomerName: organizationSchema.enableCustomerName,
-      enableWhatsappContact: organizationSchema.enableWhatsappContact,
-      deliveryEnabled: organizationSchema.deliveryEnabled,
-      onlinePaymentsEnabled: organizationSchema.onlinePaymentsEnabled,
-      posIntegrationEnabled: organizationSchema.posIntegrationEnabled,
-      whatsappBusinessEnabled: organizationSchema.whatsappBusinessEnabled,
-      loyaltyEnabled: organizationSchema.loyaltyEnabled,
-      welcomeScreenEnabled: organizationSchema.welcomeScreenEnabled,
-      welcomeImageUrl: organizationSchema.welcomeImageUrl,
-      welcomeImageAvifUrl: organizationSchema.welcomeImageAvifUrl,
-      welcomeButtonLabel: organizationSchema.welcomeButtonLabel,
-      welcomeButtonColor: organizationSchema.welcomeButtonColor,
-      welcomeButtonPosition: organizationSchema.welcomeButtonPosition,
-      welcomeUseImageAccentForMenu:
-        organizationSchema.welcomeUseImageAccentForMenu,
-      welcomeGeneratedAccentColor:
-        organizationSchema.welcomeGeneratedAccentColor,
-      orderVisualNotificationsEnabled:
-        organizationSchema.orderVisualNotificationsEnabled,
-      orderSoundNotificationsEnabled:
-        organizationSchema.orderSoundNotificationsEnabled,
-      qrMode: organizationSchema.qrMode,
-      qrFrameColor: organizationSchema.qrFrameColor,
-      qrForegroundColor: organizationSchema.qrForegroundColor,
-      qrBackgroundColor: organizationSchema.qrBackgroundColor,
-      qrLabelText: organizationSchema.qrLabelText,
-      qrShowRestaurantName: organizationSchema.qrShowRestaurantName,
-      qrShowTableNumber: organizationSchema.qrShowTableNumber,
-      qrStyleTemplate: organizationSchema.qrStyleTemplate,
-      updatedAt: organizationSchema.updatedAt,
-      createdAt: organizationSchema.createdAt,
-    })
-    .from(organizationSchema)
-    .where(eq(organizationSchema.id, organizationId))
-    .limit(1);
+  const [[organization], posProviderConfigs] = await Promise.all([
+    db
+      .select({
+        id: organizationSchema.id,
+        restaurantDisplayName: organizationSchema.restaurantDisplayName,
+        clientCategory: organizationSchema.clientCategory,
+        restaurantAddress: organizationSchema.restaurantAddress,
+        restaurantOpeningHours: organizationSchema.restaurantOpeningHours,
+        restaurantInstagramUrl: organizationSchema.restaurantInstagramUrl,
+        restaurantWifiName: organizationSchema.restaurantWifiName,
+        restaurantWifiPassword: organizationSchema.restaurantWifiPassword,
+        restaurantGoogleMapsUrl: organizationSchema.restaurantGoogleMapsUrl,
+        restaurantLogoUrl: organizationSchema.restaurantLogoUrl,
+        restaurantPrimaryColor: organizationSchema.restaurantPrimaryColor,
+        restaurantAccentColor: organizationSchema.restaurantAccentColor,
+        restaurantThemeMode: organizationSchema.restaurantThemeMode,
+        restaurantTemplateStyle: organizationSchema.restaurantTemplateStyle,
+        restaurantWhatsappNumber: organizationSchema.restaurantWhatsappNumber,
+        localCurrencyCode: organizationSchema.localCurrencyCode,
+        localCurrencyLabel: organizationSchema.localCurrencyLabel,
+        showMenuItemImages: organizationSchema.showMenuItemImages,
+        orderingMode: organizationSchema.orderingMode,
+        enableTableNumbers: organizationSchema.enableTableNumbers,
+        enableNamedTables: organizationSchema.enableNamedTables,
+        enableCustomerName: organizationSchema.enableCustomerName,
+        enableWhatsappContact: organizationSchema.enableWhatsappContact,
+        deliveryEnabled: organizationSchema.deliveryEnabled,
+        onlinePaymentsEnabled: organizationSchema.onlinePaymentsEnabled,
+        posIntegrationEnabled: organizationSchema.posIntegrationEnabled,
+        whatsappBusinessEnabled: organizationSchema.whatsappBusinessEnabled,
+        loyaltyEnabled: organizationSchema.loyaltyEnabled,
+        welcomeScreenEnabled: organizationSchema.welcomeScreenEnabled,
+        welcomeImageUrl: organizationSchema.welcomeImageUrl,
+        welcomeImageAvifUrl: organizationSchema.welcomeImageAvifUrl,
+        welcomeButtonLabel: organizationSchema.welcomeButtonLabel,
+        welcomeButtonColor: organizationSchema.welcomeButtonColor,
+        welcomeButtonPosition: organizationSchema.welcomeButtonPosition,
+        welcomeUseImageAccentForMenu:
+          organizationSchema.welcomeUseImageAccentForMenu,
+        welcomeGeneratedAccentColor:
+          organizationSchema.welcomeGeneratedAccentColor,
+        orderVisualNotificationsEnabled:
+          organizationSchema.orderVisualNotificationsEnabled,
+        orderSoundNotificationsEnabled:
+          organizationSchema.orderSoundNotificationsEnabled,
+        qrMode: organizationSchema.qrMode,
+        qrFrameColor: organizationSchema.qrFrameColor,
+        qrForegroundColor: organizationSchema.qrForegroundColor,
+        qrBackgroundColor: organizationSchema.qrBackgroundColor,
+        qrLabelText: organizationSchema.qrLabelText,
+        qrShowRestaurantName: organizationSchema.qrShowRestaurantName,
+        qrShowTableNumber: organizationSchema.qrShowTableNumber,
+        qrStyleTemplate: organizationSchema.qrStyleTemplate,
+        updatedAt: organizationSchema.updatedAt,
+        createdAt: organizationSchema.createdAt,
+      })
+      .from(organizationSchema)
+      .where(eq(organizationSchema.id, organizationId))
+      .limit(1),
+    db
+      .select({
+        provider: posProviderConfigSchema.provider,
+        enabled: posProviderConfigSchema.enabled,
+        syncEnabled: posProviderConfigSchema.syncEnabled,
+        testMode: posProviderConfigSchema.testMode,
+        lastSyncAt: posProviderConfigSchema.lastSyncAt,
+        syncStatus: posProviderConfigSchema.syncStatus,
+        syncErrorMessage: posProviderConfigSchema.syncErrorMessage,
+        providerMerchantId: posProviderConfigSchema.providerMerchantId,
+        providerMetadata: posProviderConfigSchema.providerMetadata,
+        createdAt: posProviderConfigSchema.createdAt,
+        updatedAt: posProviderConfigSchema.updatedAt,
+      })
+      .from(posProviderConfigSchema)
+      .where(eq(posProviderConfigSchema.organizationId, organizationId))
+      .orderBy(desc(posProviderConfigSchema.createdAt)),
+  ]);
 
   return createJsonDownload(`wasl-settings-${organizationId}.json`, {
     exportType: 'restaurant_settings',
     exportedAt,
     organizationId,
     settings: organization ?? null,
+    posProviderConfigs,
   });
 };
 

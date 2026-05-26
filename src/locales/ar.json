@@ -453,6 +453,24 @@
     "safety_note": "تشمل الصادرات مؤسسة المطعم النشطة فقط. يتم حفظ الصور كرابط URL؛ هذه الأداة لا تنشئ أرشيف صور أو نسخاً مجدولة أو نظام استيراد أو استعادة سحابية.",
     "location_scope_note": "على الشركات متعددة الفروع تصدير كل ملف مطعم/فرع بشكل منفصل. لا يوجد تصدير موحّد للفروع بعد."
   },
+  "DashboardPOS": {
+    "meta_title": "أساس POS",
+    "meta_description": "عرض أساس ربط POS للمطعم.",
+    "title_bar": "أساس POS",
+    "title_bar_description": "حضّر عمليات CSV/يدوية الآن، مع تكاملات API لاحقاً.",
+    "section_title": "جسر POS",
+    "section_description_enabled": "تم تفعيل وحدة POS كأساس. هذا لا يستبدل نظام POS ولا يشغل مزامنة تلقائية حالياً.",
+    "section_description_disabled": "وحدة POS غير مفعلة بعد. تعرض هذه الصفحة الأساس الذي يمكن لـ Wasl تحضيره معك.",
+    "module_status": "حالة الوحدة",
+    "enabled": "مفعّل",
+    "disabled": "غير مفعّل",
+    "provider": "المزوّد",
+    "sync_status": "حالة المزامنة",
+    "last_sync_placeholder": "لم يتم تشغيل أي مزامنة. عمليات CSV/يدوية هي الخطوة الأولى.",
+    "csv_manual_title": "جسر CSV/يدوي أولاً",
+    "csv_manual_description": "استخدم صادرات Wasl والمقارنة اليدوية كنسخة أولى موثوقة للاتصالات الضعيفة وعمليات المطعم اليومية.",
+    "api_later_description": "يمكن ربط Foodics وSapaad وSquare وToast وLightspeed وغيرها من واجهات API لاحقاً بدون تغيير تدفقات الطلب الحالية."
+  },
   "Statistics": {
     "meta_title": "الإحصاءات",
     "meta_description": "عرض إحصاءات استخدام المطعم الأساسية.",

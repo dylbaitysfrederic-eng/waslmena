@@ -13,6 +13,7 @@ import {
   menuItemSchema,
   orderSchema,
   organizationSchema,
+  posProviderConfigSchema,
   restaurantTableSchema,
   saasSettingsSchema,
 } from '@/models/Schema';
@@ -23,6 +24,7 @@ import {
   hasAnyMenuText,
   normalizeMenuText,
 } from '@/utils/MenuTranslations';
+import { POS_PROVIDERS, POS_SYNC_STATUSES } from '@/utils/POS';
 import { RESTAURANT_THEME_MODES } from '@/utils/RestaurantTheme';
 import { saveWelcomeScreenImageFile } from '@/utils/WelcomeScreenImageUpload';
 
@@ -1286,6 +1288,48 @@ export const updateAdminModulesAction = async (formData: FormData) => {
     `/admin/modules/${organizationId}`,
     '/dashboard/modules',
   );
+};
+
+export const updateAdminPosConfigAction = async (formData: FormData) => {
+  await assertAdmin();
+
+  const organizationId = getOrganizationId(formData);
+
+  if (!organizationId) {
+    return;
+  }
+
+  const provider = normalizeEnumValue(
+    formData.get('provider'),
+    POS_PROVIDERS,
+    'csv_manual',
+  );
+  const values = {
+    organizationId,
+    provider,
+    enabled: formData.get('enabled') === 'on',
+    syncEnabled: formData.get('syncEnabled') === 'on',
+    testMode: formData.get('testMode') === 'on',
+    syncStatus: normalizeEnumValue(
+      formData.get('syncStatus'),
+      POS_SYNC_STATUSES,
+      provider === 'csv_manual' ? 'ready' : 'not_configured',
+    ),
+    syncErrorMessage: normalizeOptionalText(formData.get('syncErrorMessage')),
+    providerMerchantId: normalizeOptionalText(formData.get('providerMerchantId')),
+    providerMetadata: normalizeOptionalText(formData.get('providerMetadata')),
+  };
+
+  await db.insert(posProviderConfigSchema).values(values);
+
+  revalidateAdminPaths(
+    '/admin/pos',
+    `/admin/pos/${organizationId}`,
+    '/dashboard/pos',
+    '/dashboard/modules',
+  );
+
+  redirect(`/admin/pos/${organizationId}?saved=1`);
 };
 
 export const updateAdminIdentityAction = async (formData: FormData) => {

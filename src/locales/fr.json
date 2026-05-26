@@ -453,6 +453,24 @@
     "safety_note": "Les exports incluent uniquement l’organisation restaurant active. Les images sont référencées par URL ; cet outil ne crée pas d’archive d’images, sauvegarde planifiée, import ou restauration cloud.",
     "location_scope_note": "Les entreprises multi-branches doivent exporter chaque profil restaurant/lieu séparément. Il n’existe pas encore d’export consolidé multi-sites."
   },
+  "DashboardPOS": {
+    "meta_title": "Fondation POS",
+    "meta_description": "Voir la fondation du pont POS du restaurant.",
+    "title_bar": "Fondation POS",
+    "title_bar_description": "Préparez les opérations CSV/manuelles maintenant, avec les intégrations API plus tard.",
+    "section_title": "Pont POS",
+    "section_description_enabled": "Votre module POS est activé comme fondation. Il ne remplace pas votre POS et ne lance pas encore de synchronisation automatique.",
+    "section_description_disabled": "Le module POS n’est pas encore activé. Cette page montre la fondation que Wasl peut préparer avec vous.",
+    "module_status": "Statut du module",
+    "enabled": "Activé",
+    "disabled": "Désactivé",
+    "provider": "Fournisseur",
+    "sync_status": "Statut de synchronisation",
+    "last_sync_placeholder": "Aucune synchronisation n’a été lancée. Les opérations CSV/manuelles sont la première étape.",
+    "csv_manual_title": "Pont CSV/manuel d’abord",
+    "csv_manual_description": "Utilisez les exports Wasl et la comparaison manuelle comme première version fiable pour les connexions faibles et les opérations réelles du restaurant.",
+    "api_later_description": "Foodics, Sapaad, Square, Toast, Lightspeed et d’autres API pourront être connectés plus tard sans modifier les flux de commande actuels."
+  },
   "Statistics": {
     "meta_title": "Statistiques",
     "meta_description": "Voir les statistiques d’utilisation du restaurant.",

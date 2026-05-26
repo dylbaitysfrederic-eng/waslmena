@@ -318,6 +318,87 @@ export const whatsappWebhookEventSchema = pgTable('whatsapp_webhook_event', {
   createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
 });
 
+export const posProviderConfigSchema = pgTable('pos_provider_config', {
+  id: serial('id').primaryKey(),
+  organizationId: text('organization_id').notNull(),
+  provider: text('provider').default('csv_manual').notNull(),
+  enabled: boolean('enabled').default(false).notNull(),
+  syncEnabled: boolean('sync_enabled').default(false).notNull(),
+  testMode: boolean('test_mode').default(true).notNull(),
+  lastSyncAt: timestamp('last_sync_at', { mode: 'date' }),
+  syncStatus: text('sync_status').default('not_configured').notNull(),
+  syncErrorMessage: text('sync_error_message'),
+  providerMerchantId: text('provider_merchant_id'),
+  providerMetadata: text('provider_metadata'),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'date' })
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
+});
+
+export const posItemMappingSchema = pgTable('pos_item_mapping', {
+  id: serial('id').primaryKey(),
+  organizationId: text('organization_id').notNull(),
+  menuItemId: integer('menu_item_id'),
+  posSku: text('pos_sku'),
+  posExternalId: text('pos_external_id'),
+  posName: text('pos_name'),
+  posCategory: text('pos_category'),
+  posPriceUsdCents: integer('pos_price_usd_cents'),
+  posPriceLocal: integer('pos_price_local'),
+  syncStatus: text('sync_status').default('pending').notNull(),
+  conflictReason: text('conflict_reason'),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'date' })
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
+});
+
+export const posCategoryMappingSchema = pgTable('pos_category_mapping', {
+  id: serial('id').primaryKey(),
+  organizationId: text('organization_id').notNull(),
+  categoryId: integer('category_id'),
+  posCategoryId: text('pos_category_id'),
+  posName: text('pos_name'),
+  syncStatus: text('sync_status').default('pending').notNull(),
+  conflictReason: text('conflict_reason'),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'date' })
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
+});
+
+export const posOrderMappingSchema = pgTable('pos_order_mapping', {
+  id: serial('id').primaryKey(),
+  organizationId: text('organization_id').notNull(),
+  orderId: integer('order_id').notNull(),
+  posOrderId: text('pos_order_id'),
+  pushStatus: text('push_status').default('pending').notNull(),
+  posStatus: text('pos_status'),
+  statusSyncedAt: timestamp('status_synced_at', { mode: 'date' }),
+  errorMessage: text('error_message'),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'date' })
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
+});
+
+export const posSyncLogSchema = pgTable('pos_sync_log', {
+  id: serial('id').primaryKey(),
+  organizationId: text('organization_id').notNull(),
+  syncType: text('sync_type').notNull(),
+  resourceType: text('resource_type'),
+  resourceId: text('resource_id'),
+  status: text('status').default('pending').notNull(),
+  message: text('message'),
+  payloadSnapshot: text('payload_snapshot'),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+});
+
 export const orderItemSchema = pgTable('order_item', {
   id: serial('id').primaryKey(),
   orderId: integer('order_id').notNull(),

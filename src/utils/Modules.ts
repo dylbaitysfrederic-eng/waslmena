@@ -45,10 +45,10 @@ export const MODULES: ModuleDefinition[] = [
   {
     key: 'posIntegration',
     title: 'POS Integrations',
-    description: 'CSV and manual operations first, provider integrations later.',
+    description: 'CSV/manual POS bridge first, provider integrations later.',
     maturity: 'Planned',
-    positioning: 'Start with clean operational exports while leaving room for POS provider connectivity when a restaurant needs it.',
-    adminHelper: 'Keep current CSV/manual workflows as the default. Provider integrations are not active from this toggle.',
+    positioning: 'Use clean exports and manual reconciliation now while leaving room for Foodics, Sapaad, Square, Toast, Lightspeed, and other providers later.',
+    adminHelper: 'Keep CSV/manual workflows as the default. Enabling the flag does not connect APIs, send orders to a POS, or start automatic sync.',
   },
   {
     key: 'whatsappBusiness',

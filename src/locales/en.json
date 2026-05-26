@@ -453,6 +453,24 @@
     "safety_note": "Exports only include the active restaurant organization. Images are referenced by URL; this tool does not create image archives, scheduled backups, imports, or cloud restores.",
     "location_scope_note": "Multi-branch businesses should export each restaurant/location profile separately. There is no consolidated branch export yet."
   },
+  "DashboardPOS": {
+    "meta_title": "POS Foundation",
+    "meta_description": "View the restaurant POS bridge foundation.",
+    "title_bar": "POS foundation",
+    "title_bar_description": "Prepare CSV/manual POS operations now, with API integrations coming later.",
+    "section_title": "POS bridge",
+    "section_description_enabled": "Your POS module is enabled as a foundation. It does not replace your POS or run automatic sync yet.",
+    "section_description_disabled": "The POS module is not enabled yet. This page shows the foundation Wasl can prepare with you.",
+    "module_status": "Module status",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "provider": "Provider",
+    "sync_status": "Sync status",
+    "last_sync_placeholder": "No sync has run. CSV/manual operations are the first step.",
+    "csv_manual_title": "CSV/manual bridge first",
+    "csv_manual_description": "Use Wasl exports and manual comparison as the reliable first version for weak connections and real restaurant operations.",
+    "api_later_description": "Foodics, Sapaad, Square, Toast, Lightspeed, and other APIs can be connected later without changing current order flows."
+  },
   "Statistics": {
     "meta_title": "Statistics",
     "meta_description": "View basic restaurant usage statistics.",
