@@ -25,6 +25,22 @@ import { AdminRestaurantSearch } from '../AdminRestaurantSearch';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+const getMaturityClassName = (maturity: string) => {
+  if (maturity === 'MVP available') {
+    return 'border-amber-300 bg-amber-50 text-amber-950';
+  }
+
+  if (maturity === 'Coming soon') {
+    return 'border-blue-300 bg-blue-50 text-blue-950';
+  }
+
+  if (maturity === 'Planned') {
+    return 'border-muted bg-muted text-muted-foreground';
+  }
+
+  return 'border-green-300 bg-green-50 text-green-950';
+};
+
 const AdminModulesPage = async (props: {
   searchParams?: { q?: string | string[] };
 }) => {
@@ -45,9 +61,26 @@ const AdminModulesPage = async (props: {
         <div>
           <h2 className="text-xl font-semibold">Modules & integrations</h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            View and manage optional module access for each restaurant client. These toggles are lightweight foundations and do not activate a full integration yet.
+            View and manage optional module access for each restaurant client. Future-module flags mark commercial readiness only and do not activate full integrations until Wasl configures them.
           </p>
         </div>
+      </div>
+
+      <div className="mb-5 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+        {MODULES.map(module => (
+          <div key={module.key} className="rounded-md border bg-background p-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="text-sm font-semibold">{module.title}</h3>
+              <span className={`rounded-full border px-2 py-1 text-xs font-semibold ${getMaturityClassName(module.maturity)}`}>
+                {module.maturity}
+              </span>
+            </div>
+            <p className="mt-3 text-sm text-foreground">{module.description}</p>
+            <p className="mt-2 text-xs leading-5 text-muted-foreground">
+              {module.positioning}
+            </p>
+          </div>
+        ))}
       </div>
 
       <AdminRestaurantSearch
@@ -97,12 +130,15 @@ const AdminModulesPage = async (props: {
                           const enabled = organizationHasModule(organization, module.key);
 
                           return (
-                            <TableCell key={module.key}>
+                            <TableCell key={module.key} className="min-w-36">
                               <span className={enabled
-                                ? 'rounded-full border border-green-300 bg-green-50 px-2 py-1 text-xs font-medium text-green-900'
-                                : 'rounded-full border bg-muted px-2 py-1 text-xs font-medium text-muted-foreground'}
+                                ? 'inline-flex rounded-full border border-green-300 bg-green-50 px-2 py-1 text-xs font-medium text-green-900'
+                                : 'inline-flex rounded-full border bg-muted px-2 py-1 text-xs font-medium text-muted-foreground'}
                               >
                                 {enabled ? 'Enabled' : 'Disabled'}
+                              </span>
+                              <span className={`mt-2 inline-flex rounded-full border px-2 py-1 text-xs font-medium ${getMaturityClassName(module.maturity)}`}>
+                                {module.maturity}
                               </span>
                             </TableCell>
                           );

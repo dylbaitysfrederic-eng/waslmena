@@ -13,6 +13,22 @@ import {
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+const getMaturityClassName = (maturity: string) => {
+  if (maturity === 'MVP available') {
+    return 'border-amber-300 bg-amber-50 text-amber-950';
+  }
+
+  if (maturity === 'Coming soon') {
+    return 'border-blue-300 bg-blue-50 text-blue-950';
+  }
+
+  if (maturity === 'Planned') {
+    return 'border-muted bg-muted text-muted-foreground';
+  }
+
+  return 'border-green-300 bg-green-50 text-green-950';
+};
+
 const DashboardModulesPage = async (props: {
   params: { locale: string };
 }) => {
@@ -39,7 +55,7 @@ const DashboardModulesPage = async (props: {
           <div>
             <h1 className="text-xl font-semibold">Modules & integrations</h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              See which optional modules are prepared for your restaurant. These toggles are lightweight foundations for future features and do not yet enable active new workflows.
+              See what is available for your restaurant now and what is on the Wasl roadmap. Future modules stay informational until Wasl configures them with you.
             </p>
           </div>
           <Link
@@ -57,23 +73,41 @@ const DashboardModulesPage = async (props: {
 
           return (
             <div key={module.key} className="rounded-md border bg-background p-5 shadow-sm">
-              <div className="flex items-center justify-between gap-3">
-                <div>
+              <div className="flex h-full flex-col gap-4">
+                <div className="flex items-start justify-between gap-3">
                   <h2 className="text-base font-semibold">{module.title}</h2>
-                  <p className="mt-2 text-sm text-muted-foreground">{module.description}</p>
+                  <span className={enabled
+                    ? 'shrink-0 rounded-full border border-green-300 bg-green-50 px-2 py-1 text-xs font-semibold text-green-900'
+                    : 'shrink-0 rounded-full border bg-muted px-2 py-1 text-xs font-semibold text-muted-foreground'}
+                  >
+                    {enabled ? 'Enabled' : 'Disabled'}
+                  </span>
                 </div>
-                <span className={enabled
-                  ? 'rounded-full border border-green-300 bg-green-50 px-2 py-1 text-xs font-semibold text-green-900'
-                  : 'rounded-full border bg-muted px-2 py-1 text-xs font-semibold text-muted-foreground'}
-                >
-                  {enabled ? 'Enabled' : 'Disabled'}
-                </span>
+
+                <div className="flex flex-wrap gap-2">
+                  <span className={`rounded-full border px-2 py-1 text-xs font-semibold ${getMaturityClassName(module.maturity)}`}>
+                    {module.maturity}
+                  </span>
+                  {module.key === 'whatsappBusiness' && (
+                    <span className="rounded-full border border-purple-300 bg-purple-50 px-2 py-1 text-xs font-semibold text-purple-950">
+                      Premium
+                    </span>
+                  )}
+                </div>
+
+                <div>
+                  <p className="text-sm text-foreground">{module.description}</p>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                    {module.positioning}
+                  </p>
+                </div>
+
+                <div className="mt-auto rounded-md border border-dashed border-muted p-3 text-sm text-muted-foreground">
+                  {module.maturity === 'MVP available'
+                    ? 'Available as an MVP module. Contact Wasl if you want help positioning it for your restaurant operations.'
+                    : 'Coming soon: contact Wasl to discuss availability, priority, and setup requirements.'}
+                </div>
               </div>
-              {!enabled && (
-                <div className="mt-4 rounded-md border border-dashed border-muted p-3 text-sm text-muted-foreground">
-                  Coming soon: this optional module is in preparation and will stay lightweight for weak and mobile connections.
-                </div>
-              )}
             </div>
           );
         })}
