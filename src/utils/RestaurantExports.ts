@@ -408,7 +408,10 @@ export const createRestaurantOrdersCsvExport = async (
     )
     .leftJoin(
       paymentSessionSchema,
-      eq(orderSchema.paymentSessionId, paymentSessionSchema.id),
+      and(
+        eq(orderSchema.paymentSessionId, paymentSessionSchema.id),
+        eq(paymentSessionSchema.organizationId, organizationId),
+      ),
     )
     .where(orderPeriodWhere)
     .orderBy(desc(orderSchema.createdAt));
