@@ -1,15 +1,23 @@
 import { eq } from 'drizzle-orm';
 import {
+  BarChart3,
   Building2,
   CheckCircle2,
   Clock3,
+  CreditCard,
   Facebook,
+  Gift,
   Instagram,
   Languages,
   MessageCircle,
+  MessagesSquare,
+  Palette,
+  Plug,
   Printer,
   QrCode,
+  ShieldCheck,
   Smartphone,
+  Truck,
   Utensils,
   Waves,
   Wifi,
@@ -30,22 +38,6 @@ import { getI18nPath } from '@/utils/Helpers';
 
 import { sendLandingContactAction } from './actions';
 
-const FEATURE_KEYS = [
-  'qr_menu',
-  'table_ordering',
-  'faster_service',
-  'usd_lbp',
-  'arabic_english',
-  'dashboard',
-] as const;
-
-const HOW_IT_WORKS_KEYS = [
-  'setup_menu',
-  'print_qr',
-  'customer_orders',
-  'staff_manages',
-] as const;
-
 const QUICK_FLOW_STEPS = [
   {
     key: 'scan_qr',
@@ -64,7 +56,7 @@ const QUICK_FLOW_STEPS = [
 const WHY_WASL_FEATURES = [
   {
     key: 'stable_qr',
-    icon: QrCode,
+    icon: ShieldCheck,
   },
   {
     key: 'languages',
@@ -76,7 +68,7 @@ const WHY_WASL_FEATURES = [
   },
   {
     key: 'ordering_modes',
-    icon: Smartphone,
+    icon: Truck,
   },
   {
     key: 'kitchen_tickets',
@@ -85,6 +77,52 @@ const WHY_WASL_FEATURES = [
   {
     key: 'welcome_branding',
     icon: CheckCircle2,
+  },
+] as const;
+
+const PRODUCT_LAYERS = [
+  {
+    key: 'core_ordering',
+    icon: Utensils,
+    features: ['qr_menu', 'table_ordering', 'pickup', 'delivery', 'kitchen_tickets'],
+  },
+  {
+    key: 'operations',
+    icon: BarChart3,
+    features: ['dashboard_orders', 'analytics', 'exports', 'team_visibility', 'stable_qr'],
+  },
+  {
+    key: 'brand_experience',
+    icon: Palette,
+    features: ['welcome_screen', 'colors', 'multilingual_menu', 'public_info'],
+  },
+  {
+    key: 'premium_modules',
+    icon: Plug,
+    features: ['payments', 'whatsapp_business', 'pos', 'loyalty'],
+  },
+] as const;
+
+const ROADMAP_MODULES = [
+  {
+    key: 'payments',
+    icon: CreditCard,
+    status: 'coming_soon',
+  },
+  {
+    key: 'whatsapp_business',
+    icon: MessagesSquare,
+    status: 'premium_coming_soon',
+  },
+  {
+    key: 'pos',
+    icon: Plug,
+    status: 'csv_first',
+  },
+  {
+    key: 'loyalty',
+    icon: Gift,
+    status: 'planned',
   },
 ] as const;
 
@@ -125,10 +163,12 @@ const FINAL_TRUST_POINTS = [
   'weak_connections',
 ] as const;
 
-const MENA_KEYS = [
-  'unstable_internet',
-  'bilingual_service',
-  'cash_reality',
+const TRUST_KEYS = [
+  'stable_qr',
+  'weak_connections',
+  'cart_recovery',
+  'languages',
+  'mena_operations',
 ] as const;
 
 const FAQ_KEYS = [
@@ -321,9 +361,11 @@ const IndexPage = async (props: {
             <div className="mt-7 grid gap-2 text-sm text-zinc-700 sm:grid-cols-2">
               {[
                 t('hero_signal_qr'),
+                t('hero_signal_delivery'),
                 t('hero_signal_languages'),
                 t('hero_signal_stable'),
                 t('hero_signal_lightweight'),
+                t('hero_signal_modules'),
               ].map(signal => (
                 <div key={signal} className="flex items-center gap-2">
                   <CheckCircle2 className="size-4 shrink-0 text-emerald-600" />
@@ -413,8 +455,8 @@ const IndexPage = async (props: {
                       {t('hero_visual_qr')}
                     </div>
                     <div className="rounded-md border bg-white p-3">
-                      <Smartphone className="mx-auto mb-1 size-4 text-emerald-600" />
-                      {t('hero_visual_no_app')}
+                      <Truck className="mx-auto mb-1 size-4 text-emerald-600" />
+                      {t('hero_visual_delivery')}
                     </div>
                     <div className="rounded-md border bg-white p-3">
                       <Clock3 className="mx-auto mb-1 size-4 text-emerald-600" />
@@ -589,7 +631,7 @@ const IndexPage = async (props: {
                     </p>
                   </div>
                   <span className="rounded-md bg-emerald-200 px-2 py-1 text-xs font-semibold text-emerald-950">
-                    Live
+                    {t('product_preview_live_badge')}
                   </span>
                 </div>
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -628,23 +670,50 @@ const IndexPage = async (props: {
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="rounded-md border bg-white p-4">
                   <h3 className="text-lg font-semibold">
-                    {t('product_preview_cart_flow_title')}
+                    {t('product_preview_delivery_title')}
                   </h3>
                   <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                    {t('product_preview_cart_flow_description')}
+                    {t('product_preview_delivery_description')}
                   </p>
                   <div className="mt-4 rounded-lg border bg-zinc-50 p-3">
                     <div className="flex items-center justify-between text-sm">
-                      <span className="font-semibold">{t('phone_item')}</span>
-                      <span className="rounded bg-white px-2 py-1 text-xs font-semibold">x2</span>
+                      <span className="font-semibold">{t('product_preview_delivery_order')}</span>
+                      <span className="rounded bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-800">
+                        {t('product_preview_delivery_badge')}
+                      </span>
                     </div>
-                    <div className="mt-3 flex items-center justify-between border-t pt-3 text-sm">
-                      <span className="text-muted-foreground">{t('customer_total_label')}</span>
-                      <span className="font-semibold">$16.00</span>
+                    <div className="mt-3 grid gap-2 border-t pt-3 text-sm">
+                      <div className="flex justify-between gap-3">
+                        <span className="text-muted-foreground">{t('product_preview_delivery_address')}</span>
+                        <span className="font-semibold">Gemmayzeh</span>
+                      </div>
+                      <div className="flex justify-between gap-3">
+                        <span className="text-muted-foreground">{t('customer_total_label')}</span>
+                        <span className="font-semibold">$16.00</span>
+                      </div>
                     </div>
                     <div className="mt-3 rounded-md bg-emerald-600 px-3 py-2 text-center text-sm font-semibold text-white">
                       {t('product_preview_send_order')}
                     </div>
+                  </div>
+                </div>
+
+                <div className="rounded-md border bg-white p-4">
+                  <h3 className="text-lg font-semibold">
+                    {t('product_preview_modules_title')}
+                  </h3>
+                  <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                    {t('product_preview_modules_description')}
+                  </p>
+                  <div className="mt-4 grid gap-2 text-sm">
+                    {ROADMAP_MODULES.slice(0, 3).map(({ key, status }) => (
+                      <div key={key} className="flex items-center justify-between gap-3 rounded-md border bg-zinc-50 px-3 py-2">
+                        <span className="font-semibold">{t(`roadmap_${key}_title`)}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {t(`roadmap_status_${status}`)}
+                        </span>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
@@ -724,16 +793,32 @@ const IndexPage = async (props: {
       <section className="border-b py-12">
         <div className="mx-auto max-w-screen-xl px-4">
           <div className="max-w-2xl">
-            <h2 className="text-3xl font-semibold tracking-normal">{t('features_title')}</h2>
-            <p className="mt-3 text-muted-foreground">{t('features_description')}</p>
+            <p className="text-sm font-semibold uppercase text-emerald-700">
+              {t('layers_eyebrow')}
+            </p>
+            <h2 className="mt-2 text-3xl font-semibold tracking-normal">
+              {t('layers_title')}
+            </h2>
+            <p className="mt-3 text-muted-foreground">{t('layers_description')}</p>
           </div>
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {FEATURE_KEYS.map(key => (
+          <div className="mt-8 grid gap-4 lg:grid-cols-4">
+            {PRODUCT_LAYERS.map(({ key, icon: Icon, features }) => (
               <div key={key} className="rounded-md border bg-card p-5">
-                <div className="text-lg font-semibold">{t(`feature_${key}_title`)}</div>
+                <div className="flex size-10 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700">
+                  <Icon className="size-5" aria-hidden="true" />
+                </div>
+                <h3 className="mt-4 text-lg font-semibold">{t(`layer_${key}_title`)}</h3>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                  {t(`feature_${key}_description`)}
+                  {t(`layer_${key}_description`)}
                 </p>
+                <ul className="mt-4 grid gap-2 text-sm">
+                  {features.map(feature => (
+                    <li key={feature} className="flex gap-2">
+                      <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-emerald-600" />
+                      <span>{t(`layer_${key}_${feature}`)}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
             ))}
           </div>
@@ -741,17 +826,27 @@ const IndexPage = async (props: {
       </section>
 
       <section className="border-b bg-muted py-12">
-        <div className="mx-auto max-w-screen-xl px-4">
-          <h2 className="text-3xl font-semibold tracking-normal">{t('how_title')}</h2>
-          <div className="mt-8 grid gap-4 md:grid-cols-4">
-            {HOW_IT_WORKS_KEYS.map((key, index) => (
-              <div key={key} className="rounded-md bg-background p-5">
-                <div className="mb-4 flex size-9 items-center justify-center rounded-md bg-primary text-sm font-semibold text-primary-foreground">
-                  {index + 1}
+        <div className="mx-auto grid max-w-screen-xl gap-6 px-4 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-start">
+          <div>
+            <p className="text-sm font-semibold uppercase text-emerald-700">
+              {t('delivery_eyebrow')}
+            </p>
+            <h2 className="mt-2 text-3xl font-semibold tracking-normal">
+              {t('delivery_title')}
+            </h2>
+            <p className="mt-3 text-sm leading-6 text-muted-foreground sm:text-base">
+              {t('delivery_description')}
+            </p>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {['owned', 'commission_free', 'relationship', 'no_marketplace'].map(key => (
+              <div key={key} className="rounded-md border bg-background p-5">
+                <Truck className="size-5 text-emerald-700" aria-hidden="true" />
+                <div className="mt-3 font-semibold">
+                  {t(`delivery_${key}_title`)}
                 </div>
-                <div className="font-semibold">{t(`how_${key}_title`)}</div>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                  {t(`how_${key}_description`)}
+                  {t(`delivery_${key}_description`)}
                 </p>
               </div>
             ))}
@@ -760,17 +855,59 @@ const IndexPage = async (props: {
       </section>
 
       <section className="border-b py-12">
-        <div className="mx-auto grid max-w-screen-xl gap-8 px-4 lg:grid-cols-[360px_1fr]">
-          <div>
-            <h2 className="text-3xl font-semibold tracking-normal">{t('mena_title')}</h2>
-            <p className="mt-3 text-muted-foreground">{t('mena_description')}</p>
+        <div className="mx-auto max-w-screen-xl px-4">
+          <div className="max-w-2xl">
+            <p className="text-sm font-semibold uppercase text-emerald-700">
+              {t('trust_eyebrow')}
+            </p>
+            <h2 className="mt-2 text-3xl font-semibold tracking-normal">
+              {t('trust_title')}
+            </h2>
+            <p className="mt-3 text-muted-foreground">{t('trust_description')}</p>
           </div>
-          <div className="grid gap-4 sm:grid-cols-3">
-            {MENA_KEYS.map(key => (
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+            {TRUST_KEYS.map(key => (
               <div key={key} className="rounded-md border bg-card p-5">
-                <div className="font-semibold">{t(`mena_${key}_title`)}</div>
+                <ShieldCheck className="size-5 text-emerald-700" aria-hidden="true" />
+                <div className="mt-3 font-semibold">{t(`trust_${key}_title`)}</div>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                  {t(`mena_${key}_description`)}
+                  {t(`trust_${key}_description`)}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="border-b bg-zinc-50 py-12">
+        <div className="mx-auto max-w-screen-xl px-4">
+          <div className="max-w-2xl">
+            <p className="text-sm font-semibold uppercase text-emerald-700">
+              {t('roadmap_eyebrow')}
+            </p>
+            <h2 className="mt-2 text-3xl font-semibold tracking-normal text-zinc-950">
+              {t('roadmap_title')}
+            </h2>
+            <p className="mt-3 text-sm leading-6 text-muted-foreground sm:text-base">
+              {t('roadmap_description')}
+            </p>
+          </div>
+          <div className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {ROADMAP_MODULES.map(({ key, icon: Icon, status }) => (
+              <div key={key} className="rounded-md border bg-white p-5">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex size-10 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700">
+                    <Icon className="size-5" aria-hidden="true" />
+                  </div>
+                  <span className="rounded-full border bg-muted px-2 py-1 text-xs font-semibold text-muted-foreground">
+                    {t(`roadmap_status_${status}`)}
+                  </span>
+                </div>
+                <h3 className="mt-4 text-lg font-semibold">
+                  {t(`roadmap_${key}_title`)}
+                </h3>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  {t(`roadmap_${key}_description`)}
                 </p>
               </div>
             ))}
