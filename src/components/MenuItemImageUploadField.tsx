@@ -6,7 +6,9 @@ import { MenuItemImagePreview } from '@/components/MenuItemImagePreview';
 import { Label } from '@/components/ui/label';
 
 const ACCEPTED_FILE_TYPES = '.jpg,.jpeg,.png,.webp';
+const ACCEPTED_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
 const MAX_UPLOAD_KB = 300;
+const MAX_UPLOAD_BYTES = MAX_UPLOAD_KB * 1000;
 
 type MenuItemImageUploadFieldProps = {
   fieldId: string;
@@ -29,6 +31,7 @@ export const MenuItemImageUploadField = ({
 }: MenuItemImageUploadFieldProps) => {
   const [selectedFileName, setSelectedFileName] = useState('');
   const [selectedFileSize, setSelectedFileSize] = useState<number | null>(null);
+  const [validationError, setValidationError] = useState('');
   const [localPreviewUrl, setLocalPreviewUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -45,12 +48,32 @@ export const MenuItemImageUploadField = ({
     if (!file) {
       setSelectedFileName('');
       setSelectedFileSize(null);
+      setValidationError('');
+      setLocalPreviewUrl(null);
+      return;
+    }
+
+    if (!ACCEPTED_MIME_TYPES.has(file.type)) {
+      event.target.value = '';
+      setSelectedFileName('');
+      setSelectedFileSize(null);
+      setValidationError('Upload JPG, JPEG, PNG or WEBP only.');
+      setLocalPreviewUrl(null);
+      return;
+    }
+
+    if (file.size > MAX_UPLOAD_BYTES) {
+      event.target.value = '';
+      setSelectedFileName('');
+      setSelectedFileSize(null);
+      setValidationError(`Upload an image up to ${MAX_UPLOAD_KB} KB.`);
       setLocalPreviewUrl(null);
       return;
     }
 
     setSelectedFileName(file.name);
     setSelectedFileSize(file.size);
+    setValidationError('');
     setLocalPreviewUrl(URL.createObjectURL(file));
   };
 
@@ -70,13 +93,20 @@ export const MenuItemImageUploadField = ({
       />
       <p className="text-xs text-muted-foreground">
         Upload JPG, JPEG, PNG or WEBP up to
+        {' '}
         {MAX_UPLOAD_KB}
+        {' '}
         KB. Uploading a new file replaces the current image.
       </p>
+      {validationError && (
+        <p className="text-xs font-medium text-destructive">{validationError}</p>
+      )}
       {selectedFileName && (
         <p className="text-xs text-muted-foreground">
           Selected file:
+          {' '}
           {selectedFileName}
+          {' '}
           (
           {Math.round((selectedFileSize ?? 0) / 1024)}
           KB)

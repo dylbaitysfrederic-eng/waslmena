@@ -9,7 +9,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/utils/Helpers';
 
-import { checkPendingPublicOrderAction, submitPublicOrderAction } from './actions';
+import {
+  checkPendingPublicOrderAction,
+  submitPublicOrderAction,
+  trackPublicMenuCategoryViewAction,
+} from './actions';
 
 type MenuItem = {
   id: number;
@@ -158,6 +162,20 @@ const getReadableTextColor = (hexColor: string) => {
   const luminance = 0.2126 * red! + 0.7152 * green! + 0.0722 * blue!;
 
   return luminance > 0.55 ? '#111827' : '#ffffff';
+};
+
+const getClientDeviceType = () => {
+  const userAgent = navigator.userAgent.toLowerCase();
+
+  if (/ipad|tablet/.test(userAgent)) {
+    return 'tablet';
+  }
+
+  if (/mobile|iphone|android/.test(userAgent)) {
+    return 'mobile';
+  }
+
+  return 'desktop';
 };
 
 const PriceLines = (props: {
@@ -500,6 +518,19 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingAttempt, isOnline, hasCheckedPendingOnce]);
 
+  useEffect(() => {
+    if (!selectedCategory?.id) {
+      return;
+    }
+
+    trackPublicMenuCategoryViewAction({
+      organizationId: props.organizationId,
+      categoryId: selectedCategory.id,
+      locale: props.locale,
+      deviceType: getClientDeviceType(),
+    });
+  }, [props.locale, props.organizationId, selectedCategory?.id]);
+
   const addItem = (item: MenuItem) => {
     if (item.isAvailable === false || isOrderSubmitting) {
       return;
@@ -649,6 +680,8 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
           deliveryAddress: deliveryAddress || undefined,
           deliveryPhone: deliveryPhone || undefined,
           deliveryNotes: deliveryNotes || undefined,
+          locale: props.locale,
+          deviceType: getClientDeviceType(),
           items: cart.map(item => ({
             menuItemId: item.id,
             quantity: item.quantity,
@@ -779,7 +812,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
                     type="button"
                     size="sm"
                     className={cn(
-                      'min-h-11 flex-1 font-semibold sm:min-w-28 sm:flex-none',
+                      'min-h-11 min-w-0 flex-1 whitespace-normal text-center font-semibold leading-5 sm:min-w-28 sm:flex-none',
                       templateClassNames.button,
                     )}
                     style={primaryButtonStyle}
@@ -1069,11 +1102,11 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
           {pendingAttempt.status === 'pending' && (
             <div className="space-y-3">
               <div className="space-y-1">
-                <div>Your order may still be processing.</div>
+                <div>{t('pending_order_title')}</div>
                 <div className="text-xs text-muted-foreground">
                   {isCheckingPending
-                    ? 'Checking pending order...'
-                    : 'Check again when you are back online.'}
+                    ? t('pending_order_checking')
+                    : t('pending_order_check_again_online')}
                 </div>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -1082,7 +1115,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
                   disabled={isOrderSubmitting || isCheckingPending}
                   onClick={checkPendingOrderStatus}
                 >
-                  {isCheckingPending ? 'Checking...' : 'Check order status'}
+                  {isCheckingPending ? t('checking_button') : t('check_order_status_button')}
                 </Button>
               </div>
             </div>
@@ -1090,7 +1123,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
           {pendingAttempt.status === 'failed' && (
             <div className="space-y-3">
               <div>
-                Your order may still be processing.
+                {t('pending_order_title')}
                 <div className="text-xs text-muted-foreground">
                   {t('order_failed_helper')}
                 </div>
@@ -1101,7 +1134,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
                   disabled={isOrderSubmitting || isCheckingPending}
                   onClick={checkPendingOrderStatus}
                 >
-                  {isCheckingPending ? 'Checking...' : 'Check again'}
+                  {isCheckingPending ? t('checking_button') : t('check_again_button')}
                 </Button>
                 <Button
                   size="sm"
@@ -1143,7 +1176,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
   );
 
   return (
-    <div className="space-y-5 pb-28 sm:pb-8">
+    <div className="space-y-5 pb-[calc(8rem+env(safe-area-inset-bottom))] sm:pb-8">
       <div
         className="sticky top-[57px] z-30 -mx-4 flex gap-2 overflow-x-auto border-y bg-background/95 px-4 py-2 shadow-sm backdrop-blur-sm sm:static sm:mx-0 sm:flex-wrap sm:overflow-visible sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none sm:backdrop-blur-0"
         aria-label={t('category_nav_label')}
@@ -1200,13 +1233,13 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
       {cart.length > 0 && (
         <section className="hidden rounded-md border bg-card p-4 shadow-sm sm:block">
           <div className="mb-3 flex items-start justify-between gap-4">
-            <div>
+            <div className="min-w-0">
               <h2 className="font-semibold">{t('cart_title')}</h2>
               <div className="text-xs text-muted-foreground">
                 {t('cart_items_count', { count: cartQuantity })}
               </div>
             </div>
-            <div className="text-right text-sm font-semibold">
+            <div className="shrink-0 text-right text-sm font-semibold">
               {cartTotalUsdCents > 0 && (
                 <div>{formatUsdCents(cartTotalUsdCents, props.locale)}</div>
               )}
@@ -1245,13 +1278,13 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
           onClick={() => setIsCartOpen(true)}
         >
           <div className="mx-auto flex max-w-2xl items-center justify-between gap-3">
-            <div>
+            <div className="min-w-0">
               <div className="text-sm font-semibold">{t('cart_title')}</div>
               <div className="text-xs opacity-85">
                 {t('cart_items_count', { count: cartQuantity })}
               </div>
             </div>
-            <div className="text-right text-sm font-semibold">
+            <div className="shrink-0 text-right text-sm font-semibold">
               {cartTotalUsdCents > 0 && (
                 <div>{formatUsdCents(cartTotalUsdCents, props.locale)}</div>
               )}
@@ -1265,7 +1298,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
                 </div>
               )}
             </div>
-            <div className="rounded-full bg-white/15 px-3 py-1 text-sm font-semibold">
+            <div className="shrink-0 rounded-full bg-white/15 px-3 py-1 text-sm font-semibold">
               {t('cart_bar_button')}
             </div>
           </div>
@@ -1274,7 +1307,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
 
       {isCartOpen && cart.length > 0 && (
         <div
-          className="fixed inset-0 z-50 bg-black/45 px-3 pb-3 pt-10 sm:hidden"
+          className="fixed inset-0 z-50 bg-black/45 px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-8 sm:hidden"
           role="dialog"
           aria-modal="true"
           aria-label={t('cart_title')}
@@ -1286,7 +1319,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
             onClick={() => setIsCartOpen(false)}
           />
           <section
-            className="relative mx-auto max-h-[88vh] max-w-2xl overflow-y-auto rounded-lg border bg-background p-4 shadow-lg"
+            className="relative mx-auto max-h-[calc(100dvh-4rem-env(safe-area-inset-bottom))] max-w-2xl overflow-y-auto rounded-lg border bg-background p-4 shadow-lg"
           >
             <div className="mb-3 flex items-center justify-between gap-3">
               <div>

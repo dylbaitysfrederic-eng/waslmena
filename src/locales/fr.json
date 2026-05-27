@@ -3,6 +3,15 @@
     "meta_title": "Wasl - Plateforme hospitality modulaire pour le Liban & MENA",
     "meta_description": "Wasl est une plateforme hospitality légère pour menus QR, commandes, livraison, tickets cuisine, analytics, exports, branding et modules futurs."
   },
+  "ErrorBoundary": {
+    "title": "Une erreur est survenue",
+    "description": "La page n’a pas pu se charger correctement. Réessayez.",
+    "dashboard_title": "Tableau de bord indisponible",
+    "dashboard_description": "Le tableau de bord n’a pas pu se charger correctement. Vos données ne sont pas exposées ici; réessayez.",
+    "public_menu_title": "Menu indisponible",
+    "public_menu_description": "Le menu n’a pas pu se charger correctement. Réessayez ou demandez de l’aide au personnel.",
+    "retry": "Réessayer"
+  },
   "Landing": {
     "nav_dashboard": "Tableau de bord",
     "hero_eyebrow": "Plateforme hospitality modulaire pour le Liban & MENA",
@@ -418,6 +427,12 @@
     "submit_order_button": "Envoyer la commande",
     "submit_order_pending": "Envoi...",
     "submit_order_connection_helper": "Cela peut prendre quelques secondes avec une connexion lente. Gardez cet écran ouvert.",
+    "pending_order_title": "Votre commande est peut-être encore en cours.",
+    "pending_order_checking": "Vérification de la commande...",
+    "pending_order_check_again_online": "Vérifiez à nouveau quand la connexion revient.",
+    "checking_button": "Vérification...",
+    "check_order_status_button": "Vérifier la commande",
+    "check_again_button": "Vérifier encore",
     "order_success_title": "Commande reçue",
     "order_success": "Commande n°{orderId} envoyée.",
     "order_success_helper": "Gardez ce numéro visible pour le personnel du restaurant.",
@@ -529,6 +544,7 @@
     "orders_export_title": "Export commandes",
     "orders_export_description": "Utilise l’export CSV existant et borné des commandes, sur les 48 dernières heures par défaut.",
     "orders_export_summary": "{orders, plural, =1 {# commande récente} other {# commandes récentes}}",
+    "empty_state": "Aucune donnée restaurant exportable pour le moment. Ajoutez des articles, des tables ou des commandes avant de télécharger les fichiers opérationnels.",
     "safety_note": "Les exports incluent uniquement l’organisation restaurant active. Les images sont référencées par URL ; cet outil ne crée pas d’archive d’images, sauvegarde planifiée, import ou restauration cloud.",
     "location_scope_note": "Les entreprises multi-branches doivent exporter chaque profil restaurant/lieu séparément. Il n’existe pas encore d’export consolidé multi-sites."
   },
@@ -546,6 +562,7 @@
     "provider": "Fournisseur",
     "sync_status": "Statut de synchronisation",
     "last_sync_placeholder": "Aucune synchronisation n’a été lancée. La synchronisation POS n’est pas active.",
+    "empty_config": "Aucune configuration POS n’a encore été préparée. Cette page reste une fondation de readiness.",
     "csv_manual_title": "Fondation CSV/manuelle planifiée",
     "csv_manual_description": "Les exports Wasl et la comparaison manuelle sont la première étape planifiée avant toute connexion POS fournisseur live.",
     "api_later_description": "Foodics, Sapaad, Square, Toast, Lightspeed et d’autres API pourront être connectés plus tard sans modifier les flux de commande actuels."
@@ -646,6 +663,10 @@
   "Dashboard": {
     "meta_title": "Tableau de bord {restaurantName}",
     "meta_description": "Gérez les commandes, le menu, les QR et tables, les statistiques et les réglages."
+  },
+  "OrganizationSelection": {
+    "title": "Choisir un espace restaurant",
+    "description": "Sélectionnez l’organisation à gérer. Les espaces personnels sont masqués pour ce tableau de bord restaurant."
   },
   "DashboardIndex": {
     "title_bar": "Tableau de bord {restaurantName}",

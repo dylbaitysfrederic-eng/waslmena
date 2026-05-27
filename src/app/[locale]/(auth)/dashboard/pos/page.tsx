@@ -117,6 +117,11 @@ const DashboardPOSPage = async (props: { params: { locale: string } }) => {
           <div className="font-semibold text-foreground">
             {t('csv_manual_title')}
           </div>
+          {!posConfig && (
+            <p className="mt-2 leading-6">
+              {t('empty_config')}
+            </p>
+          )}
           <p className="mt-2 leading-6">
             {t('csv_manual_description')}
           </p>

@@ -3,6 +3,15 @@
     "meta_title": "Wasl - منصة ضيافة مرنة للبنان وMENA",
     "meta_description": "Wasl منصة ضيافة خفيفة لقوائم QR والطلبات والتوصيل وتذاكر المطبخ والتحليلات والتصدير والهوية والوحدات المستقبلية."
   },
+  "ErrorBoundary": {
+    "title": "حدث خطأ",
+    "description": "تعذر تحميل الصفحة بشكل آمن. حاول مرة أخرى.",
+    "dashboard_title": "لوحة التحكم غير متاحة",
+    "dashboard_description": "تعذر تحميل لوحة التحكم بشكل آمن. لا يتم عرض تفاصيل تقنية هنا؛ حاول التحميل مرة أخرى.",
+    "public_menu_title": "القائمة غير متاحة",
+    "public_menu_description": "تعذر تحميل القائمة بشكل آمن. حاول مرة أخرى أو اطلب المساعدة من موظفي المطعم.",
+    "retry": "حاول مرة أخرى"
+  },
   "Landing": {
     "nav_dashboard": "لوحة تحكم المطعم",
     "hero_eyebrow": "منصة ضيافة مرنة للبنان وMENA",
@@ -418,6 +427,12 @@
     "submit_order_button": "إرسال الطلب",
     "submit_order_pending": "جارٍ الإرسال...",
     "submit_order_connection_helper": "قد يستغرق ذلك بضع ثوانٍ على الاتصال البطيء. يرجى إبقاء هذه الشاشة مفتوحة.",
+    "pending_order_title": "قد يكون طلبك لا يزال قيد المعالجة.",
+    "pending_order_checking": "جارٍ التحقق من الطلب...",
+    "pending_order_check_again_online": "تحقق مرة أخرى عند عودة الاتصال.",
+    "checking_button": "جارٍ التحقق...",
+    "check_order_status_button": "تحقق من حالة الطلب",
+    "check_again_button": "تحقق مرة أخرى",
     "order_success_title": "تم استلام الطلب",
     "order_success": "تم إرسال الطلب رقم {orderId}.",
     "order_success_helper": "سجّل رقم الطلب وأظهره للموظف عند الحاجة.",
@@ -529,6 +544,7 @@
     "orders_export_title": "تصدير الطلبات",
     "orders_export_description": "يستخدم تصدير CSV الحالي والمحدود للطلبات، لآخر 48 ساعة افتراضياً.",
     "orders_export_summary": "{orders, plural, =1 {طلب حديث واحد} =2 {طلبان حديثان} few {# طلبات حديثة} many {# طلباً حديثاً} other {# طلب حديث}}",
+    "empty_state": "لا توجد بيانات مطعم قابلة للتصدير بعد. أضف أصنافاً أو طاولات أو طلبات قبل تنزيل ملفات التشغيل.",
     "safety_note": "تشمل الصادرات مؤسسة المطعم النشطة فقط. يتم حفظ الصور كرابط URL؛ هذه الأداة لا تنشئ أرشيف صور أو نسخاً مجدولة أو نظام استيراد أو استعادة سحابية.",
     "location_scope_note": "على الشركات متعددة الفروع تصدير كل ملف مطعم/فرع بشكل منفصل. لا يوجد تصدير موحّد للفروع بعد."
   },
@@ -546,6 +562,7 @@
     "provider": "المزوّد",
     "sync_status": "حالة المزامنة",
     "last_sync_placeholder": "لم يتم تشغيل أي مزامنة. مزامنة POS غير مفعّلة حالياً.",
+    "empty_config": "لم يتم إعداد أي تهيئة POS بعد. هذه الصفحة أساس جاهزية فقط.",
     "csv_manual_title": "أساس CSV/يدوي مخطط",
     "csv_manual_description": "صادرات Wasl والمقارنة اليدوية هي الخطوة الأولى المخططة قبل أي اتصال مباشر بمزوّد POS.",
     "api_later_description": "يمكن ربط Foodics وSapaad وSquare وToast وLightspeed وغيرها من واجهات API لاحقاً بدون تغيير تدفقات الطلب الحالية."
@@ -646,6 +663,10 @@
   "Dashboard": {
     "meta_title": "لوحة تحكم {restaurantName}",
     "meta_description": "إدارة الطلبات والقائمة وQR والطاولات والإحصاءات والإعدادات."
+  },
+  "OrganizationSelection": {
+    "title": "اختر مساحة عمل المطعم",
+    "description": "اختر المؤسسة التي تريد إدارتها. مساحات العمل الشخصية مخفية في لوحة تحكم المطعم."
   },
   "DashboardIndex": {
     "title_bar": "لوحة تحكم {restaurantName}",

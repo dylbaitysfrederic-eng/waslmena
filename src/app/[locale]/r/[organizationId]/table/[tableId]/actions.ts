@@ -10,6 +10,7 @@ import {
   organizationSchema,
   restaurantTableSchema,
 } from '@/models/Schema';
+import { recordAnalyticsEvent } from '@/utils/Analytics';
 
 type SubmitOrderInput = {
   organizationId: string;
@@ -21,11 +22,20 @@ type SubmitOrderInput = {
   deliveryAddress?: string;
   deliveryPhone?: string;
   deliveryNotes?: string;
+  locale?: string;
+  deviceType?: string;
   items: {
     menuItemId: number;
     quantity: number;
     customerNote?: string;
   }[];
+};
+
+type TrackPublicMenuCategoryViewInput = {
+  organizationId: string;
+  categoryId: number;
+  locale: string;
+  deviceType: string;
 };
 
 type SubmitOrderResult =
@@ -64,6 +74,20 @@ const normalizeCustomerNote = (value: string | undefined) => {
   return textValue.length > 0 ? textValue.slice(0, 200) : null;
 };
 
+const recordSubmitFailure = (
+  input: SubmitOrderInput,
+  reason: string,
+) => {
+  void recordAnalyticsEvent({
+    organizationId: input.organizationId,
+    eventType: 'order_submit_failure',
+    locale: input.locale,
+    deviceType: input.deviceType,
+    tableId: input.tableId ?? null,
+    metadata: { reason },
+  });
+};
+
 const submitPublicOrderActionImpl = async (
   input: SubmitOrderInput,
 ): Promise<SubmitOrderResult> => {
@@ -83,6 +107,15 @@ const submitPublicOrderActionImpl = async (
       .limit(1);
 
     if (existing) {
+      void recordAnalyticsEvent({
+        organizationId: input.organizationId,
+        eventType: 'order_submit_success',
+        locale: input.locale,
+        deviceType: input.deviceType,
+        tableId: input.tableId ?? null,
+        orderId: existing.id,
+        metadata: { idempotent: true },
+      });
       return { ok: true, orderId: existing.id };
     }
   }
@@ -112,6 +145,7 @@ const submitPublicOrderActionImpl = async (
     || customerName.length > 50
     || cartItems.length === 0
   ) {
+    recordSubmitFailure(input, 'invalid_payload');
     return { ok: false };
   }
 
@@ -128,6 +162,7 @@ const submitPublicOrderActionImpl = async (
       .limit(1);
 
     if (!restaurantTable) {
+      recordSubmitFailure(input, 'invalid_table');
       return { ok: false };
     }
   }
@@ -169,6 +204,7 @@ const submitPublicOrderActionImpl = async (
     || (orderType === 'delivery' && deliveryAddress.length === 0)
     || (orderType === 'delivery' && deliveryPhone.length === 0)
   ) {
+    recordSubmitFailure(input, 'restaurant_unavailable_or_invalid_order_type');
     return { ok: false };
   }
 
@@ -206,6 +242,7 @@ const submitPublicOrderActionImpl = async (
     );
 
   if (availableItems.length !== menuItemIds.length) {
+    recordSubmitFailure(input, 'unavailable_menu_items');
     return { ok: false };
   }
 
@@ -285,6 +322,16 @@ const submitPublicOrderActionImpl = async (
     return order.id;
   });
 
+  void recordAnalyticsEvent({
+    organizationId: input.organizationId,
+    eventType: 'order_submit_success',
+    locale: input.locale,
+    deviceType: input.deviceType,
+    tableId,
+    orderId,
+    metadata: { orderType },
+  });
+
   return {
     ok: true,
     orderId,
@@ -319,12 +366,22 @@ const wrapSubmitPublicOrderAction = async (
         .limit(1);
 
       if (existing) {
+        void recordAnalyticsEvent({
+          organizationId: input.organizationId,
+          eventType: 'order_submit_success',
+          locale: input.locale,
+          deviceType: input.deviceType,
+          tableId: input.tableId ?? null,
+          orderId: existing.id,
+          metadata: { idempotent: true },
+        });
         return { ok: true, orderId: existing.id };
       }
     } catch {
       // fall through to rethrow original error
     }
 
+    recordSubmitFailure(input, 'unexpected_error');
     throw err;
   }
 };
@@ -366,4 +423,24 @@ export const checkPendingPublicOrderAction = async (
     status: order.status,
     createdAt: order.createdAt.toISOString(),
   };
+};
+
+export const trackPublicMenuCategoryViewAction = async (
+  input: TrackPublicMenuCategoryViewInput,
+) => {
+  const categoryId = Number.isInteger(input.categoryId)
+    ? input.categoryId
+    : Number.NaN;
+
+  if (!input.organizationId || Number.isNaN(categoryId)) {
+    return;
+  }
+
+  void recordAnalyticsEvent({
+    organizationId: input.organizationId,
+    eventType: 'category_view',
+    locale: input.locale,
+    deviceType: input.deviceType,
+    categoryId,
+  });
 };

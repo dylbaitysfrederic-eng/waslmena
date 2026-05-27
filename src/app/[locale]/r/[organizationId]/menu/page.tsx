@@ -10,6 +10,7 @@ import {
   menuItemSchema,
   organizationSchema,
 } from '@/models/Schema';
+import { getRequestDeviceType, recordAnalyticsEvent } from '@/utils/Analytics';
 import { cn } from '@/utils/Helpers';
 import { getLocalizedMenuText } from '@/utils/MenuTranslations';
 import {
@@ -161,6 +162,14 @@ const PublicGeneralMenuPage = async (props: PublicGeneralMenuPageProps) => {
       </main>
     );
   }
+
+  void recordAnalyticsEvent({
+    organizationId: props.params.organizationId,
+    eventType: 'menu_open',
+    locale: props.params.locale,
+    deviceType: getRequestDeviceType(),
+    metadata: { source: 'general' },
+  });
 
   if (
     props.searchParams?.menu !== '1'

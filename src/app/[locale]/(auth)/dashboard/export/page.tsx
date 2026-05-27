@@ -106,6 +106,12 @@ const ExportBackupPage = async (props: { params: { locale: string } }) => {
       }),
     },
   ];
+  const hasExportableData = [
+    categoryRows,
+    itemRows,
+    tableRows,
+    recentOrderRows,
+  ].some(rows => getCountValue(rows) > 0);
 
   return (
     <>
@@ -145,6 +151,12 @@ const ExportBackupPage = async (props: { params: { locale: string } }) => {
             </article>
           ))}
         </div>
+
+        {!hasExportableData && (
+          <div className="mt-5 rounded-md border border-dashed bg-background p-4 text-sm leading-6 text-muted-foreground">
+            {t('empty_state')}
+          </div>
+        )}
 
         <div className="mt-5 rounded-md border border-dashed bg-background p-4 text-sm leading-6 text-muted-foreground">
           {t('safety_note')}

@@ -171,6 +171,8 @@ const TicketPage = async (props: {
             body {
               background: #fff !important;
               color: #000 !important;
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
             }
           }
         `}
@@ -186,7 +188,7 @@ const TicketPage = async (props: {
         <article
           id={ticketId}
           tabIndex={-1}
-          className="mx-auto w-full max-w-[72mm] bg-white font-mono text-[12px] leading-tight text-black outline-none"
+          className="mx-auto w-full max-w-[72mm] break-words bg-white font-mono text-[12px] leading-tight text-black outline-none print:text-[12px]"
         >
           <header className="text-center">
             <div className="text-base font-black uppercase tracking-normal">

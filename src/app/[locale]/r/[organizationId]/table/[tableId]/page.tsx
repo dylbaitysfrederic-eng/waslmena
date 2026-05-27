@@ -11,6 +11,7 @@ import {
   organizationSchema,
   restaurantTableSchema,
 } from '@/models/Schema';
+import { getRequestDeviceType, recordAnalyticsEvent } from '@/utils/Analytics';
 import { cn } from '@/utils/Helpers';
 import { getLocalizedMenuText } from '@/utils/MenuTranslations';
 import {
@@ -213,6 +214,15 @@ const PublicTableMenuPage = async (props: PublicMenuPageProps) => {
       </main>
     );
   }
+
+  void recordAnalyticsEvent({
+    organizationId: props.params.organizationId,
+    eventType: 'menu_open',
+    locale: props.params.locale,
+    deviceType: getRequestDeviceType(),
+    tableId,
+    metadata: { source: 'table' },
+  });
 
   if (
     props.searchParams?.menu !== '1'

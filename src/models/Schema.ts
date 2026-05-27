@@ -1,6 +1,7 @@
 import {
   bigint,
   boolean,
+  index,
   integer,
   pgTable,
   serial,
@@ -408,4 +409,28 @@ export const orderItemSchema = pgTable('order_item', {
   unitPriceUsdCents: integer('unit_price_usd_cents'),
   unitPriceLbp: integer('unit_price_lbp'),
   createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+});
+
+export const analyticsEventSchema = pgTable('analytics_event', {
+  id: serial('id').primaryKey(),
+  organizationId: text('organization_id').notNull(),
+  eventType: text('event_type').notNull(),
+  locale: text('locale'),
+  deviceType: text('device_type'),
+  tableId: integer('table_id'),
+  categoryId: integer('category_id'),
+  orderId: integer('order_id'),
+  metadata: text('metadata'),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+}, (table) => {
+  return {
+    analyticsEventOrgCreatedIdx: index('analytics_event_org_created_idx').on(
+      table.organizationId,
+      table.createdAt,
+    ),
+    analyticsEventTypeCreatedIdx: index('analytics_event_type_created_idx').on(
+      table.eventType,
+      table.createdAt,
+    ),
+  };
 });

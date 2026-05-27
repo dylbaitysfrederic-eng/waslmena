@@ -18,11 +18,15 @@ export const saveMenuItemImageFile = async (
   organizationId: string,
   file: File,
 ): Promise<string> => {
+  if (!file || typeof file.arrayBuffer !== 'function') {
+    throw new Error('invalid_image_type');
+  }
+
   if (!ALLOWED_IMAGE_MIME_TYPES.has(file.type)) {
     throw new Error('invalid_image_type');
   }
 
-  if (file.size > MAX_UPLOAD_BYTES) {
+  if (file.size <= 0 || file.size > MAX_UPLOAD_BYTES) {
     throw new Error('image_too_large');
   }
 

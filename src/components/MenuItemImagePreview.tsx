@@ -18,7 +18,18 @@ export const MenuItemImagePreview = ({
   const [hasError, setHasError] = useState(false);
 
   if (hasError) {
-    return null;
+    return (
+      <div
+        className={cn(
+          'flex aspect-[4/3] items-center justify-center rounded-md border bg-muted',
+          className,
+        )}
+        role="img"
+        aria-label={alt}
+      >
+        <span className="size-8 rounded-full border border-background/80 bg-background/70" />
+      </div>
+    );
   }
 
   return (
