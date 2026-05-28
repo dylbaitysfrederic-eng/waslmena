@@ -1,8 +1,5 @@
-/* eslint-disable simple-import-sort/imports */
-
 import { eq } from 'drizzle-orm';
 import { getTranslations } from 'next-intl/server';
-import { currentUser } from '@clerk/nextjs/server';
 
 import { DashboardSection } from '@/features/dashboard/DashboardSection';
 import { TitleBar } from '@/features/dashboard/TitleBar';
@@ -10,19 +7,44 @@ import { db } from '@/libs/DB';
 import { saasSettingsSchema } from '@/models/Schema';
 import { AppConfig } from '@/utils/AppConfig';
 
-import { sendDashboardSupportAction } from './actions';
+const QUICK_START_ITEMS = [
+  'identity',
+  'menu',
+  'tables',
+  'public_menu',
+  'order_flow',
+  'ticket',
+] as const;
 
-const FAQ_ITEMS = [
-  'pilot_setup',
-  'qr_codes',
-  'menu_prices',
+const DAILY_OPERATIONS_ITEMS = [
+  'monitor_orders',
+  'refresh_pending',
+  'print_tickets',
+  'sold_out',
+  'exports',
+] as const;
+
+const DELIVERY_PICKUP_ITEMS = [
+  'toggle',
+  'address_phone',
+  'owned_delivery',
+  'no_marketplace',
 ] as const;
 
 const TROUBLESHOOTING_ITEMS = [
   'qr_not_opening',
   'orders_not_appearing',
-  'refresh_orders',
-  'update_prices',
+  'order_pending',
+  'image_upload_fails',
+  'weak_connection',
+  'dashboard_access',
+] as const;
+
+const COMING_SOON_ITEMS = [
+  'payments',
+  'whatsapp',
+  'pos',
+  'loyalty',
 ] as const;
 
 export async function generateMetadata(props: { params: { locale: string } }) {
@@ -62,8 +84,6 @@ const getWhatsappLink = (value: string | null | undefined) => {
 
 const SupportPage = async ({ params }: { params: { locale: string } }) => {
   const t = await getTranslations({ locale: params.locale, namespace: 'Support' });
-  const clerkUser = await currentUser();
-  const prefillEmail = clerkUser?.primaryEmailAddress?.emailAddress?.toLowerCase() ?? null;
   const [settings] = await db
     .select({
       supportEmail: saasSettingsSchema.supportEmail,
@@ -122,52 +142,60 @@ const SupportPage = async ({ params }: { params: { locale: string } }) => {
                 {supportEmail}
               </a>
             </div>
-
-            <form action={sendDashboardSupportAction} className="rounded-md border bg-background p-4" aria-labelledby="support-form">
-              <h3 id="support-form" className="text-sm font-semibold">{t('form_title')}</h3>
-              <p className="mt-2 text-sm text-muted-foreground">{t('form_description')}</p>
-
-              <input type="hidden" name="returnPath" value={`/${params.locale}/dashboard/support`} />
-
-              <div className="mt-3 space-y-3">
-                <div>
-                  <label className="block text-xs font-medium text-muted-foreground">{t('form_subject_label')}</label>
-                  <input name="subject" required className="mt-1 w-full rounded-md border px-3 py-2 text-sm" />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-muted-foreground">{t('form_message_label')}</label>
-                  <textarea name="message" required rows={4} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-muted-foreground">{t('form_email_label')}</label>
-                  <input name="email" type="email" defaultValue={prefillEmail ?? undefined} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" />
-                </div>
-
-                <div className="flex justify-end">
-                  <button type="submit" className="inline-flex items-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:opacity-95">{t('form_submit')}</button>
-                </div>
-              </div>
-            </form>
           </div>
         </DashboardSection>
 
         <div className="space-y-6">
           <DashboardSection
-            title={t('faq_title')}
-            description={t('faq_description')}
+            title={t('quick_start_title')}
+            description={t('quick_start_description')}
           >
-            <div className="space-y-3">
-              {FAQ_ITEMS.map(item => (
-                <details key={item} className="rounded-md border bg-background p-4">
-                  <summary className="cursor-pointer text-sm font-semibold">
-                    {t(`faq_${item}_question`)}
-                  </summary>
-                  <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                    {t(`faq_${item}_answer`)}
+            <div className="grid gap-3 sm:grid-cols-2">
+              {QUICK_START_ITEMS.map(item => (
+                <div key={item} className="rounded-md border bg-background p-4">
+                  <div className="text-sm font-semibold">
+                    {t(`quick_start_${item}_title`)}
+                  </div>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                    {t(`quick_start_${item}_description`)}
                   </p>
-                </details>
+                </div>
+              ))}
+            </div>
+          </DashboardSection>
+
+          <DashboardSection
+            title={t('daily_operations_title')}
+            description={t('daily_operations_description')}
+          >
+            <div className="grid gap-3 sm:grid-cols-2">
+              {DAILY_OPERATIONS_ITEMS.map(item => (
+                <div key={item} className="rounded-md border bg-background p-4">
+                  <div className="text-sm font-semibold">
+                    {t(`daily_operations_${item}_title`)}
+                  </div>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                    {t(`daily_operations_${item}_description`)}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </DashboardSection>
+
+          <DashboardSection
+            title={t('delivery_pickup_title')}
+            description={t('delivery_pickup_description')}
+          >
+            <div className="grid gap-3 sm:grid-cols-2">
+              {DELIVERY_PICKUP_ITEMS.map(item => (
+                <div key={item} className="rounded-md border bg-background p-4">
+                  <div className="text-sm font-semibold">
+                    {t(`delivery_pickup_${item}_title`)}
+                  </div>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                    {t(`delivery_pickup_${item}_description`)}
+                  </p>
+                </div>
               ))}
             </div>
           </DashboardSection>
@@ -184,6 +212,24 @@ const SupportPage = async ({ params }: { params: { locale: string } }) => {
                   </div>
                   <p className="mt-2 text-sm leading-6 text-muted-foreground">
                     {t(`troubleshooting_${item}_description`)}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </DashboardSection>
+
+          <DashboardSection
+            title={t('coming_soon_title')}
+            description={t('coming_soon_description')}
+          >
+            <div className="grid gap-3 sm:grid-cols-2">
+              {COMING_SOON_ITEMS.map(item => (
+                <div key={item} className="rounded-md border border-dashed bg-background p-4">
+                  <div className="text-sm font-semibold">
+                    {t(`coming_soon_${item}_title`)}
+                  </div>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                    {t(`coming_soon_${item}_description`)}
                   </p>
                 </div>
               ))}
