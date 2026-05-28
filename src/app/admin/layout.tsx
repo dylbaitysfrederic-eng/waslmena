@@ -16,6 +16,7 @@ const adminNavigation = [
   { href: '/admin/modules', label: 'Modules & integrations' },
   { href: '/admin/pos', label: 'POS foundation' },
   { href: '/admin/menu', label: 'Menu setup' },
+  { href: '/admin/demo', label: 'Demo' },
   { href: '/admin/exports', label: 'Exports' },
   { href: '/admin/usage', label: 'Usage' },
   { href: '/admin/settings', label: 'Settings' },
