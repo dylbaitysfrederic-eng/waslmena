@@ -761,7 +761,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
         )}
 
         <div className="min-w-0 flex-1 space-y-2">
-          <div className="flex items-start justify-between gap-3">
+          <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
             <div className="min-w-0 space-y-1.5">
               {itemBadges.length > 0 && (
                 <div className="flex flex-wrap gap-1.5">
@@ -782,11 +782,11 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
                   ))}
                 </div>
               )}
-              <h3 className={templateClassNames.itemName}>
+              <h3 className={cn('break-words', templateClassNames.itemName)}>
                 {item.name}
               </h3>
             </div>
-            <div className={cn('shrink-0 text-right', templateClassNames.price)}>
+            <div className={cn('min-w-0 text-left sm:text-right', templateClassNames.price)}>
               <PriceLines
                 oldPriceUsdCents={item.oldPriceUsdCents}
                 oldPriceLbp={item.oldPriceLbp}
@@ -868,7 +868,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
           <div key={item.id} className="grid gap-3 rounded-md border bg-card p-3">
             <div className="grid grid-cols-[1fr_auto] gap-3">
               <div className="min-w-0 flex-1">
-                <div className="truncate text-sm font-semibold">
+                <div className="break-words text-sm font-semibold">
                   {item.name}
                 </div>
                 <div className="mt-1 text-xs font-medium text-muted-foreground">
@@ -957,6 +957,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
         </Label>
         <Input
           id="customerName"
+          className="text-base sm:text-sm"
           value={customerName}
           maxLength={50}
           required
@@ -975,7 +976,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
       </div>
 
       {props.tableId === null && (props.deliveryEnabled || props.pickupEnabled) && (
-        <div className="mt-4 space-y-2">
+        <div className="mt-4 grid gap-3">
           <Label>
             {t('order_type_label')}
           </Label>
@@ -1019,6 +1020,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
           </Label>
           <Input
             id="deliveryAddress"
+            className="text-base sm:text-sm"
             value={deliveryAddress}
             maxLength={240}
             disabled={isOrderSubmitting}
@@ -1039,6 +1041,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
           </Label>
           <Input
             id="deliveryPhone"
+            className="text-base sm:text-sm"
             value={deliveryPhone}
             maxLength={40}
             disabled={isOrderSubmitting}
@@ -1064,7 +1067,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
             rows={3}
             disabled={isOrderSubmitting}
             placeholder={t('delivery_notes_placeholder')}
-            className="min-h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
+            className="min-h-24 w-full rounded-md border border-input bg-background px-3 py-2 text-base text-foreground sm:text-sm"
             onChange={event => setDeliveryNotes(event.target.value)}
           />
         </div>
@@ -1081,7 +1084,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
           rows={3}
           disabled={isOrderSubmitting}
           placeholder={t('order_note_placeholder')}
-          className="min-h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
+          className="min-h-24 w-full rounded-md border border-input bg-background px-3 py-2 text-base text-foreground sm:text-sm"
           onChange={event => setOrderNote(event.target.value)}
         />
       </div>
@@ -1176,9 +1179,9 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
   );
 
   return (
-    <div className="space-y-5 pb-[calc(8rem+env(safe-area-inset-bottom))] sm:pb-8">
+    <div className="scroll-pb-40 space-y-5 pb-[calc(9rem+env(safe-area-inset-bottom))] sm:pb-8">
       <div
-        className="sticky top-[57px] z-30 -mx-4 flex gap-2 overflow-x-auto border-y bg-background/95 px-4 py-2 shadow-sm backdrop-blur-sm sm:static sm:mx-0 sm:flex-wrap sm:overflow-visible sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none sm:backdrop-blur-0"
+        className="sticky top-[57px] z-30 -mx-4 mb-1 flex gap-2 overflow-x-auto border-y bg-background/95 px-4 py-2 shadow-sm backdrop-blur-sm sm:static sm:mx-0 sm:mb-0 sm:flex-wrap sm:overflow-visible sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none sm:backdrop-blur-0"
         aria-label={t('category_nav_label')}
       >
         {props.categories.map(category => (
@@ -1273,7 +1276,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
       {cart.length > 0 && (
         <button
           type="button"
-          className="fixed inset-x-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-40 rounded-lg border bg-background px-4 py-3 text-left shadow-lg sm:hidden"
+          className="fixed inset-x-3 bottom-[calc(1rem+env(safe-area-inset-bottom))] z-40 rounded-lg border bg-background px-4 py-3 text-left shadow-lg sm:hidden"
           style={primaryButtonStyle}
           onClick={() => setIsCartOpen(true)}
         >
@@ -1307,7 +1310,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
 
       {isCartOpen && cart.length > 0 && (
         <div
-          className="fixed inset-0 z-50 bg-black/45 px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-8 sm:hidden"
+          className="fixed inset-0 z-50 bg-black/45 px-3 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-[calc(1rem+env(safe-area-inset-top))] sm:hidden"
           role="dialog"
           aria-modal="true"
           aria-label={t('cart_title')}
@@ -1319,7 +1322,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
             onClick={() => setIsCartOpen(false)}
           />
           <section
-            className="relative mx-auto max-h-[calc(100dvh-4rem-env(safe-area-inset-bottom))] max-w-2xl overflow-y-auto rounded-lg border bg-background p-4 shadow-lg"
+            className="relative mx-auto max-h-[calc(100dvh_-_2rem_-_env(safe-area-inset-top)_-_env(safe-area-inset-bottom))] max-w-2xl overflow-y-auto overscroll-contain rounded-lg border bg-background p-4 shadow-lg"
           >
             <div className="mb-3 flex items-center justify-between gap-3">
               <div>

@@ -110,12 +110,20 @@ const AdminHealthPage = async (props: {
             from existing client, menu, table, module, and order data.
           </p>
         </div>
-        <Link
-          href="/admin/beta"
-          className="inline-flex w-fit rounded-md border border-input bg-background px-3 py-2 text-sm font-semibold hover:bg-muted"
-        >
-          Beta operations
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href="/admin/beta"
+            className="inline-flex w-fit rounded-md border border-input bg-background px-3 py-2 text-sm font-semibold hover:bg-muted"
+          >
+            Beta operations
+          </Link>
+          <Link
+            href="/admin/field-test"
+            className="inline-flex w-fit rounded-md border border-input bg-background px-3 py-2 text-sm font-semibold hover:bg-muted"
+          >
+            Field test
+          </Link>
+        </div>
       </div>
 
       <div className="mb-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">

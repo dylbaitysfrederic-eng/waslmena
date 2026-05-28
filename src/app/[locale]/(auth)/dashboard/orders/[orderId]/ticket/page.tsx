@@ -85,6 +85,7 @@ const TicketPage = async (props: {
       orderType: orderSchema.orderType,
       deliveryAddress: orderSchema.deliveryAddress,
       deliveryPhone: orderSchema.deliveryPhone,
+      deliveryNotes: orderSchema.deliveryNotes,
       status: orderSchema.status,
       paymentMethod: orderSchema.paymentMethod,
       paymentStatus: orderSchema.paymentStatus,
@@ -151,10 +152,6 @@ const TicketPage = async (props: {
   const showWhatsappBusinessHelper = order.whatsappBusinessEnabled === true;
   const hasStoredTotal = order.totalUsdCents !== null || order.totalLbp !== null;
   const paymentStatusLabel = t(getPaymentStatusLabelKey(order.paymentStatus));
-  const paymentSummary = t('payment_method_status_label', {
-    paymentMethod: order.paymentMethod,
-    paymentStatus: paymentStatusLabel,
-  });
   const ticketId = `order-ticket-${order.id}`;
 
   return (
@@ -177,7 +174,7 @@ const TicketPage = async (props: {
           }
         `}
       </style>
-      <div className="mx-auto w-full max-w-[82mm] px-3 py-4 print:max-w-none print:p-0">
+      <div className="mx-auto w-full max-w-[80mm] px-3 py-4 print:max-w-none print:p-0">
         <div className="mb-3 flex justify-center print:hidden">
           <AutoPrintTicket
             label={t('print_ticket_button')}
@@ -224,7 +221,7 @@ const TicketPage = async (props: {
               <span className="font-bold">{orderTypeLabel}</span>
             </div>
             {order.orderType === 'delivery' && (
-              <>
+              <div className="mt-2 space-y-1 border border-black p-2">
                 {order.deliveryAddress && (
                   <div>
                     {t('delivery_address_label')}
@@ -239,13 +236,23 @@ const TicketPage = async (props: {
                     <span className="font-bold">{order.deliveryPhone}</span>
                   </div>
                 )}
-              </>
+                {order.deliveryNotes && (
+                  <div>
+                    {t('delivery_notes_label')}
+                    {': '}
+                    <span className="font-bold">{order.deliveryNotes}</span>
+                  </div>
+                )}
+              </div>
             )}
             <div>
               {orderSourceLabel}
             </div>
             <div>
-              {paymentSummary}
+              {t('payment_method_status_label', {
+                paymentMethod: order.paymentMethod,
+                paymentStatus: paymentStatusLabel,
+              })}
             </div>
             {showWhatsappBusinessHelper && (
               <div className="text-[10px]">

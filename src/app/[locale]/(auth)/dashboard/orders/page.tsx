@@ -800,6 +800,24 @@ const OrdersPage = async (props: {
                                           : null,
                                         `${t('status_label')}: ${t(`status_${order.status}`)}`,
                                         paymentSummary,
+                                        order.orderType === 'delivery'
+                                          ? t('ticket_order_type_delivery')
+                                          : null,
+                                        ...(order.deliveryAddress
+                                          ? [
+                                              `${t('delivery_address_label')}: ${order.deliveryAddress}`,
+                                            ]
+                                          : []),
+                                        ...(order.deliveryPhone
+                                          ? [
+                                              `${t('delivery_phone_label')}: ${order.deliveryPhone}`,
+                                            ]
+                                          : []),
+                                        ...(order.deliveryNotes
+                                          ? [
+                                              `${t('delivery_notes_label')}: ${order.deliveryNotes}`,
+                                            ]
+                                          : []),
                                         orderSourceLabel,
                                         order.customerName
                                           ? t('ticket_customer', {
@@ -961,7 +979,7 @@ const OrdersPage = async (props: {
                                                           {t('delivery_address_label')}
                                                           {': '}
                                                         </span>
-                                                        <span>{order.deliveryAddress}</span>
+                                                        <span className="break-words">{order.deliveryAddress}</span>
                                                       </div>
                                                     )}
                                                     {order.deliveryPhone && (
@@ -970,7 +988,7 @@ const OrdersPage = async (props: {
                                                           {t('delivery_phone_label')}
                                                           {': '}
                                                         </span>
-                                                        <span>{order.deliveryPhone}</span>
+                                                        <span className="break-words">{order.deliveryPhone}</span>
                                                       </div>
                                                     )}
                                                     {order.deliveryNotes && (
@@ -979,7 +997,7 @@ const OrdersPage = async (props: {
                                                           {t('delivery_notes_label')}
                                                           {': '}
                                                         </span>
-                                                        <span>{order.deliveryNotes}</span>
+                                                        <span className="break-words">{order.deliveryNotes}</span>
                                                       </div>
                                                     )}
                                                   </div>
@@ -1008,7 +1026,7 @@ const OrdersPage = async (props: {
                                                 )}
                                                 {!hasStoredTotal && t('no_order_total')}
                                               </div>
-                                              <div className="text-sm text-muted-foreground">
+                                              <div className="text-xs text-muted-foreground sm:text-sm">
                                                 {paymentSummary}
                                               </div>
                                               <div className="mt-1">
@@ -1163,7 +1181,7 @@ const OrdersPage = async (props: {
                                                     />
                                                     <FormSubmitButton
                                                       size="lg"
-                                                      className="h-12 w-full"
+                                                      className="min-h-12 w-full whitespace-normal leading-5"
                                                       pendingLabel={t('status_update_pending')}
                                                     >
                                                       {t('move_to_status', {
@@ -1188,7 +1206,7 @@ const OrdersPage = async (props: {
                                                     <FormSubmitButton
                                                       variant="destructive"
                                                       size="lg"
-                                                      className="h-12 w-full"
+                                                      className="min-h-12 w-full whitespace-normal leading-5"
                                                       pendingLabel={t('status_update_pending')}
                                                     >
                                                       {t('cancel_order_button')}
@@ -1219,7 +1237,7 @@ const OrdersPage = async (props: {
                                                             : 'outline'
                                                         }
                                                         size="sm"
-                                                        className="w-full"
+                                                        className="min-h-10 w-full whitespace-normal leading-5"
                                                         pendingLabel={t('status_update_pending')}
                                                         disabled={order.status === manualStatus}
                                                       >

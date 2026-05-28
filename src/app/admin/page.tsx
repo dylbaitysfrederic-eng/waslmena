@@ -19,6 +19,16 @@ const adminCards = [
     description: 'List restaurant clients and maintain internal founder notes.',
   },
   {
+    href: '/admin/field-test',
+    title: 'Field Test',
+    description: 'Run pre-beta device, QR, order, ticket, and failure checks before restaurant access.',
+  },
+  {
+    href: '/admin/health',
+    title: 'Client Health',
+    description: 'Review setup gaps, order activity, modules, and pilot readiness signals.',
+  },
+  {
     href: '/admin/billing',
     title: 'Billing',
     description: 'Track manual subscription amounts, payment methods, and due dates.',
