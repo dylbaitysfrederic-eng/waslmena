@@ -11,6 +11,10 @@ import {
   menuItemSchema,
   organizationSchema,
 } from '@/models/Schema';
+import {
+  importMenuCsv,
+  validateMenuCsvFile,
+} from '@/utils/MenuCsv';
 import { getMenuItemImageUrl } from '@/utils/MenuItemImageUpload';
 import {
   getPrimaryMenuText,
@@ -39,6 +43,26 @@ const getReturnPath = (formData: FormData) => {
 
 const redirectWithError = (returnPath: string, error: string): never => {
   redirect(`${returnPath}?error=${error}`);
+};
+
+const redirectWithMenuCsvSummary = (
+  returnPath: string,
+  summary: Awaited<ReturnType<typeof importMenuCsv>>,
+): never => {
+  const params = new URLSearchParams({
+    csvCategoriesCreated: String(summary.categoriesCreated),
+    csvCategoriesUpdated: String(summary.categoriesUpdated),
+    csvErrors: String(summary.errors.length),
+    csvItemsCreated: String(summary.itemsCreated),
+    csvItemsUpdated: String(summary.itemsUpdated),
+    csvSkipped: String(summary.skipped),
+  });
+
+  if (summary.errors.at(0)) {
+    params.set('csvFirstError', summary.errors[0]!);
+  }
+
+  redirect(`${returnPath}?${params.toString()}`);
 };
 
 const normalizeEnumValue = <T extends readonly string[]>(
@@ -314,6 +338,28 @@ export const createMenuItemAction = async (formData: FormData) => {
   revalidatePath(MENU_ITEMS_PATH);
   revalidatePath(returnPath);
   redirect(returnPath);
+};
+
+export const importMenuCsvAction = async (formData: FormData) => {
+  const returnPath = getReturnPath(formData);
+  const organizationId = await getActiveRestaurantOrganizationId();
+  const csvFile = formData.get('csvFile');
+
+  if (!organizationId) {
+    return;
+  }
+
+  const validationError = validateMenuCsvFile(csvFile);
+
+  if (validationError) {
+    redirectWithError(returnPath, validationError);
+  }
+
+  const csvText = await (csvFile as File).text();
+  const summary = await importMenuCsv(organizationId, csvText);
+
+  revalidatePath(MENU_ITEMS_PATH);
+  redirectWithMenuCsvSummary(returnPath, summary);
 };
 
 export const updateMenuItemAction = async (formData: FormData) => {

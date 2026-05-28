@@ -43,6 +43,7 @@ import {
   updateAdminMenuCategoryAction,
   updateAdminMenuItemAction,
 } from '../../actions';
+import { importAdminMenuCsvAction } from './csvActions';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -349,6 +350,13 @@ const AdminMenuItemPriceLine = (props: {
 const AdminMenuDetailPage = async (props: {
   params: { id: string };
   searchParams?: {
+    csvCategoriesCreated?: string;
+    csvCategoriesUpdated?: string;
+    csvErrors?: string;
+    csvFirstError?: string;
+    csvItemsCreated?: string;
+    csvItemsUpdated?: string;
+    csvSkipped?: string;
     templateStatus?: string;
     status?: string;
   };
@@ -397,7 +405,32 @@ const AdminMenuDetailPage = async (props: {
     statusMessage = 'Category deleted.';
   } else if (props.searchParams?.status === 'item_deleted') {
     statusMessage = 'Item deleted.';
+  } else if (props.searchParams?.status === 'missing_file') {
+    statusMessage = 'Choose a CSV file before importing.';
+  } else if (props.searchParams?.status === 'invalid_file') {
+    statusMessage = 'Uploaded menu import must be a CSV file.';
+  } else if (props.searchParams?.status === 'file_too_large') {
+    statusMessage = 'Uploaded CSV must be 512 KB or smaller.';
+  } else if (props.searchParams?.status === 'invalid_menu_csv') {
+    statusMessage = 'CSV import could not be started for this restaurant.';
   }
+  const csvSummary = props.searchParams?.csvItemsCreated === undefined
+    ? null
+    : {
+        categoriesCreated: Number.parseInt(
+          props.searchParams.csvCategoriesCreated ?? '0',
+          10,
+        ),
+        categoriesUpdated: Number.parseInt(
+          props.searchParams.csvCategoriesUpdated ?? '0',
+          10,
+        ),
+        errors: Number.parseInt(props.searchParams.csvErrors ?? '0', 10),
+        firstError: props.searchParams.csvFirstError,
+        itemsCreated: Number.parseInt(props.searchParams.csvItemsCreated ?? '0', 10),
+        itemsUpdated: Number.parseInt(props.searchParams.csvItemsUpdated ?? '0', 10),
+        skipped: Number.parseInt(props.searchParams.csvSkipped ?? '0', 10),
+      };
 
   return (
     <section className="grid gap-6">
@@ -431,6 +464,97 @@ const AdminMenuDetailPage = async (props: {
           {statusMessage}
         </div>
       )}
+
+      {csvSummary && (
+        <div className="rounded-md border border-green-300 bg-green-50 p-3 text-sm text-green-950">
+          <p className="font-semibold">CSV import complete.</p>
+          <p className="mt-1">
+            Categories:
+            {' '}
+            {csvSummary.categoriesCreated}
+            {' '}
+            created,
+            {' '}
+            {csvSummary.categoriesUpdated}
+            {' '}
+            updated. Items:
+            {' '}
+            {csvSummary.itemsCreated}
+            {' '}
+            created,
+            {' '}
+            {csvSummary.itemsUpdated}
+            {' '}
+            updated.
+            {' '}
+            {csvSummary.skipped}
+            {' '}
+            skipped,
+            {' '}
+            {csvSummary.errors}
+            {' '}
+            errors.
+          </p>
+          {csvSummary.firstError && (
+            <p className="mt-1 text-xs">{csvSummary.firstError}</p>
+          )}
+        </div>
+      )}
+
+      <details className="rounded-md border bg-background p-5">
+        <summary className="cursor-pointer font-semibold">
+          CSV import / export
+        </summary>
+        <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_320px]">
+          <div className="rounded-md border bg-muted/20 p-4">
+            <h3 className="text-sm font-semibold">Import menu CSV</h3>
+            <p className="mt-1 text-sm leading-6 text-muted-foreground">
+              Creates or updates categories and items. Existing items are never
+              deleted, and existing item images are preserved.
+            </p>
+            <form
+              action={importAdminMenuCsvAction}
+              encType="multipart/form-data"
+              className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto]"
+            >
+              <input type="hidden" name="organizationId" value={organizationId} />
+              <Input
+                aria-label="Menu CSV file"
+                name="csvFile"
+                type="file"
+                accept=".csv,text/csv"
+                required
+              />
+              <FormSubmitButton pendingLabel="Importing...">
+                Import CSV
+              </FormSubmitButton>
+            </form>
+            <p className="mt-3 text-xs leading-5 text-muted-foreground">
+              Match uses item_id when present, otherwise item name plus category.
+              Re-running the same file should update rather than duplicate.
+            </p>
+          </div>
+
+          <div className="grid gap-2 rounded-md border bg-background p-4">
+            <a
+              href={`/admin/menu/${organizationId}/export`}
+              className="inline-flex rounded-md border border-input bg-background px-3 py-2 text-sm font-semibold hover:bg-muted"
+            >
+              Download menu CSV
+            </a>
+            <a
+              href={`/admin/menu/${organizationId}/sample`}
+              className="inline-flex rounded-md border border-input bg-background px-3 py-2 text-sm font-semibold hover:bg-muted"
+            >
+              Download sample CSV
+            </a>
+            <p className="text-xs leading-5 text-muted-foreground">
+              CSV includes categories, subcategories, multilingual text, prices,
+              availability, and merchandising badges.
+            </p>
+          </div>
+        </div>
+      </details>
 
       <details className="rounded-md border bg-background p-5">
         <summary className="cursor-pointer font-semibold">

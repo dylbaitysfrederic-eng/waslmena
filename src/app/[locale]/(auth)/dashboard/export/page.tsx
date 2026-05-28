@@ -81,6 +81,16 @@ const ExportBackupPage = async (props: { params: { locale: string } }) => {
       }),
     },
     {
+      href: getI18nPath('/dashboard/menu-items/export', props.params.locale),
+      title: t('menu_csv_export_title'),
+      description: t('menu_csv_export_description'),
+      format: t('csv_format'),
+      summary: t('menu_export_summary', {
+        categories: getCountValue(categoryRows),
+        items: getCountValue(itemRows),
+      }),
+    },
+    {
       href: getI18nPath('/dashboard/export/tables', props.params.locale),
       title: t('tables_export_title'),
       description: t('tables_export_description'),

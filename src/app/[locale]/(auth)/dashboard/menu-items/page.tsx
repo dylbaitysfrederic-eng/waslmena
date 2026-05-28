@@ -40,6 +40,7 @@ import {
 import {
   createMenuItemAction,
   deleteMenuItemAction,
+  importMenuCsvAction,
   updateMenuAppearanceAction,
   updateMenuItemAction,
 } from './actions';
@@ -82,6 +83,9 @@ const VALID_FORM_ERRORS = [
   'image_too_large',
   'category_in_use',
   'original_price_below_price',
+  'missing_file',
+  'invalid_file',
+  'file_too_large',
 ] as const;
 
 const MERCHANDISING_BADGES = [
@@ -409,7 +413,16 @@ const MenuItemPriceLine = (props: {
 
 const MenuItemsPage = async (props: {
   params: { locale: string };
-  searchParams: { error?: string };
+  searchParams: {
+    csvCategoriesCreated?: string;
+    csvCategoriesUpdated?: string;
+    csvErrors?: string;
+    csvFirstError?: string;
+    csvItemsCreated?: string;
+    csvItemsUpdated?: string;
+    csvSkipped?: string;
+    error?: string;
+  };
 }) => {
   noStore();
 
@@ -502,6 +515,23 @@ const MenuItemsPage = async (props: {
     '/dashboard/menu-items',
     props.params.locale,
   );
+  const csvSummary = props.searchParams.csvItemsCreated === undefined
+    ? null
+    : {
+        categoriesCreated: Number.parseInt(
+          props.searchParams.csvCategoriesCreated ?? '0',
+          10,
+        ),
+        categoriesUpdated: Number.parseInt(
+          props.searchParams.csvCategoriesUpdated ?? '0',
+          10,
+        ),
+        errors: Number.parseInt(props.searchParams.csvErrors ?? '0', 10),
+        firstError: props.searchParams.csvFirstError,
+        itemsCreated: Number.parseInt(props.searchParams.csvItemsCreated ?? '0', 10),
+        itemsUpdated: Number.parseInt(props.searchParams.csvItemsUpdated ?? '0', 10),
+        skipped: Number.parseInt(props.searchParams.csvSkipped ?? '0', 10),
+      };
 
   return (
     <>
@@ -509,6 +539,78 @@ const MenuItemsPage = async (props: {
         title={t('title_bar')}
         description={t('title_bar_description')}
       />
+
+      <DashboardSection
+        title={t('csv_section_title')}
+        description={t('csv_section_description')}
+      >
+        <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
+          <div className="rounded-md border bg-muted/20 p-4">
+            <h3 className="text-sm font-semibold">
+              {t('csv_import_title')}
+            </h3>
+            <p className="mt-1 text-sm leading-6 text-muted-foreground">
+              {t('csv_import_description')}
+            </p>
+            <form
+              action={importMenuCsvAction}
+              encType="multipart/form-data"
+              className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto]"
+            >
+              <input
+                type="hidden"
+                name="returnPath"
+                value={menuItemsReturnPath}
+              />
+              <Input
+                aria-label={t('csv_file_label')}
+                name="csvFile"
+                type="file"
+                accept=".csv,text/csv"
+                required
+              />
+              <FormSubmitButton pendingLabel={t('csv_import_pending')}>
+                {t('csv_import_button')}
+              </FormSubmitButton>
+            </form>
+            <p className="mt-3 text-xs leading-5 text-muted-foreground">
+              {t('csv_import_safety')}
+            </p>
+          </div>
+
+          <div className="grid gap-2 rounded-md border bg-background p-4">
+            <a
+              href={getI18nPath('/dashboard/menu-items/export', props.params.locale)}
+              className="inline-flex rounded-md border border-input bg-background px-3 py-2 text-sm font-semibold hover:bg-muted"
+            >
+              {t('csv_export_button')}
+            </a>
+            <a
+              href={getI18nPath('/dashboard/menu-items/sample', props.params.locale)}
+              className="inline-flex rounded-md border border-input bg-background px-3 py-2 text-sm font-semibold hover:bg-muted"
+            >
+              {t('csv_sample_button')}
+            </a>
+            <p className="text-xs leading-5 text-muted-foreground">
+              {t('csv_export_description')}
+            </p>
+          </div>
+        </div>
+
+        {csvSummary && (
+          <div className="mt-4 rounded-md border border-green-300 bg-green-50 p-4 text-sm text-green-950">
+            <p className="font-semibold">{t('csv_summary_title')}</p>
+            <p className="mt-1">
+              {t('csv_summary_body', csvSummary)}
+            </p>
+            {csvSummary.firstError && (
+              <p className="mt-2 text-xs">
+                {t('csv_first_error', { error: csvSummary.firstError })}
+              </p>
+            )}
+          </div>
+        )}
+      </DashboardSection>
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,380px)_1fr]">
         <DashboardSection
