@@ -395,6 +395,12 @@ const PilotChecklistPage = async (props: { params: { locale: string } }) => {
             <div className="mt-4 rounded-md border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950">
               <p className="font-semibold">{t('starter_guidance_title')}</p>
               <p className="mt-1">{t('starter_guidance_description')}</p>
+              <Link
+                href={getI18nPath('/dashboard/setup', props.params.locale)}
+                className="mt-3 inline-flex rounded-md border border-amber-400 bg-background px-3 py-2 text-sm font-semibold hover:bg-amber-100"
+              >
+                {t('setup_wizard_link')}
+              </Link>
             </div>
           )}
         </DashboardSection>

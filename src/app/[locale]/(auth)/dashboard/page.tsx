@@ -88,11 +88,17 @@ const DashboardIndexPage = async (props: { params: { locale: string } }) => {
   ];
   const quickLinks = [
     {
+      href: '/dashboard/setup',
+      title: t('setup_title'),
+      description: t('setup_description'),
+      cta: t('setup_cta'),
+      primary: true,
+    },
+    {
       href: '/dashboard/orders',
       title: t('orders_title'),
       description: t('orders_description'),
       cta: t('orders_cta'),
-      primary: true,
     },
     {
       href: '/dashboard/menu-items',
@@ -120,9 +126,9 @@ const DashboardIndexPage = async (props: { params: { locale: string } }) => {
     },
     {
       href: '/dashboard/modules',
-      title: 'Modules & integrations',
-      description: 'See which optional restaurant modules are prepared and ready for future integration.',
-      cta: 'View modules',
+      title: t('modules_title'),
+      description: t('modules_description'),
+      cta: t('modules_cta'),
     },
     {
       href: '/dashboard/support',
