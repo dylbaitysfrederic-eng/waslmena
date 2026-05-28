@@ -9,6 +9,7 @@ const adminNavigation = [
   { href: '/admin', label: 'Overview' },
   { href: '/admin/onboarding', label: 'Onboarding' },
   { href: '/admin/clients', label: 'Clients' },
+  { href: '/admin/beta', label: 'Beta' },
   { href: '/admin/billing', label: 'Billing' },
   { href: '/admin/access', label: 'Access' },
   { href: '/admin/identity', label: 'Identity' },
