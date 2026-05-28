@@ -1899,6 +1899,7 @@ export const updateAdminMenuItemAction = async (formData: FormData) => {
   const names = getMenuNamesFromForm(formData);
   const descriptions = getMenuDescriptionsFromForm(formData);
   const imageUrlField = formData.get('imageUrl')?.toString().trim() || null;
+  const shouldRemoveImage = formData.get('removeImage') === 'on';
 
   const priceUsdCents = normalizeOptionalInteger(formData.get('priceUsdCents'));
   const priceLbp = normalizeOptionalInteger(formData.get('priceLbp'));
@@ -1955,7 +1956,7 @@ export const updateAdminMenuItemAction = async (formData: FormData) => {
   try {
     imageUrl = await getMenuItemImageUrl(
       organizationId,
-      imageUrlField || existingItem?.imageUrl || null,
+      shouldRemoveImage ? null : imageUrlField || existingItem?.imageUrl || null,
       formData.get('imageFile'),
     );
   } catch (error) {

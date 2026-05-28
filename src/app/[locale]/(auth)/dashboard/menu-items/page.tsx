@@ -81,6 +81,7 @@ const VALID_FORM_ERRORS = [
   'currency_mismatch',
   'invalid_image_type',
   'image_too_large',
+  'upload_failed',
   'category_in_use',
   'original_price_below_price',
   'missing_file',

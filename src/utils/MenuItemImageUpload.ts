@@ -1,6 +1,12 @@
 import { put } from '@vercel/blob';
 
 const MAX_UPLOAD_BYTES = 300_000;
+const ALLOWED_IMAGE_EXTENSIONS = new Set([
+  '.jpg',
+  '.jpeg',
+  '.png',
+  '.webp',
+]);
 const ALLOWED_IMAGE_MIME_TYPES = new Set([
   'image/jpeg',
   'image/png',
@@ -12,7 +18,16 @@ const EXTENSION_BY_MIME_TYPE: Record<string, string> = {
   'image/webp': '.webp',
 };
 
-export type MenuItemImageUploadError = 'invalid_image_type' | 'image_too_large';
+export type MenuItemImageUploadError =
+  | 'image_too_large'
+  | 'invalid_image_type'
+  | 'upload_failed';
+
+const getFileExtension = (fileName: string) => {
+  const lastDotIndex = fileName.lastIndexOf('.');
+
+  return lastDotIndex === -1 ? '' : fileName.slice(lastDotIndex).toLowerCase();
+};
 
 export const saveMenuItemImageFile = async (
   organizationId: string,
@@ -22,7 +37,12 @@ export const saveMenuItemImageFile = async (
     throw new Error('invalid_image_type');
   }
 
-  if (!ALLOWED_IMAGE_MIME_TYPES.has(file.type)) {
+  const extension = getFileExtension(file.name);
+
+  if (
+    !ALLOWED_IMAGE_MIME_TYPES.has(file.type)
+    || !ALLOWED_IMAGE_EXTENSIONS.has(extension)
+  ) {
     throw new Error('invalid_image_type');
   }
 
@@ -30,15 +50,19 @@ export const saveMenuItemImageFile = async (
     throw new Error('image_too_large');
   }
 
-  const extension = EXTENSION_BY_MIME_TYPE[file.type] ?? '.jpg';
-  const fileName = `menu-items/${encodeURIComponent(organizationId)}/${crypto.randomUUID()}${extension}`;
+  const storageExtension = EXTENSION_BY_MIME_TYPE[file.type] ?? '.jpg';
+  const fileName = `menu-items/${encodeURIComponent(organizationId)}/${crypto.randomUUID()}${storageExtension}`;
 
-  const blob = await put(fileName, file, {
-    access: 'public',
-    contentType: file.type,
-  });
+  try {
+    const blob = await put(fileName, file, {
+      access: 'public',
+      contentType: file.type,
+    });
 
-  return blob.url;
+    return blob.url;
+  } catch {
+    throw new Error('upload_failed');
+  }
 };
 
 export const getMenuItemImageUrl = async (

@@ -27,7 +27,9 @@ export const MenuItemImagePreview = ({
         role="img"
         aria-label={alt}
       >
-        <span className="size-8 rounded-full border border-background/80 bg-background/70" />
+        <span className="px-3 text-center text-xs font-medium text-muted-foreground">
+          Image unavailable
+        </span>
       </div>
     );
   }

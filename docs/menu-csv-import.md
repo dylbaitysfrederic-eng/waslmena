@@ -57,3 +57,10 @@ item,,Breakfast,Breakfast,Petit dejeuner,الفطور,,,,,,,Labneh toast,Labneh 
 4. Review the result summary for created, updated, skipped, and error counts.
 5. Download the menu CSV after import as a clean reference copy.
 6. Add or review item images in Wasl, since CSV import does not modify images.
+
+## Image note
+
+CSV import/export does not upload image binaries or bulk-process photo folders.
+Keep item photos optional and manage them from the menu item forms. Preserve
+`public/uploads/menu-items/` during hosting or server moves so existing image
+paths remain valid.

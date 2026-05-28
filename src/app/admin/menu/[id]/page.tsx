@@ -399,6 +399,8 @@ const AdminMenuDetailPage = async (props: {
     statusMessage = 'Uploaded image must be JPG, PNG, or WEBP.';
   } else if (props.searchParams?.status === 'image_too_large') {
     statusMessage = 'Uploaded image must be 300 KB or smaller.';
+  } else if (props.searchParams?.status === 'upload_failed') {
+    statusMessage = 'Image upload failed. Try a smaller compressed image or upload again on a stronger connection.';
   } else if (props.searchParams?.status === 'category_in_use') {
     statusMessage = 'This category can’t be deleted while it has subcategories or items assigned.';
   } else if (props.searchParams?.status === 'category_deleted') {
@@ -755,7 +757,7 @@ const AdminMenuDetailPage = async (props: {
                         urlFieldName="imageUrl"
                         fileFieldName="imageFile"
                         label="Image (optional)"
-                        helpText="Optional. Upload a lightweight image file."
+                        helpText="Optional. Smaller compressed photos load faster; the menu works without images."
                         placeholder="https://example.com/image.jpg"
                       />
                       <div className="grid gap-3 sm:grid-cols-2">
@@ -1031,7 +1033,7 @@ const AdminMenuDetailPage = async (props: {
                                       urlFieldName="imageUrl"
                                       fileFieldName="imageFile"
                                       label="Image (optional)"
-                                      helpText="Optional. Upload a lightweight image file."
+                                      helpText="Optional. Smaller compressed photos load faster; the menu works without images."
                                       placeholder="https://example.com/image.jpg"
                                       currentImageUrl={item.imageUrl}
                                     />

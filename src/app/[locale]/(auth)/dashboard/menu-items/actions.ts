@@ -384,6 +384,7 @@ export const updateMenuItemAction = async (formData: FormData) => {
     fr: normalizeMenuText(formData.get('descriptionFr')),
   };
   const imageUrlField = formData.get('imageUrl')?.toString().trim() || null;
+  const shouldRemoveImage = formData.get('removeImage') === 'on';
 
   const priceUsdCents = parseOptionalPrice(formData.get('priceUsdCents'));
   const priceLbp = parseOptionalPrice(formData.get('priceLbp'));
@@ -445,7 +446,7 @@ export const updateMenuItemAction = async (formData: FormData) => {
   try {
     imageUrl = await getMenuItemImageUrl(
       organizationId,
-      imageUrlField || existingItem?.imageUrl || null,
+      shouldRemoveImage ? null : imageUrlField || existingItem?.imageUrl || null,
       formData.get('imageFile'),
     );
   } catch (error) {
