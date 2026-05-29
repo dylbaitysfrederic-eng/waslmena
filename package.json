@@ -12,6 +12,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "check:migrations": "node scripts/check-migrations.mjs",
+    "smoke:checklist": "node scripts/print-smoke-test.mjs",
     "seed:demos": "dotenv -c production -- node scripts/seed-demo-restaurants.mjs",
     "check-types": "tsc --noEmit --pretty",
     "verify": "npm run check:migrations && npm run check-types && npm run lint && npm run build",

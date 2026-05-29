@@ -92,6 +92,15 @@ const FieldTestPage = () => (
         Use this read-only checklist before giving a restaurant access. It does
         not save checklist state or change restaurant data.
       </p>
+      <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
+        Post-deploy smoke guidance lives in
+        {' '}
+        <code className="rounded-md border bg-muted px-1.5 py-0.5">docs/post-deploy-smoke-test.md</code>
+        . You can also print it with
+        {' '}
+        <code className="rounded-md border bg-muted px-1.5 py-0.5">npm run smoke:checklist</code>
+        .
+      </p>
       <div className="mt-4 flex flex-wrap gap-2">
         {quickLinks.map(link => (
           <Link
