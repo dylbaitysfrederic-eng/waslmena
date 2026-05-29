@@ -274,6 +274,12 @@ const BetaOperationsPage = () => (
         >
           Open Field Test
         </Link>
+        <Link
+          href="/admin/feedback"
+          className="inline-flex w-fit rounded-md border bg-background px-3 py-2 text-sm font-semibold hover:bg-muted"
+        >
+          Open Feedback
+        </Link>
       </div>
     </section>
 

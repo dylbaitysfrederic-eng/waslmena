@@ -11,6 +11,7 @@ const adminNavigation = [
   { href: '/admin/clients', label: 'Clients' },
   { href: '/admin/health', label: 'Health' },
   { href: '/admin/beta', label: 'Beta' },
+  { href: '/admin/feedback', label: 'Feedback' },
   { href: '/admin/billing', label: 'Billing' },
   { href: '/admin/access', label: 'Access' },
   { href: '/admin/identity', label: 'Identity' },

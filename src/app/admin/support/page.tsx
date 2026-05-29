@@ -108,6 +108,9 @@ const AdminSupportPage = () => (
         <Link href="/admin/demo" className="rounded-md border bg-muted px-3 py-2 text-sm font-semibold hover:bg-muted/70">
           Demo & Showcase
         </Link>
+        <Link href="/admin/feedback" className="rounded-md border bg-muted px-3 py-2 text-sm font-semibold hover:bg-muted/70">
+          Beta Feedback
+        </Link>
         <Link href="/admin/access" className="rounded-md border bg-muted px-3 py-2 text-sm font-semibold hover:bg-muted/70">
           Access
         </Link>

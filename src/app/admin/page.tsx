@@ -24,6 +24,11 @@ const adminCards = [
     description: 'Run pre-beta device, QR, order, ticket, and failure checks before restaurant access.',
   },
   {
+    href: '/admin/feedback',
+    title: 'Beta feedback',
+    description: 'Review structured pilot feedback from restaurant staff and admins.',
+  },
+  {
     href: '/admin/health',
     title: 'Client Health',
     description: 'Review setup gaps, order activity, modules, and pilot readiness signals.',

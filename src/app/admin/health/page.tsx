@@ -123,6 +123,12 @@ const AdminHealthPage = async (props: {
           >
             Field test
           </Link>
+          <Link
+            href="/admin/feedback"
+            className="inline-flex w-fit rounded-md border border-input bg-background px-3 py-2 text-sm font-semibold hover:bg-muted"
+          >
+            Feedback
+          </Link>
         </div>
       </div>
 

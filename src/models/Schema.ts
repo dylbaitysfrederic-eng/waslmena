@@ -164,6 +164,40 @@ export const saasSettingsSchema = pgTable('saas_settings', {
   createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
 });
 
+export const betaFeedbackSchema = pgTable(
+  'beta_feedback',
+  {
+    id: serial('id').primaryKey(),
+    organizationId: text('organization_id'),
+    submittedByUserId: text('submitted_by_user_id'),
+    roleContext: text('role_context'),
+    category: text('category').default('other').notNull(),
+    severity: text('severity').default('medium').notNull(),
+    message: text('message').notNull(),
+    deviceInfo: text('device_info'),
+    pageContext: text('page_context'),
+    status: text('status').default('new').notNull(),
+    adminNotes: text('admin_notes'),
+    updatedAt: timestamp('updated_at', { mode: 'date' })
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+  },
+  (table) => {
+    return {
+      betaFeedbackOrgCreatedIdx: index('beta_feedback_org_created_idx').on(
+        table.organizationId,
+        table.createdAt,
+      ),
+      betaFeedbackStatusCreatedIdx: index('beta_feedback_status_created_idx').on(
+        table.status,
+        table.createdAt,
+      ),
+    };
+  },
+);
+
 export const restaurantTableSchema = pgTable('restaurant_table', {
   id: serial('id').primaryKey(),
   organizationId: text('organization_id').notNull(),
