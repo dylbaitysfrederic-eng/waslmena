@@ -224,7 +224,6 @@ export const createRestaurantJsonExport = async (
         restaurantOpeningHours: organizationSchema.restaurantOpeningHours,
         restaurantInstagramUrl: organizationSchema.restaurantInstagramUrl,
         restaurantWifiName: organizationSchema.restaurantWifiName,
-        restaurantWifiPassword: organizationSchema.restaurantWifiPassword,
         restaurantGoogleMapsUrl: organizationSchema.restaurantGoogleMapsUrl,
         restaurantLogoUrl: organizationSchema.restaurantLogoUrl,
         restaurantPrimaryColor: organizationSchema.restaurantPrimaryColor,

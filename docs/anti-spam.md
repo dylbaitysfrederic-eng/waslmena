@@ -8,7 +8,8 @@ Public order submission keeps the existing idempotency behavior first. If a cust
 
 For new public orders, Wasl checks recent orders for the same restaurant and table scope:
 
-- Limit: 5 new orders
+- Limit for table QR orders: 5 new orders
+- Limit for general menu pickup/delivery orders: 20 new orders
 - Window: 60 seconds
 - Scope: organization plus table ID when present, or organization plus general ordering when no table is present
 

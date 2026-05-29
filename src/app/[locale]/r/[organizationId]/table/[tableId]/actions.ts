@@ -76,7 +76,8 @@ const normalizeCustomerNote = (value: string | undefined) => {
 };
 
 const PUBLIC_ORDER_RATE_LIMIT = {
-  maxOrders: 5,
+  maxOrdersPerTable: 5,
+  maxGeneralOrders: 20,
   windowMs: 60 * 1000,
 };
 
@@ -99,7 +100,11 @@ const isPublicOrderRateLimited = async (input: {
       ),
     );
 
-  return (recentOrderCount?.count ?? 0) >= PUBLIC_ORDER_RATE_LIMIT.maxOrders;
+  const limit = input.tableId === null
+    ? PUBLIC_ORDER_RATE_LIMIT.maxGeneralOrders
+    : PUBLIC_ORDER_RATE_LIMIT.maxOrdersPerTable;
+
+  return (recentOrderCount?.count ?? 0) >= limit;
 };
 
 const recordSubmitFailure = (
