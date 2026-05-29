@@ -72,6 +72,12 @@ const PilotFeedbackPage = async (props: {
             </div>
           )}
 
+          {props.searchParams?.error === 'rate_limited' && (
+            <div className="mb-4 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm font-medium text-destructive">
+              {t('error_rate_limited')}
+            </div>
+          )}
+
           <form action={submitBetaFeedbackAction} className="grid gap-4">
             <input type="hidden" name="returnPath" value={returnPath} />
             <DeviceInfoField />

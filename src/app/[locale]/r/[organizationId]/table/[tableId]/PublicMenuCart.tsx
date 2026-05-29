@@ -267,6 +267,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
   const [deliveryPhone, setDeliveryPhone] = useState('');
   const [deliveryNotes, setDeliveryNotes] = useState('');
   const [hasOrderError, setHasOrderError] = useState(false);
+  const [isOrderRateLimited, setIsOrderRateLimited] = useState(false);
   const [customerName, setCustomerName] = useState('');
   const [orderNote, setOrderNote] = useState('');
   const [hasCustomerNameError, setHasCustomerNameError] = useState(false);
@@ -613,6 +614,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
 
     setSuccessOrderId(null);
     setHasOrderError(false);
+    setIsOrderRateLimited(false);
     setHasCustomerNameError(false);
 
     const trimmedCustomerName = customerName.trim();
@@ -708,6 +710,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
           return;
         }
 
+        setIsOrderRateLimited(result.reason === 'rate_limited');
         setHasOrderError(true);
         setPendingAttempt({ ...pending, status: 'failed' } as any);
         try {
@@ -716,6 +719,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
           // ignore
         }
       } catch {
+        setIsOrderRateLimited(false);
         setHasOrderError(true);
         setPendingAttempt({ ...pending, status: 'failed' } as any);
         try {
@@ -1148,6 +1152,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
 
                     idempotencyRef.current = pendingAttempt.idempotencyKey;
                     setHasOrderError(false);
+                    setIsOrderRateLimited(false);
                     submitOrder();
                   }}
                 >
@@ -1161,7 +1166,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
 
       {hasOrderError && (
         <div className="mt-3 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm font-medium text-destructive">
-          {t('order_error')}
+          {isOrderRateLimited ? t('order_rate_limited') : t('order_error')}
         </div>
       )}
 

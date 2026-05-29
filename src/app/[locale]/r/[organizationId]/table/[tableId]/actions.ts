@@ -1,6 +1,6 @@
 'use server';
 
-import { and, eq, inArray } from 'drizzle-orm';
+import { and, count, eq, gte, inArray, isNull } from 'drizzle-orm';
 
 import { db } from '@/libs/DB';
 import {
@@ -45,6 +45,7 @@ type SubmitOrderResult =
   }
   | {
     ok: false;
+    reason?: 'rate_limited';
   };
 
 type CheckPendingPublicOrderInput = {
@@ -72,6 +73,33 @@ const normalizeCustomerNote = (value: string | undefined) => {
   const textValue = value?.trim() ?? '';
 
   return textValue.length > 0 ? textValue.slice(0, 200) : null;
+};
+
+const PUBLIC_ORDER_RATE_LIMIT = {
+  maxOrders: 5,
+  windowMs: 60 * 1000,
+};
+
+const isPublicOrderRateLimited = async (input: {
+  organizationId: string;
+  tableId: number | null;
+}) => {
+  const since = new Date(Date.now() - PUBLIC_ORDER_RATE_LIMIT.windowMs);
+  const tableCondition = input.tableId === null
+    ? isNull(orderSchema.tableId)
+    : eq(orderSchema.tableId, input.tableId);
+  const [recentOrderCount] = await db
+    .select({ count: count() })
+    .from(orderSchema)
+    .where(
+      and(
+        eq(orderSchema.organizationId, input.organizationId),
+        tableCondition,
+        gte(orderSchema.createdAt, since),
+      ),
+    );
+
+  return (recentOrderCount?.count ?? 0) >= PUBLIC_ORDER_RATE_LIMIT.maxOrders;
 };
 
 const recordSubmitFailure = (
@@ -147,6 +175,11 @@ const submitPublicOrderActionImpl = async (
   ) {
     recordSubmitFailure(input, 'invalid_payload');
     return { ok: false };
+  }
+
+  if (await isPublicOrderRateLimited({ organizationId: input.organizationId, tableId })) {
+    recordSubmitFailure(input, 'rate_limited');
+    return { ok: false, reason: 'rate_limited' };
   }
 
   if (tableId !== null) {

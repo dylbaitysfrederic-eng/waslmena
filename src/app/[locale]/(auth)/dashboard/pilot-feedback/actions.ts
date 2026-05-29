@@ -1,6 +1,7 @@
 'use server';
 
 import { auth } from '@clerk/nextjs/server';
+import { and, count, eq, gte } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
@@ -21,6 +22,35 @@ const getReturnPath = (formData: FormData) => {
     : '/dashboard/pilot-feedback';
 };
 
+const BETA_FEEDBACK_RATE_LIMIT = {
+  maxSubmissions: 5,
+  windowMs: 10 * 60 * 1000,
+};
+
+const isBetaFeedbackRateLimited = async (input: {
+  organizationId: string;
+  userId: string | null;
+}) => {
+  const since = new Date(Date.now() - BETA_FEEDBACK_RATE_LIMIT.windowMs);
+  const rateLimitCondition = input.userId
+    ? and(
+      eq(betaFeedbackSchema.organizationId, input.organizationId),
+      eq(betaFeedbackSchema.submittedByUserId, input.userId),
+      gte(betaFeedbackSchema.createdAt, since),
+    )
+    : and(
+      eq(betaFeedbackSchema.organizationId, input.organizationId),
+      gte(betaFeedbackSchema.createdAt, since),
+    );
+  const [recentFeedbackCount] = await db
+    .select({ count: count() })
+    .from(betaFeedbackSchema)
+    .where(rateLimitCondition);
+
+  return (recentFeedbackCount?.count ?? 0)
+    >= BETA_FEEDBACK_RATE_LIMIT.maxSubmissions;
+};
+
 export const submitBetaFeedbackAction = async (formData: FormData) => {
   const { orgId, userId } = await auth();
   const returnPath = getReturnPath(formData);
@@ -33,6 +63,10 @@ export const submitBetaFeedbackAction = async (formData: FormData) => {
 
   if (!message) {
     redirect(`${returnPath}?error=missing_message`);
+  }
+
+  if (await isBetaFeedbackRateLimited({ organizationId: orgId, userId })) {
+    redirect(`${returnPath}?error=rate_limited`);
   }
 
   await db.insert(betaFeedbackSchema).values({
