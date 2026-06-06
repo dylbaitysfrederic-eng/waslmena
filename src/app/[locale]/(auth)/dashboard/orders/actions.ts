@@ -20,6 +20,10 @@ const ORDER_STATUSES = [
 
 const FINAL_ORDER_STATUSES = new Set(['completed', 'served', 'delivered', 'cancelled']);
 
+const isOrdersPath = (path: string) => {
+  return path === ORDERS_PATH || /^\/[a-z]{2}\/dashboard\/orders$/.test(path);
+};
+
 export const updateOrderStatusAction = async (formData: FormData) => {
   const organizationId = await getActiveRestaurantOrganizationId();
   const orderId = Number.parseInt(
@@ -27,16 +31,20 @@ export const updateOrderStatusAction = async (formData: FormData) => {
     10,
   );
   const status = formData.get('status')?.toString();
+  const currentPath = formData.get('currentPath')?.toString() ?? ORDERS_PATH;
 
-  if (
-    !organizationId
-    || Number.isNaN(orderId)
-    || !ORDER_STATUSES.includes(status as (typeof ORDER_STATUSES)[number])
-  ) {
-    return;
+  if (!organizationId) {
+    return { ok: false, error: 'unauthorized' };
   }
 
-  await db
+  if (
+    Number.isNaN(orderId)
+    || !ORDER_STATUSES.includes(status as (typeof ORDER_STATUSES)[number])
+  ) {
+    return { ok: false, error: 'invalid_request' };
+  }
+
+  const updatedRows = await db
     .update(orderSchema)
     .set({ status })
     .where(
@@ -44,9 +52,21 @@ export const updateOrderStatusAction = async (formData: FormData) => {
         eq(orderSchema.id, orderId),
         eq(orderSchema.organizationId, organizationId),
       ),
-    );
+    )
+    .returning();
+
+  if (updatedRows.length === 0) {
+    return { ok: false, error: 'not_found' };
+  }
+
+  if (isOrdersPath(currentPath)) {
+    revalidatePath(currentPath);
+  }
 
   revalidatePath(ORDERS_PATH);
+  revalidatePath('/[locale]/dashboard/orders', 'page');
+
+  return { ok: true };
 };
 
 const parsePositiveInteger = (value: FormDataEntryValue | null) => {

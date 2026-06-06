@@ -24,8 +24,9 @@ import {
   formatWhatsappProvider,
 } from '@/utils/Whatsapp';
 
-import { updateOrderAction, updateOrderStatusAction } from './actions';
+import { updateOrderAction } from './actions';
 import { CopyTicketButton } from './CopyTicketButton';
+import { OrderStatusForm } from './OrderStatusForm';
 import { OrderStatusGroups } from './OrderStatusGroups';
 import { PendingOrderNotifier } from './PendingOrderNotifier';
 import {
@@ -1168,82 +1169,56 @@ const OrdersPage = async (props: {
 
                                               <div className="space-y-2">
                                                 {nextStatus && (
-                                                  <form action={updateOrderStatusAction}>
-                                                    <input
-                                                      type="hidden"
-                                                      name="orderId"
-                                                      value={order.id}
-                                                    />
-                                                    <input
-                                                      type="hidden"
-                                                      name="status"
-                                                      value={nextStatus}
-                                                    />
-                                                    <FormSubmitButton
-                                                      size="lg"
-                                                      className="min-h-12 w-full whitespace-normal leading-5"
-                                                      pendingLabel={t('status_update_pending')}
-                                                    >
-                                                      {t('move_to_status', {
-                                                        status: t(`status_${nextStatus}`),
-                                                      })}
-                                                    </FormSubmitButton>
-                                                  </form>
+                                                  <OrderStatusForm
+                                                    currentPath={ordersPath}
+                                                    orderId={order.id}
+                                                    status={nextStatus}
+                                                    size="lg"
+                                                    buttonClassName="min-h-12 w-full whitespace-normal leading-5"
+                                                    pendingLabel={t('status_update_pending')}
+                                                    errorLabel={t('status_update_error')}
+                                                  >
+                                                    {t('move_to_status', {
+                                                      status: t(`status_${nextStatus}`),
+                                                    })}
+                                                  </OrderStatusForm>
                                                 )}
 
                                                 {canCancel && (
-                                                  <form action={updateOrderStatusAction}>
-                                                    <input
-                                                      type="hidden"
-                                                      name="orderId"
-                                                      value={order.id}
-                                                    />
-                                                    <input
-                                                      type="hidden"
-                                                      name="status"
-                                                      value="cancelled"
-                                                    />
-                                                    <FormSubmitButton
-                                                      variant="destructive"
-                                                      size="lg"
-                                                      className="min-h-12 w-full whitespace-normal leading-5"
-                                                      pendingLabel={t('status_update_pending')}
-                                                    >
-                                                      {t('cancel_order_button')}
-                                                    </FormSubmitButton>
-                                                  </form>
+                                                  <OrderStatusForm
+                                                    currentPath={ordersPath}
+                                                    orderId={order.id}
+                                                    status="cancelled"
+                                                    variant="destructive"
+                                                    size="lg"
+                                                    buttonClassName="min-h-12 w-full whitespace-normal leading-5"
+                                                    pendingLabel={t('status_update_pending')}
+                                                    errorLabel={t('status_update_error')}
+                                                  >
+                                                    {t('cancel_order_button')}
+                                                  </OrderStatusForm>
                                                 )}
 
                                                 <div className="grid gap-2 pt-2 sm:grid-cols-2">
                                                   {ORDER_STATUSES.map(manualStatus => (
-                                                    <form
+                                                    <OrderStatusForm
                                                       key={manualStatus}
-                                                      action={updateOrderStatusAction}
+                                                      currentPath={ordersPath}
+                                                      orderId={order.id}
+                                                      status={manualStatus}
+                                                      variant={
+                                                        order.status === manualStatus
+                                                          ? 'default'
+                                                          : 'outline'
+                                                      }
+                                                      size="sm"
+                                                      buttonClassName="min-h-10 w-full whitespace-normal leading-5"
+                                                      pendingLabel={t('status_update_pending')}
+                                                      errorLabel={t('status_update_error')}
+                                                      disabled={order.status === manualStatus}
                                                     >
-                                                      <input
-                                                        type="hidden"
-                                                        name="orderId"
-                                                        value={order.id}
-                                                      />
-                                                      <input
-                                                        type="hidden"
-                                                        name="status"
-                                                        value={manualStatus}
-                                                      />
-                                                      <FormSubmitButton
-                                                        variant={
-                                                          order.status === manualStatus
-                                                            ? 'default'
-                                                            : 'outline'
-                                                        }
-                                                        size="sm"
-                                                        className="min-h-10 w-full whitespace-normal leading-5"
-                                                        pendingLabel={t('status_update_pending')}
-                                                        disabled={order.status === manualStatus}
-                                                      >
-                                                        {t(`status_${manualStatus}`)}
-                                                      </FormSubmitButton>
-                                                    </form>
+                                                      {t(`status_${manualStatus}`)}
+                                                    </OrderStatusForm>
                                                   ))}
                                                 </div>
                                               </div>
