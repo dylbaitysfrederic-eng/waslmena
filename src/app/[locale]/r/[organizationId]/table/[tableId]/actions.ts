@@ -222,6 +222,7 @@ const submitPublicOrderActionImpl = async (
       accessStatus: organizationSchema.accessStatus,
       accessSuspended: organizationSchema.accessSuspended,
       deliveryEnabled: organizationSchema.deliveryEnabled,
+      orderingMode: organizationSchema.orderingMode,
       pickupEnabled: organizationSchema.pickupEnabled,
       deliveryFeeUsdCents: organizationSchema.deliveryFeeUsdCents,
       deliveryFeeLocal: organizationSchema.deliveryFeeLocal,
@@ -233,10 +234,21 @@ const submitPublicOrderActionImpl = async (
     .where(eq(organizationSchema.id, input.organizationId))
     .limit(1);
 
+  const tableOrderingEnabled = organizationWithDelivery
+    ? organizationWithDelivery.orderingMode === 'table_ordering'
+    || organizationWithDelivery.orderingMode === 'both'
+    : false;
+  const generalMenuOrderingEnabled = organizationWithDelivery
+    ? organizationWithDelivery.pickupEnabled
+    || organizationWithDelivery.deliveryEnabled
+    : false;
+
   if (
     !organizationWithDelivery
     || organizationWithDelivery.accessStatus !== 'active'
     || organizationWithDelivery.accessSuspended
+    || (tableId !== null && !tableOrderingEnabled)
+    || (tableId === null && !generalMenuOrderingEnabled)
     || (orderType === 'delivery' && !organizationWithDelivery.deliveryEnabled)
     || (tableId === null && orderType === 'counter' && !organizationWithDelivery.pickupEnabled)
     || (orderType === 'delivery' && deliveryAddress.length === 0)

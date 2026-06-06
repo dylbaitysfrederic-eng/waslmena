@@ -409,7 +409,7 @@ const PublicTableMenuPage = async (props: PublicMenuPageProps) => {
     )}`
     : null;
   const localCurrencyLabel = organization?.localCurrencyLabel ?? 'LL';
-  const orderingEnabled = organization.orderingMode === 'table_ordering'
+  const tableOrderingEnabled = organization.orderingMode === 'table_ordering'
     || organization.orderingMode === 'both';
   const restaurantName = organization.restaurantDisplayName || t('title');
 
@@ -509,7 +509,7 @@ const PublicTableMenuPage = async (props: PublicMenuPageProps) => {
                 primaryColor={organization?.restaurantPrimaryColor ?? null}
                 showMenuItemImages={organization.showMenuItemImages}
                 tableId={restaurantTable.id}
-                orderingEnabled={orderingEnabled}
+                orderingEnabled={tableOrderingEnabled}
                 deliveryEnabled={organization.deliveryEnabled}
                 pickupEnabled={organization.pickupEnabled}
                 deliveryFeeUsdCents={organization.deliveryFeeUsdCents}

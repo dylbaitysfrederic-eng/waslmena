@@ -355,7 +355,8 @@ const PublicGeneralMenuPage = async (props: PublicGeneralMenuPageProps) => {
     )}`
     : null;
   const localCurrencyLabel = organization.localCurrencyLabel ?? 'LL';
-  const orderingEnabled = organization.pickupEnabled || organization.deliveryEnabled;
+  const generalMenuOrderingEnabled = organization.pickupEnabled
+    || organization.deliveryEnabled;
   const restaurantName = organization.restaurantDisplayName || t('title');
 
   return (
@@ -451,7 +452,7 @@ const PublicGeneralMenuPage = async (props: PublicGeneralMenuPageProps) => {
                 primaryColor={organization.restaurantPrimaryColor ?? null}
                 showMenuItemImages={organization.showMenuItemImages}
                 tableId={null}
-                orderingEnabled={orderingEnabled}
+                orderingEnabled={generalMenuOrderingEnabled}
                 deliveryEnabled={organization.deliveryEnabled}
                 pickupEnabled={organization.pickupEnabled}
                 deliveryFeeUsdCents={organization.deliveryFeeUsdCents}

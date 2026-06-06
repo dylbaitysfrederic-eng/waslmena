@@ -320,7 +320,7 @@ const AdminTemplatesDetailPage = async (props: {
             <FormSubmitButton
               pendingLabel="Creating..."
               size="sm"
-              className="w-fit px-4"
+              className="w-auto max-w-max self-start px-3"
             >
               Create table
             </FormSubmitButton>

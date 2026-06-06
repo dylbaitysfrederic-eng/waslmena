@@ -1285,13 +1285,13 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
       )}
 
       {cart.length > 0 && (
-        <button
-          type="button"
-          className="fixed inset-x-3 bottom-[calc(1rem+env(safe-area-inset-bottom))] z-40 rounded-lg border bg-background px-4 py-3 text-left shadow-lg sm:hidden"
-          style={primaryButtonStyle}
-          onClick={() => setIsCartOpen(true)}
-        >
-          <div className="mx-auto flex max-w-2xl items-center justify-between gap-3">
+        <div className="fixed inset-x-0 bottom-0 z-50 border-t bg-background/95 px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-2 shadow-[0_-10px_30px_rgba(15,23,42,0.18)] backdrop-blur sm:hidden">
+          <button
+            type="button"
+            className="mx-auto flex min-h-14 w-full max-w-2xl items-center justify-between gap-3 rounded-lg border px-4 py-3 text-left shadow-sm"
+            style={primaryButtonStyle}
+            onClick={() => setIsCartOpen(true)}
+          >
             <div className="min-w-0">
               <div className="text-sm font-semibold">{t('cart_title')}</div>
               <div className="text-xs opacity-85">
@@ -1315,8 +1315,8 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
             <div className="shrink-0 rounded-full bg-white/15 px-3 py-1 text-sm font-semibold">
               {t('cart_bar_button')}
             </div>
-          </div>
-        </button>
+          </button>
+        </div>
       )}
 
       {isCartOpen && cart.length > 0 && (
