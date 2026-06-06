@@ -196,19 +196,19 @@ const PriceLines = (props: {
     && props.oldPriceLbp > props.priceLbp;
 
   return (
-    <div className="space-y-1">
+    <div className="select-none space-y-1 text-right">
       {props.priceUsdCents !== null && (
-        <div className="flex flex-wrap items-baseline justify-end gap-x-2">
+        <div className="flex flex-wrap items-baseline justify-end gap-x-2 gap-y-1 break-words">
           {hasUsdDiscount && (
             <span className="text-xs font-medium text-muted-foreground line-through">
               {formatUsdCents(props.oldPriceUsdCents!, props.locale)}
             </span>
           )}
-          <span>{formatUsdCents(props.priceUsdCents, props.locale)}</span>
+          <span className="[overflow-wrap:anywhere]">{formatUsdCents(props.priceUsdCents, props.locale)}</span>
         </div>
       )}
       {props.priceLbp !== null && (
-        <div className="flex flex-wrap items-baseline justify-end gap-x-2">
+        <div className="flex flex-wrap items-baseline justify-end gap-x-2 gap-y-1 break-words">
           {hasLbpDiscount && (
             <span className="text-xs font-medium text-muted-foreground line-through">
               {formatLocalCurrency(
@@ -218,7 +218,7 @@ const PriceLines = (props: {
               )}
             </span>
           )}
-          <span>
+          <span className="[overflow-wrap:anywhere]">
             {formatLocalCurrency(
               props.priceLbp,
               props.locale,
@@ -1184,9 +1184,9 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
   );
 
   return (
-    <div className="scroll-pb-40 space-y-5 pb-[calc(9rem+env(safe-area-inset-bottom))] sm:pb-8">
+    <div className="scroll-pb-44 space-y-5 pb-[calc(10rem+env(safe-area-inset-bottom))] sm:pb-8">
       <div
-        className="sticky top-[57px] z-30 -mx-4 mb-1 flex gap-2 overflow-x-auto border-y bg-background/95 px-4 py-2 shadow-sm backdrop-blur-sm sm:static sm:mx-0 sm:mb-0 sm:flex-wrap sm:overflow-visible sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none sm:backdrop-blur-0"
+        className="sticky top-[calc(57px+env(safe-area-inset-top))] z-40 -mx-4 mb-1 flex gap-2 overflow-x-auto overscroll-x-contain border-y bg-background/95 px-4 py-2 shadow-sm backdrop-blur-sm sm:static sm:mx-0 sm:mb-0 sm:flex-wrap sm:overflow-visible sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none sm:backdrop-blur-0"
         aria-label={t('category_nav_label')}
       >
         {props.categories.map(category => (
@@ -1207,6 +1207,12 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
           </Button>
         ))}
       </div>
+
+      {!props.orderingEnabled && (
+        <div className="rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-medium leading-6 text-amber-950">
+          {t('ordering_unavailable_message')}
+        </div>
+      )}
 
       {selectedCategory && (
         <div>

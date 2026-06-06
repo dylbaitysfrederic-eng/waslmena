@@ -148,7 +148,10 @@ const RestaurantTablesPage = async (props: {
               />
             </div>
 
-            <FormSubmitButton pendingLabel={t('create_pending_button')}>
+            <FormSubmitButton
+              pendingLabel={t('create_pending_button')}
+              className="w-fit px-4"
+            >
               {t('create_button')}
             </FormSubmitButton>
           </form>

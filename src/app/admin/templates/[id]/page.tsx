@@ -317,7 +317,11 @@ const AdminTemplatesDetailPage = async (props: {
                 required
               />
             </div>
-            <FormSubmitButton pendingLabel="Creating..." size="sm">
+            <FormSubmitButton
+              pendingLabel="Creating..."
+              size="sm"
+              className="w-fit px-4"
+            >
               Create table
             </FormSubmitButton>
           </form>

@@ -425,10 +425,10 @@ const PublicTableMenuPage = async (props: PublicMenuPageProps) => {
         organization.restaurantAccentColor,
       )}
     >
-      <header className="sticky top-0 z-40 border-b border-zinc-900/10 bg-background/95 shadow-sm backdrop-blur-sm">
+      <header className="sticky top-[env(safe-area-inset-top)] z-50 border-b border-zinc-900/10 bg-background/95 shadow-sm backdrop-blur-sm">
         <div
           className={cn(
-            'mx-auto flex min-h-14 w-full items-center justify-between gap-3 px-4 py-3',
+            'mx-auto flex min-h-14 w-full items-center justify-between gap-2 px-4 py-3 sm:gap-3',
             templateClassNames.shell,
           )}
         >
@@ -450,7 +450,7 @@ const PublicTableMenuPage = async (props: PublicMenuPageProps) => {
               </p>
             </div>
           </div>
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="flex shrink-0 items-center justify-end gap-2">
             {whatsappUrl && (
               <a
                 href={whatsappUrl}
