@@ -147,7 +147,7 @@ export default async function DashboardLayout(props: {
     <>
       <div
         className={cn(
-          'sticky top-0 z-40 border-b border-zinc-900/10 bg-background/95 shadow-sm backdrop-blur-sm',
+          'sticky top-0 z-40 border-b border-zinc-900/10 bg-background/95 shadow-sm backdrop-blur-sm print:hidden',
           getRestaurantThemeClassName(organization?.restaurantThemeMode),
         )}
         style={getRestaurantBrandStyle(
@@ -293,8 +293,8 @@ export default async function DashboardLayout(props: {
         </div>
       </div>
 
-      <div className="min-h-[calc(100vh-72px)] bg-muted">
-        <div className="mx-auto max-w-screen-xl px-3 pb-16 pt-6">
+      <div className="min-h-[calc(100vh-72px)] bg-muted print:min-h-0 print:bg-white">
+        <div className="mx-auto max-w-screen-xl px-3 pb-16 pt-6 print:max-w-none print:p-0">
           {dashboardContent}
         </div>
       </div>

@@ -168,8 +168,33 @@ const TicketPage = async (props: {
             body {
               background: #fff !important;
               color: #000 !important;
+              margin: 0 !important;
+              width: 80mm;
               -webkit-print-color-adjust: exact;
               print-color-adjust: exact;
+            }
+
+            body * {
+              visibility: hidden !important;
+            }
+
+            [data-print-ticket],
+            [data-print-ticket] * {
+              visibility: visible !important;
+            }
+
+            [data-print-ticket] {
+              background: #fff !important;
+              border: 0 !important;
+              box-shadow: none !important;
+              color: #000 !important;
+              left: 0 !important;
+              margin: 0 !important;
+              max-width: 72mm !important;
+              padding: 0 !important;
+              position: absolute !important;
+              top: 0 !important;
+              width: 72mm !important;
             }
           }
         `}
@@ -184,8 +209,9 @@ const TicketPage = async (props: {
 
         <article
           id={ticketId}
+          data-print-ticket
           tabIndex={-1}
-          className="mx-auto w-full max-w-[72mm] break-words bg-white font-mono text-[12px] leading-tight text-black outline-none print:text-[12px]"
+          className="mx-auto w-full max-w-[72mm] break-words bg-white font-mono text-[12px] leading-tight text-black outline-none print:mx-0 print:text-[12px]"
         >
           <header className="text-center">
             <div className="text-base font-black uppercase tracking-normal">

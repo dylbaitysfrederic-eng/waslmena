@@ -371,7 +371,7 @@ const PublicGeneralMenuPage = async (props: PublicGeneralMenuPageProps) => {
         organization.restaurantAccentColor,
       )}
     >
-      <header className="sticky top-[env(safe-area-inset-top)] z-50 border-b border-zinc-900/10 bg-background/95 shadow-sm backdrop-blur-sm">
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-zinc-900/10 bg-background/95 pt-[env(safe-area-inset-top)] shadow-sm backdrop-blur-sm sm:sticky sm:top-0 sm:pt-0">
         <div
           className={cn(
             'mx-auto flex min-h-14 w-full items-center justify-between gap-2 px-4 py-3 sm:gap-3',
@@ -418,7 +418,7 @@ const PublicGeneralMenuPage = async (props: PublicGeneralMenuPageProps) => {
 
       <div
         className={cn(
-          'mx-auto flex w-full flex-col gap-4 px-4 py-4',
+          'mx-auto flex w-full flex-col gap-4 px-4 pb-4 pt-[calc(4.75rem+env(safe-area-inset-top))] sm:py-4',
           templateClassNames.shell,
         )}
       >

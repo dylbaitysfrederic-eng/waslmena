@@ -1186,7 +1186,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
   return (
     <div className="scroll-pb-44 space-y-5 pb-[calc(10rem+env(safe-area-inset-bottom))] sm:pb-8">
       <div
-        className="sticky top-[calc(57px+env(safe-area-inset-top))] z-40 -mx-4 mb-1 flex gap-2 overflow-x-auto overscroll-x-contain border-y bg-background/95 px-4 py-2 shadow-sm backdrop-blur-sm sm:static sm:mx-0 sm:mb-0 sm:flex-wrap sm:overflow-visible sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none sm:backdrop-blur-0"
+        className="sticky top-[calc(4.75rem+env(safe-area-inset-top))] z-40 -mx-4 mb-1 flex gap-2 overflow-x-auto overscroll-x-contain border-y bg-background/95 px-4 py-2 shadow-sm backdrop-blur-sm sm:static sm:mx-0 sm:mb-0 sm:flex-wrap sm:overflow-visible sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none sm:backdrop-blur-0"
         aria-label={t('category_nav_label')}
       >
         {props.categories.map(category => (
@@ -1285,7 +1285,7 @@ export const PublicMenuCart = (props: PublicMenuCartProps) => {
       )}
 
       {cart.length > 0 && (
-        <div className="fixed inset-x-0 bottom-0 z-50 border-t bg-background/95 px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-2 shadow-[0_-10px_30px_rgba(15,23,42,0.18)] backdrop-blur sm:hidden">
+        <div className="fixed inset-x-0 bottom-0 z-30 border-t bg-background/95 px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-2 shadow-[0_-10px_30px_rgba(15,23,42,0.18)] backdrop-blur sm:hidden">
           <button
             type="button"
             className="mx-auto flex min-h-14 w-full max-w-2xl items-center justify-between gap-3 rounded-lg border px-4 py-3 text-left shadow-sm"
