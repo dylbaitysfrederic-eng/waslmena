@@ -80,6 +80,7 @@ const PUBLIC_ORDER_RATE_LIMIT = {
   maxGeneralOrders: 20,
   windowMs: 60 * 1000,
 };
+const TABLE_ORDERING_MODES = ['table_ordering', 'both', 'pickup_delivery'] as const;
 
 const isPublicOrderRateLimited = async (input: {
   organizationId: string;
@@ -206,13 +207,11 @@ const submitPublicOrderActionImpl = async (
   }
 
   const rawOrderType = input.orderType?.toString().trim();
-  const orderType = rawOrderType === 'delivery'
-    ? 'delivery'
-    : rawOrderType === 'counter'
-      ? 'counter'
-      : tableId !== null
-        ? 'table'
-        : 'counter';
+  const orderType = tableId !== null
+    ? 'table'
+    : rawOrderType === 'delivery'
+      ? 'delivery'
+      : 'counter';
   const deliveryAddress = input.deliveryAddress?.trim() ?? '';
   const deliveryPhone = input.deliveryPhone?.trim() ?? '';
   const deliveryNotes = normalizeCustomerNote(input.deliveryNotes);
@@ -235,8 +234,9 @@ const submitPublicOrderActionImpl = async (
     .limit(1);
 
   const tableOrderingEnabled = organizationWithDelivery
-    ? organizationWithDelivery.orderingMode === 'table_ordering'
-    || organizationWithDelivery.orderingMode === 'both'
+    ? TABLE_ORDERING_MODES.includes(
+      organizationWithDelivery.orderingMode as (typeof TABLE_ORDERING_MODES)[number],
+    )
     : false;
   const generalMenuOrderingEnabled = organizationWithDelivery
     ? organizationWithDelivery.pickupEnabled

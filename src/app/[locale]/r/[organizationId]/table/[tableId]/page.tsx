@@ -44,6 +44,7 @@ const TEMPLATE_STYLES = [
   'table_service',
   'shisha_lounge',
 ] as const;
+const TABLE_ORDERING_MODES = ['table_ordering', 'both', 'pickup_delivery'] as const;
 
 type TemplateStyle = typeof TEMPLATE_STYLES[number];
 
@@ -409,8 +410,9 @@ const PublicTableMenuPage = async (props: PublicMenuPageProps) => {
     )}`
     : null;
   const localCurrencyLabel = organization?.localCurrencyLabel ?? 'LL';
-  const tableOrderingEnabled = organization.orderingMode === 'table_ordering'
-    || organization.orderingMode === 'both';
+  const tableOrderingEnabled = TABLE_ORDERING_MODES.includes(
+    organization.orderingMode as (typeof TABLE_ORDERING_MODES)[number],
+  );
   const restaurantName = organization.restaurantDisplayName || t('title');
 
   return (
