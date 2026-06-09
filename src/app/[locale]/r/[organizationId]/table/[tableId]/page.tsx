@@ -44,7 +44,12 @@ const TEMPLATE_STYLES = [
   'table_service',
   'shisha_lounge',
 ] as const;
-const TABLE_ORDERING_MODES = ['table_ordering', 'both', 'pickup_delivery'] as const;
+const TABLE_ORDERING_MODES = [
+  'table_ordering',
+  'both',
+  'pickup_delivery',
+  'counter_pickup',
+] as const;
 
 type TemplateStyle = typeof TEMPLATE_STYLES[number];
 

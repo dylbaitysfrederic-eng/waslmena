@@ -80,7 +80,12 @@ const PUBLIC_ORDER_RATE_LIMIT = {
   maxGeneralOrders: 20,
   windowMs: 60 * 1000,
 };
-const TABLE_ORDERING_MODES = ['table_ordering', 'both', 'pickup_delivery'] as const;
+const TABLE_ORDERING_MODES = [
+  'table_ordering',
+  'both',
+  'pickup_delivery',
+  'counter_pickup',
+] as const;
 
 const isPublicOrderRateLimited = async (input: {
   organizationId: string;
